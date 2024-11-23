@@ -1,0 +1,30 @@
+<?xml version="0.0" ?>
+<robot name="T_20mm.urdf">
+  <link concave="yes" name="baseLink" >
+    <contact>
+      <friction_anchor/>
+      <lateral_friction value="0.3"/>
+      <rolling_friction value="0.0"/>
+      <contact_cfm value="0.0"/>
+      <contact_erp value="1.0"/>
+    </contact>
+    <inertial>
+       <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value="0.176"/>
+       <inertia ixx="8e-05" ixy="0" ixz="0" iyy="0.0002" iyz="0" izz="0.0002"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="T_20mm.obj" scale="1 1 2"/>
+      </geometry>
+      <material name="orange">
+        <color rgba="255. 165. 0. 1."/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+    	 	<mesh filename="test.obj" scale="1 1 2"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>
