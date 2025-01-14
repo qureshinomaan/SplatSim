@@ -1,0 +1,6 @@
+name: R3MEncoder
+obs_shapes: ${obs_shapes}
+num_frames: ${num_frames}
+out_shape: (1, 2048 + ${proprio_dim}) # gets overridden according to model name choice
+freeze_pretrained: True
+model_type: resnet50

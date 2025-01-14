@@ -1,0 +1,70 @@
+build-ubuntu-2004:
+  extends: .linux-build
+  image: gitlab.sdu.dk:5050/sdurobotics/docker-images/ur_rtde-build:ubuntu-2004
+
+examples-ubuntu-2004:
+  extends: .linux-build-examples
+  image: gitlab.sdu.dk:5050/sdurobotics/docker-images/ur_rtde-build:ubuntu-2004
+  dependencies:
+    - build-ubuntu-2004
+  needs: ["build-ubuntu-2004"]
+
+polyscope-5.12.4:
+  extends: .linux-polyscopetest
+  variables:
+    POLYSCOPE_TYPE: "e-series"
+    POLYSCOPE_IMAGE: "universalrobots/ursim_e-series:5.12.4"
+    POLYSCOPE_VER_DOTTED: "5.12.4"
+    POLYSCOPE_VER_UNDERSCORE: "5_12_4"
+  image: gitlab.sdu.dk:5050/sdurobotics/docker-images/ur_rtde-build:ubuntu-dind
+  dependencies:
+    - build-ubuntu-2004
+  needs: ["build-ubuntu-2004"]
+
+polyscope-5.5.1:
+  extends: .linux-polyscopetest
+  variables:
+    POLYSCOPE_TYPE: "e-series"
+    POLYSCOPE_IMAGE: "universalrobots/ursim_e-series:5.5.1"
+    POLYSCOPE_VER_DOTTED: "5.5.1"
+    POLYSCOPE_VER_UNDERSCORE: "5_5_1"
+  image: gitlab.sdu.dk:5050/sdurobotics/docker-images/ur_rtde-build:ubuntu-dind
+  dependencies:
+    - build-ubuntu-2004
+  needs: ["build-ubuntu-2004"]
+
+polyscope-3.15.8:
+  extends: .linux-polyscopetest
+  variables:
+    POLYSCOPE_TYPE: "cb-series"
+    POLYSCOPE_IMAGE: "universalrobots/ursim_cb3:3.15.8"
+    POLYSCOPE_VER_DOTTED: "3.15.8"
+    POLYSCOPE_VER_UNDERSCORE: "3_15_8"
+  image: gitlab.sdu.dk:5050/sdurobotics/docker-images/ur_rtde-build:ubuntu-dind
+  dependencies:
+    - build-ubuntu-2004
+  needs: ["build-ubuntu-2004"]
+
+polyscope-3.7.2:
+  extends: .linux-polyscopetest
+  variables:
+    POLYSCOPE_TYPE: "cb-series"
+    POLYSCOPE_IMAGE: "universalrobots/ursim_cb3:3.7.2"
+    POLYSCOPE_VER_DOTTED: "3.7.2"
+    POLYSCOPE_VER_UNDERSCORE: "3_7_2"
+  image: gitlab.sdu.dk:5050/sdurobotics/docker-images/ur_rtde-build:ubuntu-dind
+  dependencies:
+    - build-ubuntu-2004
+  needs: ["build-ubuntu-2004"]
+
+cibuildwheel-linux:
+  extends: .linux-cibuildwheel
+  only:
+    refs:
+      - tags
+  tags:
+    - sdur-dind
+    - linux
+  dependencies:
+    - build-ubuntu-2004
+  needs: ["build-ubuntu-2004"]

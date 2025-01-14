@@ -1,0 +1,13 @@
+.idea
+wandb/
+*.pyc
+*__pycache__*
+*egg*
+*.egg-info
+/data
+/dataset
+outputs/
+exp/
+.vscode
+.DS_Store
+/assets

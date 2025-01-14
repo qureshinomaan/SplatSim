@@ -1,0 +1,4 @@
+/usr/lib/*/librtde.so
+/usr/include/ur_rtde/*
+/usr/include/urcl/*
+/usr/lib/*/cmake

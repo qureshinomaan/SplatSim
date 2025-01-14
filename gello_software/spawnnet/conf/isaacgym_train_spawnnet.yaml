@@ -1,0 +1,72 @@
+defaults:
+  - _self_
+  - encoder: spawnnet
+  - policy: mlp
+
+isaacgym_task: ???
+experiment: ??? # tag for wandb and log dir
+isaacgym_arg_str: None
+debug: ???
+num_gpus: ???
+
+hydra:
+  run:
+    dir: ./data/local/${experiment}/${experiment}_${now:%H%M}
+  sweep:
+    dir: ./data/local/${experiment}/${experiment}_${now:%H%M}
+    subdir: ${hydra.job.num}
+
+wandb:
+  project: spawnnet
+  name: ${experiment}_${now:%H%M}_${hydra:job.num}
+  group: ${experiment}
+
+
+# Env specific
+in_channels: 12
+warmup_traj: 10
+num_views: 3
+proprio_dim: 49
+
+# Inputs and outputs
+obs_shapes: { "rgb": [ 3, 224, 224 ], "depth": [ 1, 224, 224 ], "state": [ 49 ] }
+act_shape: [ 11 ]
+act_bounds: [ [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ], [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] ]
+use_proprio: True
+num_frames: 1
+stack_idx: [ 0 ]
+action_horizon: 1
+
+# Training
+updates_per_iteration: 500
+batch_size: 24
+lr: 3e-4
+clip_grad: 0.5
+seed: 1
+device: cuda
+kl_weight: 0
+
+optimizer_cfg:
+  type: optim.Adam
+  params:
+    lr: ${lr}
+    weight_decay: 0
+
+scheduler_cfg:
+  type: "CosineAnnealingLRWithWarmup"
+  params:
+    warmup_lr: 3e-5
+    warmup_epoch: 1
+    T_max: 0
+
+# Dataset
+dataset:
+  obs_shapes: ${obs_shapes}
+  act_shape: ${act_shape}
+  act_bounds: ${act_bounds}
+  aug_cfg:
+    aug_prob: 0
+    num_frames: ${num_frames}
+    stack_idx: ${stack_idx}
+    use_proprio: ${use_proprio}
+  action_horizon: ${action_horizon}

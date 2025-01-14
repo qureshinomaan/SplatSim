@@ -1,0 +1,361 @@
+ur-rtde (1.3.2-2) bionic; urgency=medium
+
+  [ Kasper Høj Lorenzen ]
+  * bionic release
+
+ -- Kasper Høj Lorenzen <kalor@mmmi.sdu.dk>  Mon, 28 Sep 2020 10:51:53 +0200
+
+ur-rtde (1.3.2-1) focal; urgency=medium
+
+  [ Kasper Høj Lorenzen ]
+  * added doc on installesion of PPA devel packages
+
+  [ Anders Prier Lindvig ]
+  * Small doc. update + fixed wrong conversion
+  * Updated README.md
+
+  [ Kasper Høj Lorenzen ]
+  * implemented windows installer and extra CI
+
+  [ Kasper Høj Lorenzen ]
+  * zipping windows installer
+
+  [ Anders Prier Lindvig ]
+  * Added link to windows installer in README.md
+
+  [ Kasper Høj Lorenzen ]
+  * Fixed windows installer from CI
+
+  [ Anders Prier Lindvig ]
+  * Updated documentation
+  * Updated example animations
+
+  [ Kasper Høj Lorenzen ]
+  * compile on windows as RelWithDebInfo
+
+  [ Anders Prier Lindvig ]
+  * Release [1.2.5] Added the following:
+  * Return state of isWithinSafetyLimits functions
+  * Updated build_pypi dependencies in CI
+  * Update .gitlab-ci.yml
+  * Removed date_time from CMakeLists.txt
+  * Remote control status only checked on Polyscope version > 5.6, fixes #40
+  * Release [1.2.6] Attempt to fix pip install on Windows and MacOS
+  * Release [1.2.7] Temp. fix for regex_error with python
+  * RTDEControlInterface throws if register is already in use.
+  * Throw a std::runtime_error, when connection attempt fails
+  * Release [1.3.0] forceMode function is now RT capable.
+  * Fix for pip install on Windows, closes #22 and fixes #33
+  * Release [1.3.1] Added the following:
+  * Python 2.7 is no longer supported for future wheels
+  * README and Doc updated about the pip version requirement
+  * Implemented explicit disconnect() function for all interfaces.
+  * Added getJointTorques() function closes #45
+
+  [ Kasper Høj Lorenzen ]
+  * Added test for cmakeconfig and linking on linux
+  * added exported include to pipline artifacts
+
+  [ Uwe Kindler ]
+  * Added support for pose_trans function to enable moves w.r.t. to tool or feature
+  * Removed debug output
+
+  [ Anders Prier Lindvig ]
+  * Added isProtectiveStopped, isEmergencyStopped and getSafetyStatusBits functions to RTDEReceiveInterface, closes #47
+
+  [ Kasper Høj Lorenzen ]
+  * Ubuntu2004 test and support
+
+  [ Anders Prier Lindvig ]
+  * Release [1.3.2] Added the following:
+
+  [ Kasper Høj Lorenzen ]
+  * Added debian conflict between ur_rtde and rwhw_ur_rtde
+  * Updated package conflicts for debian
+
+ -- Kasper Høj Lorenzen <kalor@mmmi.sdu.dk>  Mon, 28 Sep 2020 10:48:18 +0200
+
+ur-rtde (1.2.4-4) focal; urgency=medium
+
+  [ Anders Prier Lindvig ]
+  * Output of connection status is now optional through a verbose flag + updated README
+
+ -- Kasper Høj Lorenzen <kalor@mmmi.sdu.dk>  Thu, 16 Jul 2020 09:54:58 +0200
+
+ur-rtde (1.2.4-3) focal; urgency=medium
+
+  * initial focal Release 
+
+ -- Kasper Høj Lorenzen <kalor@mmmi.sdu.dk>  Wed, 15 Jul 2020 12:38:45 +0200
+
+ur-rtde (1.2.4-2) focal; urgency=medium
+
+  * initial debian Release 
+
+ -- Kasper Høj Lorenzen <kalor@mmmi.sdu.dk>  Wed, 15 Jul 2020 12:38:45 +0200
+
+ur-rtde (1.2.4-1) focal; urgency=medium
+
+  [ Anders Prier Lindvig ]
+  * Initial commit of UR RTDE project
+  * Updated .gitignore to not include build folders
+  * Retrieval of joint Q working
+  * Rewrote ur_rtde to rely on boost only, implemented logic for receiving data
+  * Add .gitlab-ci.yml
+  * Update .gitlab-ci.yml
+  * Add README.md
+  * Implemented ability to send data to the controller + client
+  * Implemented a dashboard client and initial RobotState class
+  * Implemented a control interface and script client, 
+    made RobotState thread-safe
+  * Updated receive client to use new RobotState
+  * Implemented speed and servo functions
+  * Removed command queue, since not necessary
+  * Reorganized project with src and include 
+    and added doxy+sphinx built documentation
+  * Added fix for building documentation with CI
+  * Removed specific python version requirement
+  * Add link to documentation in readme
+  * Minor cleanup of RTDE class
+  * Small update to how the doc. is shown
+  * Implemented std and tool digital output functions
+  * Added more files to the documentation + logo
+  * Implemented a RTDE receive interface with documentation
+  * Added some examples
+  * Update README.md
+  * The script is now compiled as a header, 
+    to avoid file path issues and performance
+  * If no vars are specified for RTDEReceiveInterface constructor 
+    all vars are transmitted
+  * Implement python bindings for RTDE Control and Receive Interface + doc
+
+  [ Thomas Nicky Thulesen ]
+  * Implemented target exports in CMake and tested on Windows.
+  * Added include directories for the python libraries.
+  * Added linking to thread library again.
+
+  [ Anders Prier Lindvig ]
+  * Made python bindings optional + added install target for python libraries
+  * Python bindings off by default
+  * Python bindings off by default for docs
+  * Updated documentation of RTDEControlInterface
+  * Added animation of force mode example
+
+  [ Thomas Nicky Thulesen ]
+  * Fixing compilation on Windows.
+  * Fixed spelling mistake.
+  * Fixed Windows exports.
+
+  [ Anders Prier Lindvig ]
+  * Added a servoj example
+  * Changed send/receive protocol logic
+  * Python 2.X is now supported + updated README
+  * New servo impl. + added return status and timeout functionality
+  * Added MoveL with path example and Updated servo example in doc
+  * Added MoveJ with path example
+  * Update README.md
+  * Update README.md
+  * Add LICENSE
+  * Added installation to documentation and updated README
+  * Impl. threaded speed movements, updated servo impl + documentation
+  * Implemented ability to set payload and CoG
+  * Implemented teach_mode and force mode gain and damping parameters
+  * Implemented ability to set the speed slider
+  * Implemented analog voltage and current functions 
+    + RobotState are no longer inline
+  * Update README.md
+  * Added a CMake example to doc
+
+  [ Thomas Nicky Thulesen ]
+  * Made it possible for the user to customize the install directories.
+
+  [ Anders Prier Lindvig ]
+  * Increased execution timeout period
+  * Added ur_rtde namespace for all classes 
+    + made some function not avail on CB3
+  * Fixed doc to work with namespace
+  * Added Windows instructions to doc.
+  * Changed highlighting for example in doc
+  * Added missing return values to functions
+  * Deleted the generated rtde_control_script header
+  * Implemented ability to get robot status 
+    + termination of running scripts before sending a new
+  * Update README.md
+  * Connection loss is now handled safely, 
+    impl. status + reconnect, reported in #6
+  * Added tip for testing to doc
+  * New IO interface, add. connection safety and custom script functions
+  * Made python bindings for the RTDE IO interface + doc
+
+  [ Nathan Quinn ]
+  * Added missing return statement in RTDERecieveInterface::reconnect()
+
+  [ Anders Prier Lindvig ]
+  * Implemented a servoL function as requested by Inigo
+  * Fixed typo in RTDEIOInterface.
+  * Make sure doc uses Python3 Interpreter
+  * Revert to deprecated FindPythonInterp for doc
+  * Update README.md
+  * Added exception handling for connect() function
+  * Global interpreter lock (GIL) is now released on function calls, 
+    which allows for Python multithreading
+
+  [ Kasper Høj Lorenzen ]
+  * Removed warnings and updated install
+
+  [ Anders Prier Lindvig ]
+  * Update .gitlab-ci.yml
+  * Impl. tool_contact, get_actual_joint_positions_history, 
+    get_steptime, get_target_waypoint + new logic for control version
+  * Reception of data now works again, missing ID message offset, 
+    after a code cleanup
+
+  [ Iñigo Iturrate San Juan ]
+  * Added missing python bindings for new functions
+
+  [ Anders Prier Lindvig ]
+  * Updated tool_contact function, to use UR pose array in script
+
+  [ Iñigo Iturrate San Juan ]
+  * Added missing python bindings for teach mode.
+
+  [ Anders Prier Lindvig ]
+  * Allowed maximum values and added default arguments
+    for velocity and acceleration
+  * Added clearing of cmd register, before sending control script
+  * pybind11 will now be found, if installed by pip
+  * Updated documentation with macOS instructions + new pip install for pybind11
+  * Update README.md
+  * Make sure command register are cleared when initializing
+  * Added CI pipeline for building and uploading to PyPi
+  * Updated documentation and readme, with pip install option
+  * Added building of wheel for Python 2.7
+
+  [ scholle ]
+  * add bidirectional communication in dashboard client
+
+  [ Anders Prier Lindvig ]
+  * Changed to #include guards, to match the rest of the project
+  * Dashboard client running method: convert to lower case before parsing.
+  * Removed data reception / synchronization in the io_interface. 
+    This fixes the issue where the io_interface connection would 
+    be shutdown by the controller, after some time, 
+    with the exception "connection reset by peer". 
+    Receiving data in the io_interface is not necessary
+    and is a leftover from the initial implementation.
+  * Impl. setTcp function in control_interface 
+    and bumped python version to 0.0.2
+  * RTDEControlInterface now has a threaded receive callback
+  * Corrected pybind11 config and file path for export header.
+
+  [ Arran Hobson Sayers ]
+  * Added dashboard and script client python bindings
+  * Updated dashboard and script clients to be in line with other bindings
+  * call_guard removes the needed to specify inputs and outputs
+
+  [ Iñigo Iturrate San Juan ]
+  * Added inverse kinematics function to rtde_control.
+
+  [ Arran Hobson Sayers ]
+  * Fixed and completed script and dashboard bindings
+
+  [ Anders Prier Lindvig ]
+  * Fixed sendCustomScriptFunction so that it actually works. 
+    Removed manual closing of socket when disconnecting
+  * Changed cmake version number to match pypi version number.
+  * dashboard_enums.h header is now installed
+
+  [ Arran Hobson Sayers ]
+  * Added programState binding
+
+  [ Anders Prier Lindvig ]
+  * Small fix in CMakeLists.txt
+  * Added function to trigger a protective stop on robot
+  * The ft sensor is no longer zeroed at startup. Bumped version to 0.0.4
+
+  [ Kasper Høj Lorenzen ]
+  * Install folder fix
+
+  [ Anders Prier Lindvig ]
+  * Export header will now generated to the include folder
+  * Added documentation in the python interface. 
+    fixed export header install location
+
+  [ Kasper Høj Lorenzen ]
+  * Fixed Warning signed unsigned comparrison
+  * Made Warnings more strict
+
+  [ Anders Prier Lindvig ]
+  * Added version check for set_force_mode_damping() and protective_stop().
+  * Bumped version number to 0.0.5
+  * getStepTime() function now returns a double instead of an integer
+    + removed the debug messages for servo and speed thread in the 
+    rtde_control script. Bumped version to 0.0.6
+  * Use --prefer-binary on pip install cmake
+  * The Servo and Speed functions are now RT capable. Version bumped to 0.0.7
+  * Changed servoStop function to work while in force_mode.
+  * Added forward declarations and cleaned up includes
+  * Simplified communication protocol
+  * Updated servoJ example
+  * Added a FAQ section to docs.
+  * Bumped version to 0.0.8
+  * Removed some forward declarations, that manylinux doesn't like
+  * Move commands with path + blends adjusted to new protocol
+  * Adjustments for new protocol, 
+    stopRobot should not leave the controller in a DONE_WITH_CMD state
+  * Bumped version to 0.0.9
+  * Added missing 'end' to an if statement.
+  * FAQ and Guides are now separate in docs + Added MoveP / MoveC example
+  * Recipes are now setup in an explicit function + Impl. 
+    MoveP + Added blend to MoveC + some docs
+
+  [ Kasper Høj Lorenzen ]
+  * Updated git ignore with Build
+
+  [ Anders Prier Lindvig ]
+  * Added potential fix for issue #21, and updated some python docs
+  * 1.0.0 release
+  * Removed some conflicting python doc strings
+  * Release [1.1.0] Changes to comm. protocol.
+  * Added new stopl and stopj functions + added upper range reg.
+    + renamed stopRobot to stopScript
+  * Release [1.2.0] Changed comm. protocol, RT working again
+  * Release [1.2.1] Added missing functions to python interface + fixes #27
+
+  [ Oliver Heimann ]
+  * Refactored a very large if-else in RTDE::receiveData() 
+    which caused compiled problems with MSCV for having more than 127 
+    conditional branches. Replaced the statement with a map that contains 
+    functional handles for the different keys which were used as conditions 
+    for the if clause. 
+    Added functions to fill the map with the required callback 
+    functions on RTDE construction.
+  * Replaced std::remove_const<std::remove_reference>> with std::decay 
+    to hopefully fix a compilererror with GNU 5.4.0
+  * Added typename to std::decay
+  * Reintegrated remove_const and remove_reference instead of std::decay
+  * removed some templates that provided some minor convenience 
+    but bloated the code quiet a bit
+
+  [ Anders Prier Lindvig ]
+  * Changed to cpp domain for breathe, 
+    added SKIP_FUNCTION_MACROS to doxygen conf
+  * Make doxygen ignore the RTDE_EXPORT macro
+  * Changed breathe version to the latest again
+  * message_offset are now passed by reference + code style changes
+  * Added pybind11 as a submodule
+  * Changed CI to use project specific docker images + doc update
+  * Release [1.2.2] pybind11 as submodule + new CI. Fixes #29, #24
+  * Removed the 'm' flag for pymalloc in CI script
+  * Removed pip install pybind11 in CI script
+  * Release [1.2.3] actual force is now read again 
+    + added watchdog functionality
+
+  [ Mathias Neerup ]
+  * OrderedDict needs parentheses. Tested with Python 3.6.9 and Python 3.8.0
+
+  [ Anders Prier Lindvig ]
+  * Release [1.2.4] Added the following:
+  * Release [1.2.4] Added missing CMake update
+
+ -- Kasper Høj Lorenzen <kalor@mmmi.sdu.dk>  Wed, 15 Jul 2020 09:42:58 +0200

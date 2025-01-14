@@ -1,0 +1,10 @@
+build-ubuntu-2204:
+  extends: .linux-build
+  image: gitlab.sdu.dk:5050/sdurobotics/docker-images/ur_rtde-build:ubuntu-2204
+
+examples-ubuntu-2204:
+  extends: .linux-build-examples
+  image: gitlab.sdu.dk:5050/sdurobotics/docker-images/ur_rtde-build:ubuntu-2204
+  dependencies:
+    - build-ubuntu-2204
+  needs: ["build-ubuntu-2204"]

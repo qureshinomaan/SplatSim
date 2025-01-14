@@ -1,0 +1,46 @@
+Source: ur-rtde
+Priority: optional
+Maintainer: Anders Prier Lindvig <anpl@mmmi.sdu.dk>
+Build-Depends: 
+  debhelper (>= 9),
+  cmake(>= 3.5), 
+  libboost-system-dev (>= 1.54),
+  libboost-program-options-dev (>= 1.54),
+  libboost-thread-dev (>= 1.54), 
+Standards-Version: 4.1.2
+Section: libs
+Homepage: https://sdurobotics.gitlab.io/ur_rtde/
+Vcs-Git: https://gitlab.com/sdurobotics/ur_rtde.git
+Vcs-Browser: https://gitlab.com/sdurobotics/ur_rtde
+
+Package: librtde
+Architecture: amd64
+Multi-Arch: same
+Conflicts:
+  libsdurwhw-universalrobots-rtde1.1,
+  libsdurwhw-universalrobots-rtde1.0
+Replaces:
+  libsdurwhw-universalrobots-rtde1.1,
+  libsdurwhw-universalrobots-rtde1.0
+Depends: 
+ ${shlibs:Depends}, 
+ ${misc:Depends}
+Description: Interface for UR robots
+ A C++ interface for sending and receiving data to/from a UR robot using the
+ Real-Time Data Exchange (RTDE) interface of the robot.
+
+Package: librtde-dev
+Section: libdevel
+Architecture: amd64
+Multi-Arch: same
+Depends: 
+ librtde (=${binary:Version}), 
+ ${misc:Depends}
+Conflicts:
+  sdurwhw-cmake1.1,
+  sdurwhw-cmake1.0
+Replaces:
+  sdurwhw-cmake1.1,
+  sdurwhw-cmake1.0
+Description: Development library for ur-rtde.
+ The Development library for ur-rtde.

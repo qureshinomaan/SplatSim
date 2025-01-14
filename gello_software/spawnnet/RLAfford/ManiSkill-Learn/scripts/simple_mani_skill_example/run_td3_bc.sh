@@ -1,0 +1,3 @@
+python -m tools.run_rl configs/td3_bc/mani_skill_point_cloud.py --gpu-ids=0 --cfg-options "env_cfg.env_name=OpenCabinetDrawer_1045_link_0-v0" --work-dir=./work_dirs/OpenCabinetDrawer_1045_link_0-v0_pcd_pn --clean-up
+python -m tools.run_rl configs/td3_bc/mani_skill_point_cloud_transformer.py --gpu-ids=0 --cfg-options "env_cfg.env_name=OpenCabinetDrawer_1045_link_0-v0" --work-dir=./work_dirs/OpenCabinetDrawer_1045_link_0-v0_pcd_pntf --clean-up
+python -m tools.run_rl configs/td3_bc/mani_skill_state.py --gpu-ids=0 --cfg-options "env_cfg.env_name=OpenCabinetDrawer_1045_link_0-v0" --work-dir=./work_dirs/OpenCabinetDrawer_1045_link_0-v0_state --clean-up

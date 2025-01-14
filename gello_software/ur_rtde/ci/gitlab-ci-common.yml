@@ -1,0 +1,9 @@
+
+.CI-common:
+  before_script:
+    - THREADS=$(nproc --all)
+    - WERROR=ON
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  artifacts:
+    expire_in: 1 hour

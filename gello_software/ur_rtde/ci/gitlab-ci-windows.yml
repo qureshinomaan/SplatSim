@@ -1,0 +1,48 @@
+
+.CI-common-windows:
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  before_script:
+    - set WERROR=OFF
+  tags:
+    - sdur-windows
+
+.windows-build:
+  extends: .CI-common-windows
+  stage: build
+  script:
+    - mkdir build
+    - cd build
+    - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -G "Visual Studio 16 2019" -A x64 -DBUILD_STATIC=ON -DPYTHON_BINDINGS:BOOL=OFF -DUSE_WERROR:BOOL=%WERROR% ..
+    - msbuild ur_rtde.sln -m /property:Configuration=RelWithDebInfo
+  artifacts:
+    paths:
+      - ./build
+      - ./include
+    expire_in: 2 day
+    when: on_success
+
+.windows-build-examples:
+  extends: .CI-common-windows
+  stage: build_examples
+  script:
+    - cd examples/cpp
+    - mkdir build 
+    - cd build
+    - cmake -G "Visual Studio 16 2019" -A x64 ..
+    - msbuild ur_rtde_examples.sln -m /property:Configuration=RelWithDebInfo
+
+.windows-cibuildwheel:
+  extends: .CI-common-windows
+  stage: build_wheels
+  variables:
+    CIBW_SKIP: "cp311-* *-win32"
+    CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+    CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair --add-path C:/Local/boost/lib -w {dest_dir} {wheel}"
+  script:
+    -  python -m cibuildwheel --output-dir wheelhouse --platform windows
+  artifacts:
+    paths:
+      - wheelhouse/
+  tags:
+    - sdur-windows

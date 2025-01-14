@@ -1,0 +1,21 @@
+name: SpawnNet
+model_type: 'r3m'
+obs_shapes: ${obs_shapes}
+num_frames: ${num_frames}
+pretrained_feat_info: {'layer_2': 0, 'layer_3': 1, 'layer_4': 2}
+use_pretrained: True
+
+vit_cfg:
+  model_type: "r3m"
+  freeze_pretrained: True
+
+conv_cfg:
+  in_channels: 4
+  shape: [ 224, 224 ]
+  pretrained_input_dims: [512, 1024, 2048]
+  version: "default"
+  pretrained_feature_dim: 64
+  out_shape: (64 + ${encoder.conv_cfg.pretrained_feature_dim})  * ${num_frames} * ${num_views} * 7 * 7 + ${proprio_dim}
+  conv_size: 1
+  channel_mask: "default" # Can also be 'rgb_only' or 'depth_only'
+  use_dense: True

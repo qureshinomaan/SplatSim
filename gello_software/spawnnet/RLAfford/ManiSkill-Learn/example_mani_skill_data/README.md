@@ -1,0 +1,2 @@
+# The example data should be stored here.
+We should have "OpenCabinetDrawer_1045_link_0-v0_mlp.ckpt", "OpenCabinetDrawer_1045_link_0-v0_PN_Transformer.ckpt", "OpenCabinetDrawer_1045_link_0-v0_state.h5", "OpenCabinetDrawer_1045_link_0-v0_pcd.h5" under this folder.

@@ -1,0 +1,68 @@
+defaults:
+  - _self_
+  - encoder: vits8_8
+  - policy: mlp
+
+task: ???
+experiment: ??? # tag for wandb and log dir
+
+hydra:
+  run:
+    dir: ./data/local/${now:%m%d}_${experiment}_${now:%H%M}
+  sweep:
+    dir: ./data/local/${now:%m%d}_${experiment}_${now:%H%M}
+    subdir: ${hydra.job.num}
+
+wandb:
+  project: spawnnet
+  name: ${now:%m%d}_${experiment}_${now:%H%M}_${hydra:job.num}
+  group: ${experiment}
+
+gpu: 0
+# Inputs and outputs
+obs_shapes: { "rgb": [ 3, 224, 224 ], "depth": [ 1, 224, 224 ], "state": [ 7 ] }
+act_shape: [ 8 ]
+act_bounds: [ [ -1, -1, -1, -1, -1, -1, -1, 0 ], [ 1, 1, 1, 1, 1, 1, 1, 1 ] ]
+use_proprio: True
+use_depth: True
+num_frames: 4
+stack_idx: [ 0,1,2,3 ]
+action_horizon: 20
+num_views: 2
+proprio_dim: 7
+in_channels: 12
+
+# Training
+lr: 1e-4
+batch_size: 64
+val_freq: 1
+save_freq: 10
+clip_grad: 0.5
+epochs: 300
+seed: 1
+num_workers: 8
+device: cuda
+kl_weight: 0
+
+optimizer_cfg:
+  type: optim.Adam
+  params:
+    lr: ${lr}
+    weight_decay: 0
+
+scheduler_cfg:
+  type: None
+
+# Dataset
+dataset:
+  obs_shapes: ${obs_shapes}
+  act_shape: ${act_shape}
+  act_bounds: ${act_bounds}
+  aug_cfg:
+    aug_prob: 0
+    num_frames: ${num_frames}
+    stack_idx: ${stack_idx}
+    use_proprio: ${use_proprio}
+    use_depth: ${use_depth}
+  token_name: ???
+  action_horizon: ${action_horizon}

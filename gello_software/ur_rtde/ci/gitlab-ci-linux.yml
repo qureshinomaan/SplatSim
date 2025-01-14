@@ -1,0 +1,102 @@
+
+.CI-common-linux:
+  extends: .CI-common
+  tags:
+    - linux
+    - sdur
+
+.linux-build:
+  extends: .CI-common-linux
+  stage: build
+  script:
+    - mkdir build
+    - cd build
+    - cmake -DPYTHON_BINDINGS:BOOL=OFF -DUSE_WERROR:BOOL=${WERROR} ..
+    - make -j${THREADS}
+  artifacts:
+    paths:
+      - ./build
+      - ./include
+    expire_in: 2 day
+    when: on_success
+
+.linux-doc:
+  extends: .CI-common-linux
+  stage: build_docs
+  script:
+    - "[ -d build ] && rm -r build"
+    - mkdir build
+    - cd build
+    - cmake -DCODE:BOOL=OFF -DDOC:STRING=html -DWERROR:BOOL=${WERROR} ..
+    - make doc
+  artifacts:
+    paths:
+      - build/doc/html
+    expire_in: 2 days
+
+.linux-build-examples:
+  extends: .CI-common-linux
+  stage: build_examples
+  script:
+    - cd examples/cpp
+    - mkdir build 
+    - cd build
+    - cmake ..
+    - make
+
+.linux-polyscopetest:
+  extends: .CI-common-linux
+  before_script:
+    - 'export DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"'
+    - echo "Using " $DIR
+    - docker network create --subnet=192.168.56.0/24 static_test_net
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker run --rm -d --net static_test_net --ip 192.168.56.101 -p 5900:5900 -p 29999:29999 -p 30001-30004:30001-30004 -v "${DIR}/ci/.vol/${POLYSCOPE_TYPE}":/ursim/programs --privileged ${POLYSCOPE_IMAGE}
+  script:
+    - echo "Preparing tests"
+    - cd test
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make
+    - echo "Waiting for UR simulator to be ready..."
+    - sleep 50
+    - ./tests -s
+  after_script:
+    - >
+      if [ $CI_JOB_STATUS == 'success' ]; then
+        anybadge -l PolyScope-${POLYSCOPE_VER_DOTTED} -v passed -c green -f ps_${POLYSCOPE_VER_UNDERSCORE}.svg
+      else
+        anybadge -l PolyScope-${POLYSCOPE_VER_DOTTED} -v failed -c red -f ps_${POLYSCOPE_VER_UNDERSCORE}.svg
+      fi
+  artifacts:
+    when: always
+    paths:
+      - ps_${POLYSCOPE_VER_UNDERSCORE}.svg
+  tags:
+    - sdur-dind
+
+.linux-cibuildwheel:
+  stage: build_wheels
+  image: python:3.8
+  # make a docker daemon available for cibuildwheel to use
+  services:
+    - name: docker:dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    # See https://github.com/docker-library/docker/pull/166
+    DOCKER_TLS_CERTDIR: ""
+    CIBW_BEFORE_ALL_LINUX: "yum install -y wget && bash ci/build-boost.sh"
+    CIBW_SKIP: "*-musllinux*"
+  script:
+    - curl -sSL https://get.docker.com/ | sh
+    - python -m pip install cibuildwheel==2.11.2
+    - cibuildwheel --output-dir wheelhouse
+  artifacts:
+    paths:
+      - wheelhouse/
+  tags:
+    - sdur-dind

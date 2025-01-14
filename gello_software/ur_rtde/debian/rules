@@ -1,0 +1,27 @@
+#!/usr/bin/make -f
+export DH_VERBOSE = 0
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+%:
+	# Ubuntu 16
+	#dh $@ --parallel --buildsystem=cmake --builddirectory=Build
+	# Newer then ubuntu 16
+	dh $@ --buildsystem=cmake --builddirectory=Build 
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+        -DLIB_INSTALL_DIR=/usr/lib/$(DEB_TARGET_MULTIARCH) \
+        -DPYTHON_BINDINGS=OFF
+
+override_dh_clean:
+	dh_clean
+	$(RM) -r Build
+	$(RM) include/ur_rtde/rtde_control_script.h
+	$(RM) -r bin
+	$(RM) -r debian/.debhelper
+	$(RM) -r debian/libur-rtde
+	$(RM) debian/libur-rtde.substvars
+	$(RM) debian/libur-rtde.debhelper.log
+
+override_dh_shlibdeps:
+	LD_LIBRARY_PATH=$(DESTDIR)/usr/lib/$(DEB_TARGET_MULTIARCH):$$LD_LIBRARY_PATH dh_shlibdeps -l$(DESTDIR)/usr/lib/$(DEB_TARGET_MULTIARCH) -a

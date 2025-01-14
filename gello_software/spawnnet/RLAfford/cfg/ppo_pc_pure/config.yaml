@@ -1,0 +1,47 @@
+seed: -1
+
+clip_observations: 5.0
+clip_actions: 1.0
+
+policy: # only works for MlpPolicy right now
+  pi_hid_sizes: [512, 512, 64]
+  vf_hid_sizes: [512, 512, 64]
+  activation: elu # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
+  feature_dim: 128
+  network_type: New
+  data_parallel: True
+
+learn:
+  agent_name: shadow_hand
+  test: False
+  resume: 0
+  save_interval: 200  # check for potential saves every this many iterations
+  eval_interval: 10   # multiply by max_episode length
+  eval_round: 16
+  print_log: True
+
+  # contrastive learning params
+  contrastive_learning: False
+  contrastive_m: 0.99
+
+  # rollout params
+  max_iterations: 50000
+
+  # training params
+  cliprange: 0.2
+  ent_coef: 0
+  nsteps: 16
+  noptepochs: 2
+  nminibatches: 8 # this is per agent
+  max_grad_norm: 1
+  optim_stepsize: 3.e-4 # 3e-4 is default for single agent training with constant schedule
+  schedule: adaptive # could be adaptive or linear or fixed
+  desired_kl: 0.008 # 0.016 is default
+  lr_upper: 2e-4
+  lr_lower: 2e-8
+  gamma: 0.99
+  lam: 0.95
+  init_noise_std: 1
+
+  log_interval: 1
+  asymmetric: False

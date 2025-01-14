@@ -1,0 +1,12 @@
+hydra:
+  run:
+    dir: ./data/${now:%Y.%m.%d}/${experiment}
+  sweep:
+    dir: ./data/${now:%Y.%m.%d}/${experiment}
+    subdir: ${hydra.job.num}
+  
+experiment: ???
+isaacgym_task: ???
+num_gpus: ???
+seed: ???
+asset_mode: ???

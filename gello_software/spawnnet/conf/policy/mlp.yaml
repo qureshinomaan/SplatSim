@@ -1,0 +1,11 @@
+name: MLP
+act_shape: ${act_shape}
+layers: [256, 128]
+activation: nn.ReLU
+normalization: None
+final_act: False
+zero_init_output: True
+act_bounds: ${act_bounds}
+num_frames: ${num_frames}
+num_views: ${num_views}
+action_horizon: ${action_horizon}

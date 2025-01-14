@@ -1,0 +1,3514 @@
+MuJoCo version 2.3.6
+model name     unnamed_model
+
+nq                    14
+nv                    14
+nu                    7
+nbody                 25
+nbvh                  370998
+njnt                  14
+ngeom                 59
+nsite                 2
+nlight                1
+nmesh                 28
+nmeshvert             390487
+nmeshnormal           390487
+nmeshface             185489
+nmeshgraph            32043
+nmat                  8
+nexclude              6
+neq                   3
+ntendon               1
+nwrap                 2
+nkey                  1
+nnames                3855
+nnames_map            310
+nM                    81
+nD                    148
+nB                    264
+nemax                 7
+njmax                 -1
+nconmax               -1
+nstack                1835008
+nbuffer               39972568
+
+timestep              0.002   
+apirate               1e+02   
+impratio              10      
+tolerance             1e-08   
+noslip_tolerance      1e-06   
+mpr_tolerance         1e-06   
+density               0       
+viscosity             0       
+o_margin              0       
+integrator            3
+collision             0
+cone                  0
+jacobian              2
+solver                2
+iterations            100
+noslip_iterations     0
+mpr_iterations        50
+disableflags          0
+enableflags           0
+gravity               0         0        -9.8      
+wind                  0         0         0        
+magnetic              0        -0.5       0        
+o_solref              0.02      1        
+o_solimp              0.9       0.95      0.001     0.5       2        
+
+totalmass             22      
+
+meaninertia           0.67    
+meanmass              0.92    
+meansize              0.089   
+extent                1.1     
+center               -0.1      0.36     0.29    
+
+qpos0                 0         0         0         0         0         0         0         0         0         0         0         0         0         0        
+
+qpos_spring           0         0         0         0         0         0         0         0         2.6       0         0         0         2.6       0        
+
+
+BODY 0:
+  name                  world
+  body_parentid         0 
+  body_rootid           0 
+  body_weldid           0 
+  body_mocapid          -1 
+  body_jntnum           0 
+  body_jntadr           -1 
+  body_dofnum           0 
+  body_dofadr           -1 
+  body_geomnum          1 
+  body_geomadr          0 
+  body_simple           1 
+  body_sameframe        1 
+  body_pos              0         0         0        
+  body_quat             1         0         0         0        
+  body_ipos             0         0         0        
+  body_iquat            1         0         0         0        
+  body_mass             0        
+  body_subtreemass      22       
+  body_inertia          0         0         0        
+  body_invweight0       0         0        
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           0 
+  body_bvhnum           1 
+
+BODY 1:
+  name                  ur5e/
+  body_parentid         0 
+  body_rootid           1 
+  body_weldid           0 
+  body_mocapid          -1 
+  body_jntnum           0 
+  body_jntadr           -1 
+  body_dofnum           0 
+  body_dofadr           -1 
+  body_geomnum          0 
+  body_geomadr          -1 
+  body_simple           0 
+  body_sameframe        1 
+  body_pos              0         0         0        
+  body_quat             1         0         0         0        
+  body_ipos             0         0         0        
+  body_iquat            1         0         0         0        
+  body_mass             0        
+  body_subtreemass      22       
+  body_inertia          0         0         0        
+  body_invweight0       0         0        
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           -1 
+  body_bvhnum           0 
+
+BODY 2:
+  name                  ur5e/base
+  body_parentid         1 
+  body_rootid           1 
+  body_weldid           0 
+  body_mocapid          -1 
+  body_jntnum           0 
+  body_jntadr           -1 
+  body_dofnum           0 
+  body_dofadr           -1 
+  body_geomnum          2 
+  body_geomadr          1 
+  body_simple           0 
+  body_sameframe        1 
+  body_pos              0         0         0        
+  body_quat             0.71      0         0         0.71     
+  body_ipos             0         0         0        
+  body_iquat            1         0         0         0        
+  body_mass             4        
+  body_subtreemass      22       
+  body_inertia          0.0044    0.0044    0.0072   
+  body_invweight0       0         0        
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           1 
+  body_bvhnum           1 
+
+BODY 3:
+  name                  ur5e/shoulder_link
+  body_parentid         2 
+  body_rootid           1 
+  body_weldid           3 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           0 
+  body_dofnum           1 
+  body_dofadr           0 
+  body_geomnum          4 
+  body_geomadr          3 
+  body_simple           0 
+  body_sameframe        1 
+  body_pos              0         0         0.16     
+  body_quat             1         0         0         0        
+  body_ipos             0         0         0        
+  body_iquat            1         0         0         0        
+  body_mass             3.7      
+  body_subtreemass      18       
+  body_inertia          0.01      0.01      0.0067   
+  body_invweight0       0         0.08     
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           2 
+  body_bvhnum           2 
+
+BODY 4:
+  name                  ur5e/upper_arm_link
+  body_parentid         3 
+  body_rootid           1 
+  body_weldid           4 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           1 
+  body_dofnum           1 
+  body_dofadr           1 
+  body_geomnum          6 
+  body_geomadr          7 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0.14      0        
+  body_quat             0.71      0         0.71      0        
+  body_ipos             0         0         0.21     
+  body_iquat            1         0         0         0        
+  body_mass             8.4      
+  body_subtreemass      14       
+  body_inertia          0.13      0.13      0.015    
+  body_invweight0       0.018     0.36     
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           4 
+  body_bvhnum           4 
+
+BODY 5:
+  name                  ur5e/forearm_link
+  body_parentid         4 
+  body_rootid           1 
+  body_weldid           5 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           2 
+  body_dofnum           1 
+  body_dofadr           2 
+  body_geomnum          6 
+  body_geomadr          13 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0        -0.13      0.42     
+  body_quat             1         0         0         0        
+  body_ipos             0         0         0.2      
+  body_iquat            1         0         0         0        
+  body_mass             2.3      
+  body_subtreemass      5.9      
+  body_inertia          0.031     0.031     0.0041   
+  body_invweight0       0.065     0.71     
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           8 
+  body_bvhnum           4 
+
+BODY 6:
+  name                  ur5e/wrist_1_link
+  body_parentid         5 
+  body_rootid           1 
+  body_weldid           6 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           3 
+  body_dofnum           1 
+  body_dofadr           3 
+  body_geomnum          4 
+  body_geomadr          19 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0         0.39     
+  body_quat             0.71      0         0.71      0        
+  body_ipos             0         0.13      0        
+  body_iquat            1         0         0         0        
+  body_mass             1.2      
+  body_subtreemass      3.6      
+  body_inertia          0.0026    0.0026    0.0022   
+  body_invweight0       0.12      3.1      
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           12 
+  body_bvhnum           2 
+
+BODY 7:
+  name                  ur5e/wrist_2_link
+  body_parentid         6 
+  body_rootid           1 
+  body_weldid           7 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           4 
+  body_dofnum           1 
+  body_dofadr           4 
+  body_geomnum          5 
+  body_geomadr          23 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0.13      0        
+  body_quat             1         0         0         0        
+  body_ipos             0         0         0.1      
+  body_iquat            1         0         0         0        
+  body_mass             1.2      
+  body_subtreemass      2.4      
+  body_inertia          0.0026    0.0026    0.0022   
+  body_invweight0       0.15      5.8      
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           14 
+  body_bvhnum           3 
+
+BODY 8:
+  name                  ur5e/wrist_3_link
+  body_parentid         7 
+  body_rootid           1 
+  body_weldid           8 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           5 
+  body_dofnum           1 
+  body_dofadr           5 
+  body_geomnum          2 
+  body_geomadr          28 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0         0.1      
+  body_quat             1         0         0         0        
+  body_ipos             0         0.077     0        
+  body_iquat            0.71      0         0         0.71     
+  body_mass             0.19     
+  body_subtreemass      1.2      
+  body_inertia          0.00013   9.9e-05   9.9e-05  
+  body_invweight0       0.16      9.1      
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           17 
+  body_bvhnum           2 
+
+BODY 9:
+  name                  ur5e/robotiq_2f85/
+  body_parentid         8 
+  body_rootid           1 
+  body_weldid           8 
+  body_mocapid          -1 
+  body_jntnum           0 
+  body_jntadr           -1 
+  body_dofnum           0 
+  body_dofadr           -1 
+  body_geomnum          0 
+  body_geomadr          -1 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0.1       0        
+  body_quat            -0.71      0.71      0         0        
+  body_ipos             0         0.1       0        
+  body_iquat           -0.71      0.71      0         0        
+  body_mass             0        
+  body_subtreemass      1        
+  body_inertia          0         0         0        
+  body_invweight0       0.18      9.1      
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           -1 
+  body_bvhnum           0 
+
+BODY 10:
+  name                  ur5e/robotiq_2f85/base_mount
+  body_parentid         9 
+  body_rootid           1 
+  body_weldid           8 
+  body_mocapid          -1 
+  body_jntnum           0 
+  body_jntadr           -1 
+  body_dofnum           0 
+  body_dofadr           -1 
+  body_geomnum          2 
+  body_geomadr          30 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0         0.007    
+  body_quat             1         0         0         0        
+  body_ipos            -0.00036   8.5e-05  -5.9e-05  
+  body_iquat           -0.00051   0.71      0.00053   0.71     
+  body_mass             0.096    
+  body_subtreemass      1        
+  body_inertia          6.5e-05   3.4e-05   3.3e-05  
+  body_invweight0       0.18      9.1      
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           19 
+  body_bvhnum           2 
+
+BODY 11:
+  name                  ur5e/robotiq_2f85/base
+  body_parentid         10 
+  body_rootid           1 
+  body_weldid           8 
+  body_mocapid          -1 
+  body_jntnum           0 
+  body_jntadr           -1 
+  body_dofnum           0 
+  body_dofadr           -1 
+  body_geomnum          2 
+  body_geomadr          32 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0         0.0038   
+  body_quat             0.71      0         0        -0.71     
+  body_ipos             0        -2.7e-05   0.035    
+  body_iquat            1        -0.0015    0         0        
+  body_mass             0.78     
+  body_subtreemass      0.9      
+  body_inertia          0.00026   0.00023   0.00015  
+  body_invweight0       0.2       9.1      
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           21 
+  body_bvhnum           2 
+
+BODY 12:
+  name                  ur5e/robotiq_2f85/right_driver
+  body_parentid         11 
+  body_rootid           1 
+  body_weldid           12 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           6 
+  body_dofnum           1 
+  body_dofadr           6 
+  body_geomnum          2 
+  body_geomadr          34 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0.031     0.055    
+  body_quat             1         0         0         0        
+  body_ipos             3e-12     0.018     0.0011   
+  body_iquat            0.68      0.73      0         0        
+  body_mass             0.009    
+  body_subtreemass      0.023    
+  body_inertia          1.7e-06   1.6e-06   3.2e-07  
+  body_invweight0       0.24      75       
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           23 
+  body_bvhnum           2 
+
+BODY 13:
+  name                  ur5e/robotiq_2f85/right_coupler
+  body_parentid         12 
+  body_rootid           1 
+  body_weldid           13 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           7 
+  body_dofnum           1 
+  body_dofadr           7 
+  body_geomnum          2 
+  body_geomadr          36 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0.032    -0.0041   
+  body_quat             1         0         0         0        
+  body_ipos             0         0.003     0.023    
+  body_iquat            0.71     -0.046     0.046     0.71     
+  body_mass             0.014    
+  body_subtreemass      0.014    
+  body_inertia          4.2e-06   3.5e-06   8.9e-07  
+  body_invweight0       16        3e+04    
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           25 
+  body_bvhnum           2 
+
+BODY 14:
+  name                  ur5e/robotiq_2f85/right_spring_link
+  body_parentid         11 
+  body_rootid           1 
+  body_weldid           14 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           8 
+  body_dofnum           1 
+  body_dofadr           8 
+  body_geomnum          2 
+  body_geomadr          38 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0.013     0.061    
+  body_quat             1         0         0         0        
+  body_ipos            -8.7e-09   0.018     0.021    
+  body_iquat            0.66     -0.24      0.24      0.66     
+  body_mass             0.022    
+  body_subtreemass      0.039    
+  body_inertia          9e-06     6.7e-06   2.6e-06  
+  body_invweight0       4.2       5.2e+03  
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           27 
+  body_bvhnum           2 
+
+BODY 15:
+  name                  ur5e/robotiq_2f85/right_follower
+  body_parentid         14 
+  body_rootid           1 
+  body_weldid           15 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           9 
+  body_dofnum           1 
+  body_dofadr           9 
+  body_geomnum          2 
+  body_geomadr          40 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0.055     0.037    
+  body_quat             1         0         0         0        
+  body_ipos             0        -0.011     0.012    
+  body_iquat            0.99      0.16      0         0        
+  body_mass             0.013    
+  body_subtreemass      0.017    
+  body_inertia          2.7e-06   2.5e-06   6e-07    
+  body_invweight0       14        5.6e+04  
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           29 
+  body_bvhnum           2 
+
+BODY 16:
+  name                  ur5e/robotiq_2f85/right_pad
+  body_parentid         15 
+  body_rootid           1 
+  body_weldid           15 
+  body_mocapid          -1 
+  body_jntnum           0 
+  body_jntadr           -1 
+  body_dofnum           0 
+  body_dofadr           -1 
+  body_geomnum          3 
+  body_geomadr          42 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0        -0.019     0.014    
+  body_quat             1         0         0         0        
+  body_ipos             0        -0.0025    0.018    
+  body_iquat            0.71      0         0         0.71     
+  body_mass             0.0035   
+  body_subtreemass      0.0048   
+  body_inertia          4.7e-07   3.6e-07   1.2e-07  
+  body_invweight0       39        5.6e+04  
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           31 
+  body_bvhnum           3 
+
+BODY 17:
+  name                  ur5e/robotiq_2f85/right_silicone_pad
+  body_parentid         16 
+  body_rootid           1 
+  body_weldid           15 
+  body_mocapid          -1 
+  body_jntnum           0 
+  body_jntadr           -1 
+  body_dofnum           0 
+  body_dofadr           -1 
+  body_geomnum          1 
+  body_geomadr          45 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0         0        
+  body_quat             1         0         0         0        
+  body_ipos             1.9e-14  -0.0058    0.019    
+  body_iquat            0.71      0         0         0.71     
+  body_mass             0.0013   
+  body_subtreemass      0.0013   
+  body_inertia          2e-07     1.5e-07   5.1e-08  
+  body_invweight0       43        5.6e+04  
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           34 
+  body_bvhnum           1 
+
+BODY 18:
+  name                  ur5e/robotiq_2f85/left_driver
+  body_parentid         11 
+  body_rootid           1 
+  body_weldid           18 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           10 
+  body_dofnum           1 
+  body_dofadr           10 
+  body_geomnum          2 
+  body_geomadr          46 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0        -0.031     0.055    
+  body_quat             0         0         0         1        
+  body_ipos             0         0.018     0.0011   
+  body_iquat            0.68      0.73      0         0        
+  body_mass             0.009    
+  body_subtreemass      0.023    
+  body_inertia          1.7e-06   1.6e-06   3.2e-07  
+  body_invweight0       0.27      75       
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           35 
+  body_bvhnum           2 
+
+BODY 19:
+  name                  ur5e/robotiq_2f85/left_coupler
+  body_parentid         18 
+  body_rootid           1 
+  body_weldid           19 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           11 
+  body_dofnum           1 
+  body_dofadr           11 
+  body_geomnum          2 
+  body_geomadr          48 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0.032    -0.0041   
+  body_quat             1         0         0         0        
+  body_ipos             0         0.003     0.023    
+  body_iquat            0.71     -0.046     0.046     0.71     
+  body_mass             0.014    
+  body_subtreemass      0.014    
+  body_inertia          4.2e-06   3.5e-06   8.9e-07  
+  body_invweight0       16        3e+04    
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           37 
+  body_bvhnum           2 
+
+BODY 20:
+  name                  ur5e/robotiq_2f85/left_spring_link
+  body_parentid         11 
+  body_rootid           1 
+  body_weldid           20 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           12 
+  body_dofnum           1 
+  body_dofadr           12 
+  body_geomnum          2 
+  body_geomadr          50 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0        -0.013     0.061    
+  body_quat             0         0         0         1        
+  body_ipos            -8.7e-09   0.018     0.021    
+  body_iquat            0.66     -0.24      0.24      0.66     
+  body_mass             0.022    
+  body_subtreemass      0.039    
+  body_inertia          9e-06     6.7e-06   2.6e-06  
+  body_invweight0       4.2       5.2e+03  
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           39 
+  body_bvhnum           2 
+
+BODY 21:
+  name                  ur5e/robotiq_2f85/left_follower
+  body_parentid         20 
+  body_rootid           1 
+  body_weldid           21 
+  body_mocapid          -1 
+  body_jntnum           1 
+  body_jntadr           13 
+  body_dofnum           1 
+  body_dofadr           13 
+  body_geomnum          2 
+  body_geomadr          52 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0.055     0.037    
+  body_quat             1         0         0         0        
+  body_ipos             0        -0.011     0.012    
+  body_iquat            0.99      0.16      0         0        
+  body_mass             0.013    
+  body_subtreemass      0.017    
+  body_inertia          2.7e-06   2.5e-06   6e-07    
+  body_invweight0       14        5.6e+04  
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           41 
+  body_bvhnum           2 
+
+BODY 22:
+  name                  ur5e/robotiq_2f85/left_pad
+  body_parentid         21 
+  body_rootid           1 
+  body_weldid           21 
+  body_mocapid          -1 
+  body_jntnum           0 
+  body_jntadr           -1 
+  body_dofnum           0 
+  body_dofadr           -1 
+  body_geomnum          3 
+  body_geomadr          54 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0        -0.019     0.014    
+  body_quat             1         0         0         0        
+  body_ipos             0        -0.0025    0.018    
+  body_iquat            0.71      0         0         0.71     
+  body_mass             0.0035   
+  body_subtreemass      0.0048   
+  body_inertia          4.7e-07   3.6e-07   1.2e-07  
+  body_invweight0       39        5.6e+04  
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           43 
+  body_bvhnum           3 
+
+BODY 23:
+  name                  ur5e/robotiq_2f85/left_silicone_pad
+  body_parentid         22 
+  body_rootid           1 
+  body_weldid           21 
+  body_mocapid          -1 
+  body_jntnum           0 
+  body_jntadr           -1 
+  body_dofnum           0 
+  body_dofadr           -1 
+  body_geomnum          1 
+  body_geomadr          57 
+  body_simple           0 
+  body_sameframe        0 
+  body_pos              0         0         0        
+  body_quat             1         0         0         0        
+  body_ipos             1.9e-14  -0.0058    0.019    
+  body_iquat            0.71      0         0         0.71     
+  body_mass             0.0013   
+  body_subtreemass      0.0013   
+  body_inertia          2e-07     1.5e-07   5.1e-08  
+  body_invweight0       43        5.6e+04  
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           46 
+  body_bvhnum           1 
+
+BODY 24:
+  name                  cube
+  body_parentid         0 
+  body_rootid           24 
+  body_weldid           0 
+  body_mocapid          -1 
+  body_jntnum           0 
+  body_jntadr           -1 
+  body_dofnum           0 
+  body_dofadr           -1 
+  body_geomnum          1 
+  body_geomadr          58 
+  body_simple           1 
+  body_sameframe        1 
+  body_pos              0         0         0.6      
+  body_quat             1         0         0         0        
+  body_ipos             0         0         0        
+  body_iquat            1         0         0         0        
+  body_mass             0.1      
+  body_subtreemass      0.1      
+  body_inertia          0.001     0.001     0.001    
+  body_invweight0       0         0        
+  body_gravcomp         0        
+  body_plugin           -1 
+  body_bvhadr           47 
+  body_bvhnum           1 
+
+
+JOINT 0:
+  name                  ur5e/shoulder_pan_joint
+  jnt_type              3 
+  jnt_qposadr           0 
+  jnt_dofadr            0 
+  jnt_bodyid            3 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.02      1        
+  jnt_solimp            0.9       0.95      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              0         0         1        
+  jnt_stiffness         0        
+  jnt_range            -6.3       6.3      
+  jnt_margin            0        
+
+JOINT 1:
+  name                  ur5e/shoulder_lift_joint
+  jnt_type              3 
+  jnt_qposadr           1 
+  jnt_dofadr            1 
+  jnt_bodyid            4 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.02      1        
+  jnt_solimp            0.9       0.95      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              0         1         0        
+  jnt_stiffness         0        
+  jnt_range            -6.3       6.3      
+  jnt_margin            0        
+
+JOINT 2:
+  name                  ur5e/elbow_joint
+  jnt_type              3 
+  jnt_qposadr           2 
+  jnt_dofadr            2 
+  jnt_bodyid            5 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.02      1        
+  jnt_solimp            0.9       0.95      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              0         1         0        
+  jnt_stiffness         0        
+  jnt_range            -3.1       3.1      
+  jnt_margin            0        
+
+JOINT 3:
+  name                  ur5e/wrist_1_joint
+  jnt_type              3 
+  jnt_qposadr           3 
+  jnt_dofadr            3 
+  jnt_bodyid            6 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.02      1        
+  jnt_solimp            0.9       0.95      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              0         1         0        
+  jnt_stiffness         0        
+  jnt_range            -6.3       6.3      
+  jnt_margin            0        
+
+JOINT 4:
+  name                  ur5e/wrist_2_joint
+  jnt_type              3 
+  jnt_qposadr           4 
+  jnt_dofadr            4 
+  jnt_bodyid            7 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.02      1        
+  jnt_solimp            0.9       0.95      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              0         0         1        
+  jnt_stiffness         0        
+  jnt_range            -6.3       6.3      
+  jnt_margin            0        
+
+JOINT 5:
+  name                  ur5e/wrist_3_joint
+  jnt_type              3 
+  jnt_qposadr           5 
+  jnt_dofadr            5 
+  jnt_bodyid            8 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.02      1        
+  jnt_solimp            0.9       0.95      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              0         1         0        
+  jnt_stiffness         0        
+  jnt_range            -6.3       6.3      
+  jnt_margin            0        
+
+JOINT 6:
+  name                  ur5e/robotiq_2f85/right_driver_joint
+  jnt_type              3 
+  jnt_qposadr           6 
+  jnt_dofadr            6 
+  jnt_bodyid            12 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.005     1        
+  jnt_solimp            0.95      0.99      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              1         0         0        
+  jnt_stiffness         0        
+  jnt_range             0         0.8      
+  jnt_margin            0        
+
+JOINT 7:
+  name                  ur5e/robotiq_2f85/right_coupler_joint
+  jnt_type              3 
+  jnt_qposadr           7 
+  jnt_dofadr            7 
+  jnt_bodyid            13 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.005     1        
+  jnt_solimp            0.95      0.99      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              1         0         0        
+  jnt_stiffness         0        
+  jnt_range            -1.6       0        
+  jnt_margin            0        
+
+JOINT 8:
+  name                  ur5e/robotiq_2f85/right_spring_link_joint
+  jnt_type              3 
+  jnt_qposadr           8 
+  jnt_dofadr            8 
+  jnt_bodyid            14 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.02      1        
+  jnt_solimp            0.9       0.95      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              1         0         0        
+  jnt_stiffness         0.05     
+  jnt_range            -0.3       0.8      
+  jnt_margin            0        
+
+JOINT 9:
+  name                  ur5e/robotiq_2f85/right_follower_joint
+  jnt_type              3 
+  jnt_qposadr           9 
+  jnt_dofadr            9 
+  jnt_bodyid            15 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.005     1        
+  jnt_solimp            0.95      0.99      0.001     0.5       2        
+  jnt_pos               0        -0.018     0.0065   
+  jnt_axis              1         0         0        
+  jnt_stiffness         0        
+  jnt_range            -0.87      0.87     
+  jnt_margin            0        
+
+JOINT 10:
+  name                  ur5e/robotiq_2f85/left_driver_joint
+  jnt_type              3 
+  jnt_qposadr           10 
+  jnt_dofadr            10 
+  jnt_bodyid            18 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.005     1        
+  jnt_solimp            0.95      0.99      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              1         0         0        
+  jnt_stiffness         0        
+  jnt_range             0         0.8      
+  jnt_margin            0        
+
+JOINT 11:
+  name                  ur5e/robotiq_2f85/left_coupler_joint
+  jnt_type              3 
+  jnt_qposadr           11 
+  jnt_dofadr            11 
+  jnt_bodyid            19 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.005     1        
+  jnt_solimp            0.95      0.99      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              1         0         0        
+  jnt_stiffness         0        
+  jnt_range            -1.6       0        
+  jnt_margin            0        
+
+JOINT 12:
+  name                  ur5e/robotiq_2f85/left_spring_link_joint
+  jnt_type              3 
+  jnt_qposadr           12 
+  jnt_dofadr            12 
+  jnt_bodyid            20 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.02      1        
+  jnt_solimp            0.9       0.95      0.001     0.5       2        
+  jnt_pos               0         0         0        
+  jnt_axis              1         0         0        
+  jnt_stiffness         0.05     
+  jnt_range            -0.3       0.8      
+  jnt_margin            0        
+
+JOINT 13:
+  name                  ur5e/robotiq_2f85/left_follower_joint
+  jnt_type              3 
+  jnt_qposadr           13 
+  jnt_dofadr            13 
+  jnt_bodyid            21 
+  jnt_group             0 
+  jnt_limited           1 
+  jnt_solref            0.005     1        
+  jnt_solimp            0.95      0.99      0.001     0.5       2        
+  jnt_pos               0        -0.018     0.0065   
+  jnt_axis              1         0         0        
+  jnt_stiffness         0        
+  jnt_range            -0.87      0.87     
+  jnt_margin            0        
+
+
+DOF 0:
+  dof_bodyid            3 
+  dof_jntid             0 
+  dof_parentid          -1 
+  dof_Madr              0 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0.1      
+  dof_damping           0        
+  dof_invweight0        0.24     
+  dof_M0                4.2      
+
+DOF 1:
+  dof_bodyid            4 
+  dof_jntid             1 
+  dof_parentid          0 
+  dof_Madr              1 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0.1      
+  dof_damping           0        
+  dof_invweight0        0.85     
+  dof_M0                4        
+
+DOF 2:
+  dof_bodyid            5 
+  dof_jntid             2 
+  dof_parentid          1 
+  dof_Madr              3 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0.1      
+  dof_damping           0        
+  dof_invweight0        4.2      
+  dof_M0                0.81     
+
+DOF 3:
+  dof_bodyid            6 
+  dof_jntid             3 
+  dof_parentid          2 
+  dof_Madr              6 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0.1      
+  dof_damping           0        
+  dof_invweight0        8        
+  dof_M0                0.13     
+
+DOF 4:
+  dof_bodyid            7 
+  dof_jntid             4 
+  dof_parentid          3 
+  dof_Madr              10 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0.1      
+  dof_damping           0        
+  dof_invweight0        8.3      
+  dof_M0                0.13     
+
+DOF 5:
+  dof_bodyid            8 
+  dof_jntid             5 
+  dof_parentid          4 
+  dof_Madr              15 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0.1      
+  dof_damping           0        
+  dof_invweight0        9.9      
+  dof_M0                0.1      
+
+DOF 6:
+  dof_bodyid            12 
+  dof_jntid             6 
+  dof_parentid          5 
+  dof_Madr              21 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0.005    
+  dof_damping           0.1      
+  dof_invweight0        2e+02    
+  dof_M0                0.005    
+
+DOF 7:
+  dof_bodyid            13 
+  dof_jntid             7 
+  dof_parentid          6 
+  dof_Madr              28 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0        
+  dof_damping           0        
+  dof_invweight0        8.9e+04  
+  dof_M0                1.1e-05  
+
+DOF 8:
+  dof_bodyid            14 
+  dof_jntid             8 
+  dof_parentid          5 
+  dof_Madr              36 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0        
+  dof_damping           0.0013   
+  dof_invweight0        1.6e+04  
+  dof_M0                0.00011  
+
+DOF 9:
+  dof_bodyid            15 
+  dof_jntid             9 
+  dof_parentid          8 
+  dof_Madr              43 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0        
+  dof_damping           0        
+  dof_invweight0        2.3e+05  
+  dof_M0                7.5e-06  
+
+DOF 10:
+  dof_bodyid            18 
+  dof_jntid             10 
+  dof_parentid          5 
+  dof_Madr              51 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0.005    
+  dof_damping           0.1      
+  dof_invweight0        2e+02    
+  dof_M0                0.005    
+
+DOF 11:
+  dof_bodyid            19 
+  dof_jntid             11 
+  dof_parentid          10 
+  dof_Madr              58 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0        
+  dof_damping           0        
+  dof_invweight0        8.9e+04  
+  dof_M0                1.1e-05  
+
+DOF 12:
+  dof_bodyid            20 
+  dof_jntid             12 
+  dof_parentid          5 
+  dof_Madr              66 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0        
+  dof_damping           0.0013   
+  dof_invweight0        1.6e+04  
+  dof_M0                0.00011  
+
+DOF 13:
+  dof_bodyid            21 
+  dof_jntid             13 
+  dof_parentid          12 
+  dof_Madr              73 
+  dof_simplenum         0 
+  dof_solref            0.02      1        
+  dof_solimp            0.9       0.95      0.001     0.5       2        
+  dof_frictionloss      0        
+  dof_armature          0        
+  dof_damping           0        
+  dof_invweight0        2.3e+05  
+  dof_M0                7.5e-06  
+
+
+GEOM 0:
+  name                  //unnamed_geom_0
+  geom_type             0 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           0 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            0 
+  geom_priority         0 
+  geom_sameframe        1 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             2         2         0.1      
+  geom_aabb             0         0        -5e+09     1e+10     1e+10     5e+09    
+  geom_rbound           0        
+  geom_pos              0         0         0        
+  geom_quat             1         0         0         0        
+  geom_friction         1         0.5       0.5      
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 1:
+  name                  ur5e//unnamed_geom_0
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           2 
+  geom_dataid           0 
+  geom_matid            0 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0087    0.058     0.058    
+  geom_aabb            -0.0016   -2.1e-05  -4.8e-06   0.0071    0.058     0.058    
+  geom_rbound           0.082    
+  geom_pos              6.7e-07  -3.7e-07   0.094    
+  geom_quat             0.42      0.57     -0.42      0.57     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 2:
+  name                  ur5e//unnamed_geom_1
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           2 
+  geom_dataid           1 
+  geom_matid            1 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.054     0.075     0.075    
+  geom_aabb             0.011     9.6e-07  -5.4e-07   0.042     0.075     0.075    
+  geom_rbound           0.12     
+  geom_pos              1.5e-07   5e-07     0.031    
+  geom_quat            -0.23      0.67      0.23      0.67     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 3:
+  name                  ur5e//unnamed_geom_2
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           3 
+  geom_dataid           2 
+  geom_matid            3 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.021     0.061     0.069    
+  geom_aabb            -0.00016   0.00084  -0.0039    0.021     0.06      0.065    
+  geom_rbound           0.095    
+  geom_pos              0.00016  -0.0084    0.048    
+  geom_quat             0.46      0.54     -0.61      0.36     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 4:
+  name                  ur5e//unnamed_geom_3
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           3 
+  geom_dataid           3 
+  geom_matid            0 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0087    0.058     0.058    
+  geom_aabb            -0.0016    1.6e-05   1e-06     0.0071    0.058     0.058    
+  geom_rbound           0.082    
+  geom_pos              1e-06     0.069    -0.0005   
+  geom_quat             0.7       0.06      0.06      0.7      
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 5:
+  name                  ur5e//unnamed_geom_4
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           3 
+  geom_dataid           4 
+  geom_matid            1 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.073     0.098     0.061    
+  geom_aabb             0.0044    0.013    -0.00044   0.068     0.086     0.06     
+  geom_rbound           0.14     
+  geom_pos             -5e-05     0.00056  -0.019    
+  geom_quat             0.64      0.3       0.66      0.27     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 6:
+  name                  ur5e//unnamed_geom_5
+  geom_type             3 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           3 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.06      0.06      0        
+  geom_aabb             0         0         0         0.06      0.06      0.12     
+  geom_rbound           0.12     
+  geom_pos              0         0        -0.04     
+  geom_quat             1         0         0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 7:
+  name                  ur5e//unnamed_geom_6
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           4 
+  geom_dataid           5 
+  geom_matid            2 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.058     0.058     0.14     
+  geom_aabb             2.1e-05   5.6e-05  -0.00014   0.058     0.058     0.14     
+  geom_rbound           0.16     
+  geom_pos             -3.6e-06  -0.0002    0.21     
+  geom_quat             0.98     -0.00016   2.8e-05  -0.18     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 8:
+  name                  ur5e//unnamed_geom_7
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           4 
+  geom_dataid           6 
+  geom_matid            0 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.058     0.093     0.25     
+  geom_aabb            -2.5e-06   0.0088   -0.029     0.058     0.084     0.22     
+  geom_rbound           0.27     
+  geom_pos             -7.5e-07  -0.025     0.3      
+  geom_quat             1         0.088     1.8e-05  -0.00024  
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 9:
+  name                  ur5e//unnamed_geom_8
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           4 
+  geom_dataid           7 
+  geom_matid            1 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.084     0.058     0.27     
+  geom_aabb             0.019    -8.7e-05  -0.0016    0.065     0.058     0.27     
+  geom_rbound           0.29     
+  geom_pos              1.2e-05  -0.021     0.21     
+  geom_quat             0.71      0.0033   -0.0033    0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 10:
+  name                  ur5e//unnamed_geom_9
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           4 
+  geom_dataid           8 
+  geom_matid            3 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.037     0.06      0.27     
+  geom_aabb            -0.0051   -1.3e-05  -0.00023   0.032     0.06      0.27     
+  geom_rbound           0.28     
+  geom_pos             -1.7e-05   0.045     0.21     
+  geom_quat             0.71      0.00011  -0.00012   0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 11:
+  name                  ur5e//unnamed_geom_10
+  geom_type             3 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           4 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.06      0.06      0        
+  geom_aabb             0         0         0         0.06      0.06      0.12     
+  geom_rbound           0.12     
+  geom_pos              0        -0.04      0        
+  geom_quat             0.71      0.71      0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 12:
+  name                  ur5e//unnamed_geom_11
+  geom_type             3 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           4 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.05      0.2       0        
+  geom_aabb             0         0         0         0.05      0.05      0.25     
+  geom_rbound           0.25     
+  geom_pos              0         0         0.2      
+  geom_quat             1         0         0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 13:
+  name                  ur5e//unnamed_geom_12
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           5 
+  geom_dataid           9 
+  geom_matid            3 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.022     0.039     0.043    
+  geom_aabb            -0.00067   8.2e-05   0.00042   0.021     0.039     0.043    
+  geom_rbound           0.062    
+  geom_pos              2.6e-05  -0.04      0.4      
+  geom_quat             0.7      -0.057     0.16      0.69     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 14:
+  name                  ur5e//unnamed_geom_13
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           5 
+  geom_dataid           10 
+  geom_matid            2 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.048     0.048     0.13     
+  geom_aabb            -5.6e-05  -4.7e-05   0.0034    0.048     0.048     0.13     
+  geom_rbound           0.15     
+  geom_pos             -2.4e-05  -0.00043   0.2      
+  geom_quat             0.79      0.0003   -0.00011   0.62     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 15:
+  name                  ur5e//unnamed_geom_14
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           5 
+  geom_dataid           11 
+  geom_matid            0 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.048     0.067     0.2      
+  geom_aabb             5.4e-05  -0.0046   -0.011     0.048     0.063     0.19     
+  geom_rbound           0.22     
+  geom_pos             -9.7e-06   0.017     0.26     
+  geom_quat             1        -0.073     0.00015   0.0025   
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 16:
+  name                  ur5e//unnamed_geom_15
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           5 
+  geom_dataid           12 
+  geom_matid            1 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.058     0.058     0.27     
+  geom_aabb            -0.0062   -0.00015   0.023     0.052     0.058     0.24     
+  geom_rbound           0.28     
+  geom_pos              3e-06     0.012     0.16     
+  geom_quat             0.71     -0.0072    0.0072    0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 17:
+  name                  ur5e//unnamed_geom_16
+  geom_type             3 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           5 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.055     0.06      0        
+  geom_aabb             0         0         0         0.055     0.055     0.11     
+  geom_rbound           0.11     
+  geom_pos              0         0.08      0        
+  geom_quat             0.71      0.71      0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 18:
+  name                  ur5e//unnamed_geom_17
+  geom_type             3 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           5 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.038     0.19      0        
+  geom_aabb             0         0         0         0.038     0.038     0.23     
+  geom_rbound           0.23     
+  geom_pos              0         0         0.2      
+  geom_quat             1         0         0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 19:
+  name                  ur5e//unnamed_geom_18
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           6 
+  geom_dataid           13 
+  geom_matid            0 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0046    0.038     0.038    
+  geom_aabb             0.00084   1.2e-05   2.4e-05   0.0038    0.038     0.038    
+  geom_rbound           0.053    
+  geom_pos             -2.3e-05   0.13      0.049    
+  geom_quat            -0.14      0.69      0.14      0.69     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 20:
+  name                  ur5e//unnamed_geom_19
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           6 
+  geom_dataid           14 
+  geom_matid            3 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.022     0.039     0.043    
+  geom_aabb            -0.00066  -5.4e-05  -0.00047   0.021     0.039     0.043    
+  geom_rbound           0.062    
+  geom_pos             -3.7e-05   0.13     -0.04     
+  geom_quat             0.39      0.59     -0.55      0.44     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 21:
+  name                  ur5e//unnamed_geom_20
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           6 
+  geom_dataid           15 
+  geom_matid            1 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.052     0.038     0.077    
+  geom_aabb             0.003     2.7e-05   0.008     0.049     0.038     0.069    
+  geom_rbound           0.1      
+  geom_pos             -2.1e-06   0.11      0.012    
+  geom_quat             0.35      0.62     -0.62      0.35     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 22:
+  name                  ur5e//unnamed_geom_21
+  geom_type             3 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           6 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.04      0.07      0        
+  geom_aabb             0         0         0         0.04      0.04      0.11     
+  geom_rbound           0.11     
+  geom_pos              0         0.05      0        
+  geom_quat             0.71      0.71      0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 23:
+  name                  ur5e//unnamed_geom_22
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           7 
+  geom_dataid           16 
+  geom_matid            0 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0046    0.037     0.037    
+  geom_aabb             0.00083  -3.8e-06   1.4e-06   0.0038    0.037     0.037    
+  geom_rbound           0.053    
+  geom_pos             -3.8e-06   0.049     0.099    
+  geom_quat             0.7       0.063     0.063     0.7      
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 24:
+  name                  ur5e//unnamed_geom_23
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           7 
+  geom_dataid           17 
+  geom_matid            3 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.022     0.039     0.043    
+  geom_aabb            -0.00058   5.5e-05   0.00044   0.021     0.039     0.043    
+  geom_rbound           0.062    
+  geom_pos              3.2e-05  -0.04      0.1      
+  geom_quat             0.7      -0.07      0.15      0.69     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 25:
+  name                  ur5e//unnamed_geom_24
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           7 
+  geom_dataid           18 
+  geom_matid            1 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.048     0.038     0.069    
+  geom_aabb             0.0013    2.2e-06   0.0099    0.047     0.038     0.059    
+  geom_rbound           0.092    
+  geom_pos              9e-07     0.016     0.097    
+  geom_quat             0.28      0.65     -0.65      0.28     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 26:
+  name                  ur5e//unnamed_geom_25
+  geom_type             3 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           7 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.04      0.06      0        
+  geom_aabb             0         0         0         0.04      0.04      0.1      
+  geom_rbound           0.1      
+  geom_pos              0         0         0.04     
+  geom_quat             1         0         0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 27:
+  name                  ur5e//unnamed_geom_26
+  geom_type             3 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           7 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.04      0.04      0        
+  geom_aabb             0         0         0         0.04      0.04      0.08     
+  geom_rbound           0.08     
+  geom_pos              0         0.02      0.1      
+  geom_quat             0.71      0.71      0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 28:
+  name                  ur5e//unnamed_geom_27
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           8 
+  geom_dataid           19 
+  geom_matid            2 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.026     0.038     0.043    
+  geom_aabb            -0.0033   -1.8e-07   0.0028    0.023     0.038     0.04     
+  geom_rbound           0.063    
+  geom_pos              1.4e-05   0.079    -0.00054  
+  geom_quat             0.7       0.078     0.081     0.7      
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 29:
+  name                  ur5e//unnamed_geom_28
+  geom_type             5 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           8 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.04      0.02      0        
+  geom_aabb             0         0         0         0.04      0.04      0.02     
+  geom_rbound           0.045    
+  geom_pos              0         0.08      0        
+  geom_quat             0.71      0.71      0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 30:
+  name                  ur5e/robotiq_2f85//unnamed_geom_0
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           10 
+  geom_dataid           20 
+  geom_matid            7 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0071    0.038     0.038    
+  geom_aabb             1e-05     8.6e-05   0.00036   0.0071    0.038     0.038    
+  geom_rbound           0.054    
+  geom_pos             -0.00036   8.5e-05  -5.9e-05  
+  geom_quat            -0.00051   0.71      0.00053   0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 31:
+  name                  ur5e/robotiq_2f85//unnamed_geom_1
+  geom_type             7 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           10 
+  geom_dataid           20 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0071    0.038     0.038    
+  geom_aabb             1e-05     8.6e-05   0.00036   0.0071    0.038     0.038    
+  geom_rbound           0.054    
+  geom_pos             -0.00036   8.5e-05  -5.9e-05  
+  geom_quat            -0.00051   0.71      0.00053   0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 32:
+  name                  ur5e/robotiq_2f85//unnamed_geom_2
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           11 
+  geom_dataid           21 
+  geom_matid            7 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.038     0.042     0.055    
+  geom_aabb            -9.1e-08  -3e-05     0.0075    0.038     0.042     0.047    
+  geom_rbound           0.079    
+  geom_pos              9.2e-08  -2.7e-05   0.035    
+  geom_quat             1        -0.0015    1.9e-08   1.3e-05  
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 33:
+  name                  ur5e/robotiq_2f85//unnamed_geom_3
+  geom_type             7 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           11 
+  geom_dataid           21 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.038     0.042     0.055    
+  geom_aabb            -9.1e-08  -3e-05     0.0075    0.038     0.042     0.047    
+  geom_rbound           0.079    
+  geom_pos              9.2e-08  -2.7e-05   0.035    
+  geom_quat             1        -0.0015    1.9e-08   1.3e-05  
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 34:
+  name                  ur5e/robotiq_2f85//unnamed_geom_4
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           12 
+  geom_dataid           22 
+  geom_matid            6 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.012     0.012     0.025    
+  geom_aabb             0        -0.00043   0.002     0.012     0.012     0.023    
+  geom_rbound           0.031    
+  geom_pos              3e-12     0.018     0.0011   
+  geom_quat             0.68      0.73      0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 35:
+  name                  ur5e/robotiq_2f85//unnamed_geom_5
+  geom_type             7 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           12 
+  geom_dataid           22 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.012     0.012     0.025    
+  geom_aabb             0        -0.00043   0.002     0.012     0.012     0.023    
+  geom_rbound           0.031    
+  geom_pos              3e-12     0.018     0.0011   
+  geom_quat             0.68      0.73      0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 36:
+  name                  ur5e/robotiq_2f85//unnamed_geom_6
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           13 
+  geom_dataid           23 
+  geom_matid            7 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.006     0.014     0.03     
+  geom_aabb             5.4e-07   0         0.00035   0.006     0.014     0.03     
+  geom_rbound           0.034    
+  geom_pos              8.5e-13   0.003     0.023    
+  geom_quat             0.71     -0.046     0.046     0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 37:
+  name                  ur5e/robotiq_2f85//unnamed_geom_7
+  geom_type             7 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           13 
+  geom_dataid           23 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.006     0.014     0.03     
+  geom_aabb             5.4e-07   0         0.00035   0.006     0.014     0.03     
+  geom_rbound           0.034    
+  geom_pos              8.5e-13   0.003     0.023    
+  geom_quat             0.71     -0.046     0.046     0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 38:
+  name                  ur5e/robotiq_2f85//unnamed_geom_8
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           14 
+  geom_dataid           27 
+  geom_matid            7 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.006     0.02      0.035    
+  geom_aabb             2.5e-07  -9.3e-09   0.00061   0.006     0.02      0.035    
+  geom_rbound           0.041    
+  geom_pos             -8.7e-09   0.018     0.021    
+  geom_quat             0.66     -0.24      0.24      0.66     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 39:
+  name                  ur5e/robotiq_2f85//unnamed_geom_9
+  geom_type             7 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           14 
+  geom_dataid           27 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.006     0.02      0.035    
+  geom_aabb             2.5e-07  -9.3e-09   0.00061   0.006     0.02      0.035    
+  geom_rbound           0.041    
+  geom_pos             -8.7e-09   0.018     0.021    
+  geom_quat             0.66     -0.24      0.24      0.66     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 40:
+  name                  ur5e/robotiq_2f85//unnamed_geom_10
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           15 
+  geom_dataid           24 
+  geom_matid            7 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0075    0.014     0.033    
+  geom_aabb             2e-07    -0.001     0.0057    0.0075    0.013     0.027    
+  geom_rbound           0.037    
+  geom_pos             -8.2e-08  -0.011     0.012    
+  geom_quat             0.99      0.17      6e-06     1e-06    
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 41:
+  name                  ur5e/robotiq_2f85//unnamed_geom_11
+  geom_type             7 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           15 
+  geom_dataid           24 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0075    0.014     0.033    
+  geom_aabb             2e-07    -0.001     0.0057    0.0075    0.013     0.027    
+  geom_rbound           0.037    
+  geom_pos             -8.2e-08  -0.011     0.012    
+  geom_quat             0.99      0.17      6e-06     1e-06    
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 42:
+  name                  ur5e/robotiq_2f85/right_pad1
+  geom_type             6 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           16 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         1 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.004     1        
+  geom_solimp           0.95      0.99      0.001     0.5       2        
+  geom_size             0.011     0.004     0.0094   
+  geom_aabb             0         0         0         0.011     0.004     0.0094   
+  geom_rbound           0.015    
+  geom_pos              0        -0.0026    0.028    
+  geom_quat             1         0         0         0        
+  geom_friction         0.7       0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.55      0.55      0.55      1        
+
+GEOM 43:
+  name                  ur5e/robotiq_2f85/right_pad2
+  geom_type             6 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           16 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         1 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.004     1        
+  geom_solimp           0.95      0.99      0.001     0.5       2        
+  geom_size             0.011     0.004     0.0094   
+  geom_aabb             0         0         0         0.011     0.004     0.0094   
+  geom_rbound           0.015    
+  geom_pos              0        -0.0026    0.0094   
+  geom_quat             1         0         0         0        
+  geom_friction         0.6       0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.45      0.45      0.45      1        
+
+GEOM 44:
+  name                  ur5e/robotiq_2f85//unnamed_geom_14
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           16 
+  geom_dataid           25 
+  geom_matid            -1 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0025    0.011     0.019    
+  geom_aabb             0         0         0.00023   0.0025    0.011     0.019    
+  geom_rbound           0.022    
+  geom_pos              1.9e-14  -0.0025    0.019    
+  geom_quat             0.71      0         0         0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 45:
+  name                  ur5e/robotiq_2f85//unnamed_geom_15
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           17 
+  geom_dataid           26 
+  geom_matid            7 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        2 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0008    0.011     0.019    
+  geom_aabb             0         0         0.00023   0.0008    0.011     0.019    
+  geom_rbound           0.022    
+  geom_pos              1.9e-14  -0.0058    0.019    
+  geom_quat             0.71      0         0         0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 46:
+  name                  ur5e/robotiq_2f85//unnamed_geom_16
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           18 
+  geom_dataid           22 
+  geom_matid            6 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.012     0.012     0.025    
+  geom_aabb             0        -0.00043   0.002     0.012     0.012     0.023    
+  geom_rbound           0.031    
+  geom_pos              3e-12     0.018     0.0011   
+  geom_quat             0.68      0.73      0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 47:
+  name                  ur5e/robotiq_2f85//unnamed_geom_17
+  geom_type             7 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           18 
+  geom_dataid           22 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.012     0.012     0.025    
+  geom_aabb             0        -0.00043   0.002     0.012     0.012     0.023    
+  geom_rbound           0.031    
+  geom_pos              3e-12     0.018     0.0011   
+  geom_quat             0.68      0.73      0         0        
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 48:
+  name                  ur5e/robotiq_2f85//unnamed_geom_18
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           19 
+  geom_dataid           23 
+  geom_matid            7 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.006     0.014     0.03     
+  geom_aabb             5.4e-07   0         0.00035   0.006     0.014     0.03     
+  geom_rbound           0.034    
+  geom_pos              8.5e-13   0.003     0.023    
+  geom_quat             0.71     -0.046     0.046     0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 49:
+  name                  ur5e/robotiq_2f85//unnamed_geom_19
+  geom_type             7 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           19 
+  geom_dataid           23 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.006     0.014     0.03     
+  geom_aabb             5.4e-07   0         0.00035   0.006     0.014     0.03     
+  geom_rbound           0.034    
+  geom_pos              8.5e-13   0.003     0.023    
+  geom_quat             0.71     -0.046     0.046     0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 50:
+  name                  ur5e/robotiq_2f85//unnamed_geom_20
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           20 
+  geom_dataid           27 
+  geom_matid            7 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.006     0.02      0.035    
+  geom_aabb             2.5e-07  -9.3e-09   0.00061   0.006     0.02      0.035    
+  geom_rbound           0.041    
+  geom_pos             -8.7e-09   0.018     0.021    
+  geom_quat             0.66     -0.24      0.24      0.66     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 51:
+  name                  ur5e/robotiq_2f85//unnamed_geom_21
+  geom_type             7 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           20 
+  geom_dataid           27 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.006     0.02      0.035    
+  geom_aabb             2.5e-07  -9.3e-09   0.00061   0.006     0.02      0.035    
+  geom_rbound           0.041    
+  geom_pos             -8.7e-09   0.018     0.021    
+  geom_quat             0.66     -0.24      0.24      0.66     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 52:
+  name                  ur5e/robotiq_2f85//unnamed_geom_22
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           21 
+  geom_dataid           24 
+  geom_matid            7 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0075    0.014     0.033    
+  geom_aabb             2e-07    -0.001     0.0057    0.0075    0.013     0.027    
+  geom_rbound           0.037    
+  geom_pos             -8.2e-08  -0.011     0.012    
+  geom_quat             0.99      0.17      6e-06     1e-06    
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 53:
+  name                  ur5e/robotiq_2f85//unnamed_geom_23
+  geom_type             7 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           21 
+  geom_dataid           24 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0075    0.014     0.033    
+  geom_aabb             2e-07    -0.001     0.0057    0.0075    0.013     0.027    
+  geom_rbound           0.037    
+  geom_pos             -8.2e-08  -0.011     0.012    
+  geom_quat             0.99      0.17      6e-06     1e-06    
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 54:
+  name                  ur5e/robotiq_2f85/left_pad1
+  geom_type             6 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           22 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         1 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.004     1        
+  geom_solimp           0.95      0.99      0.001     0.5       2        
+  geom_size             0.011     0.004     0.0094   
+  geom_aabb             0         0         0         0.011     0.004     0.0094   
+  geom_rbound           0.015    
+  geom_pos              0        -0.0026    0.028    
+  geom_quat             1         0         0         0        
+  geom_friction         0.7       0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.55      0.55      0.55      1        
+
+GEOM 55:
+  name                  ur5e/robotiq_2f85/left_pad2
+  geom_type             6 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           22 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            3 
+  geom_priority         1 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.004     1        
+  geom_solimp           0.95      0.99      0.001     0.5       2        
+  geom_size             0.011     0.004     0.0094   
+  geom_aabb             0         0         0         0.011     0.004     0.0094   
+  geom_rbound           0.015    
+  geom_pos              0        -0.0026    0.0094   
+  geom_quat             1         0         0         0        
+  geom_friction         0.6       0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.45      0.45      0.45      1        
+
+GEOM 56:
+  name                  ur5e/robotiq_2f85//unnamed_geom_26
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           22 
+  geom_dataid           25 
+  geom_matid            -1 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        0 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0025    0.011     0.019    
+  geom_aabb             0         0         0.00023   0.0025    0.011     0.019    
+  geom_rbound           0.022    
+  geom_pos              1.9e-14  -0.0025    0.019    
+  geom_quat             0.71      0         0         0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 57:
+  name                  ur5e/robotiq_2f85//unnamed_geom_27
+  geom_type             7 
+  geom_contype          0 
+  geom_conaffinity      0 
+  geom_condim           3 
+  geom_bodyid           23 
+  geom_dataid           26 
+  geom_matid            7 
+  geom_group            2 
+  geom_priority         0 
+  geom_sameframe        2 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.0008    0.011     0.019    
+  geom_aabb             0         0         0.00023   0.0008    0.011     0.019    
+  geom_rbound           0.022    
+  geom_pos              1.9e-14  -0.0058    0.019    
+  geom_quat             0.71      0         0         0.71     
+  geom_friction         1         0.005     0.0001   
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             0.5       0.5       0.5       1        
+
+GEOM 58:
+  name                  //unnamed_geom_1
+  geom_type             6 
+  geom_contype          1 
+  geom_conaffinity      1 
+  geom_condim           3 
+  geom_bodyid           24 
+  geom_dataid           -1 
+  geom_matid            -1 
+  geom_group            0 
+  geom_priority         0 
+  geom_sameframe        1 
+  geom_solmix           1        
+  geom_solref           0.02      1        
+  geom_solimp           0.9       0.95      0.001     0.5       2        
+  geom_size             0.1       0.1       0.1      
+  geom_aabb             0         0         0         0.1       0.1       0.1      
+  geom_rbound           0.17     
+  geom_pos              0         0         0        
+  geom_quat             1         0         0         0        
+  geom_friction         0.5       0.5       0.5      
+  geom_margin           0        
+  geom_gap              0        
+  geom_fluid            0         0         0         0         0         0         0         0         0         0         0         0        
+  geom_rgba             1         0         0         1        
+
+
+SITE 0:
+  name                  ur5e/attachment_site
+  site_type             2 
+  site_bodyid           8 
+  site_matid            -1 
+  site_group            4 
+  site_sameframe        0 
+  site_size             0.001     0.005     0.005    
+  site_pos              0         0.1       0        
+  site_quat            -0.71      0.71      0         0        
+  site_rgba             0.5       0.5       0.5       0.3      
+
+SITE 1:
+  name                  ur5e/robotiq_2f85/pinch
+  site_type             2 
+  site_bodyid           11 
+  site_matid            -1 
+  site_group            5 
+  site_sameframe        0 
+  site_size             0.005     0.005     0.005    
+  site_pos              0         0         0.14     
+  site_quat             1         0         0         0        
+  site_rgba             0.9       0.9       0.9       1        
+
+
+LIGHT 0:
+  name                  ur5e/spotlight
+  light_mode            4 
+  light_bodyid          1 
+  light_targetbodyid    7 
+  light_directional     0 
+  light_castshadow      1 
+  light_active          1 
+  light_pos             0        -1         2        
+  light_dir             0         0        -1        
+  light_poscom0         0.2      -1.8       1.9      
+  light_pos0            0        -1         2        
+  light_dir0            0         0        -1        
+  light_attenuation     1         0         0        
+  light_cutoff          45       
+  light_exponent        10       
+  light_ambient         0         0         0        
+  light_diffuse         0.7       0.7       0.7      
+  light_specular        0.3       0.3       0.3      
+
+
+MESH 0:
+  name                  ur5e/base_0
+  mesh_vertadr          0 
+  mesh_vertnum          6532 
+  mesh_normaladr        0 
+  mesh_normalnum        6532 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          0 
+  mesh_facenum          2240 
+  mesh_bvhadr           48 
+  mesh_bvhnum           4479 
+  mesh_graphadr         -1 
+
+MESH 1:
+  name                  ur5e/base_1
+  mesh_vertadr          6532 
+  mesh_vertnum          7523 
+  mesh_normaladr        6532 
+  mesh_normalnum        7523 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          2240 
+  mesh_facenum          2598 
+  mesh_bvhadr           4527 
+  mesh_bvhnum           5195 
+  mesh_graphadr         -1 
+
+MESH 2:
+  name                  ur5e/shoulder_0
+  mesh_vertadr          14055 
+  mesh_vertnum          34136 
+  mesh_normaladr        14055 
+  mesh_normalnum        34136 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          4838 
+  mesh_facenum          11435 
+  mesh_bvhadr           9722 
+  mesh_bvhnum           22869 
+  mesh_graphadr         -1 
+
+MESH 3:
+  name                  ur5e/shoulder_1
+  mesh_vertadr          48191 
+  mesh_vertnum          6703 
+  mesh_normaladr        48191 
+  mesh_normalnum        6703 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          16273 
+  mesh_facenum          2268 
+  mesh_bvhadr           32591 
+  mesh_bvhnum           4535 
+  mesh_graphadr         -1 
+
+MESH 4:
+  name                  ur5e/shoulder_2
+  mesh_vertadr          54894 
+  mesh_vertnum          28142 
+  mesh_normaladr        54894 
+  mesh_normalnum        28142 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          18541 
+  mesh_facenum          9587 
+  mesh_bvhadr           37126 
+  mesh_bvhnum           19173 
+  mesh_graphadr         -1 
+
+MESH 5:
+  name                  ur5e/upperarm_0
+  mesh_vertadr          83036 
+  mesh_vertnum          1860 
+  mesh_normaladr        83036 
+  mesh_normalnum        1860 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          28128 
+  mesh_facenum          620 
+  mesh_bvhadr           56299 
+  mesh_bvhnum           1239 
+  mesh_graphadr         -1 
+
+MESH 6:
+  name                  ur5e/upperarm_1
+  mesh_vertadr          84896 
+  mesh_vertnum          12727 
+  mesh_normaladr        84896 
+  mesh_normalnum        12727 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          28748 
+  mesh_facenum          4255 
+  mesh_bvhadr           57538 
+  mesh_bvhnum           8509 
+  mesh_graphadr         -1 
+
+MESH 7:
+  name                  ur5e/upperarm_2
+  mesh_vertadr          97623 
+  mesh_vertnum          42255 
+  mesh_normaladr        97623 
+  mesh_normalnum        42255 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          33003 
+  mesh_facenum          14489 
+  mesh_bvhadr           66047 
+  mesh_bvhnum           28977 
+  mesh_graphadr         -1 
+
+MESH 8:
+  name                  ur5e/upperarm_3
+  mesh_vertadr          139878 
+  mesh_vertnum          61912 
+  mesh_normaladr        139878 
+  mesh_normalnum        61912 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          47492 
+  mesh_facenum          20756 
+  mesh_bvhadr           95024 
+  mesh_bvhnum           41511 
+  mesh_graphadr         -1 
+
+MESH 9:
+  name                  ur5e/forearm_0
+  mesh_vertadr          201790 
+  mesh_vertnum          19489 
+  mesh_normaladr        201790 
+  mesh_normalnum        19489 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          68248 
+  mesh_facenum          6540 
+  mesh_bvhadr           136535 
+  mesh_bvhnum           13079 
+  mesh_graphadr         -1 
+
+MESH 10:
+  name                  ur5e/forearm_1
+  mesh_vertadr          221279 
+  mesh_vertnum          918 
+  mesh_normaladr        221279 
+  mesh_normalnum        918 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          74788 
+  mesh_facenum          321 
+  mesh_bvhadr           149614 
+  mesh_bvhnum           641 
+  mesh_graphadr         -1 
+
+MESH 11:
+  name                  ur5e/forearm_2
+  mesh_vertadr          222197 
+  mesh_vertnum          10952 
+  mesh_normaladr        222197 
+  mesh_normalnum        10952 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          75109 
+  mesh_facenum          3696 
+  mesh_bvhadr           150255 
+  mesh_bvhnum           7391 
+  mesh_graphadr         -1 
+
+MESH 12:
+  name                  ur5e/forearm_3
+  mesh_vertadr          233149 
+  mesh_vertnum          12730 
+  mesh_normaladr        233149 
+  mesh_normalnum        12730 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          78805 
+  mesh_facenum          4499 
+  mesh_bvhadr           157646 
+  mesh_bvhnum           8997 
+  mesh_graphadr         -1 
+
+MESH 13:
+  name                  ur5e/wrist1_0
+  mesh_vertadr          245879 
+  mesh_vertnum          3305 
+  mesh_normaladr        245879 
+  mesh_normalnum        3305 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          83304 
+  mesh_facenum          1149 
+  mesh_bvhadr           166643 
+  mesh_bvhnum           2297 
+  mesh_graphadr         -1 
+
+MESH 14:
+  name                  ur5e/wrist1_1
+  mesh_vertadr          249184 
+  mesh_vertnum          28349 
+  mesh_normaladr        249184 
+  mesh_normalnum        28349 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          84453 
+  mesh_facenum          9513 
+  mesh_bvhadr           168940 
+  mesh_bvhnum           19025 
+  mesh_graphadr         -1 
+
+MESH 15:
+  name                  ur5e/wrist1_2
+  mesh_vertadr          277533 
+  mesh_vertnum          19166 
+  mesh_normaladr        277533 
+  mesh_normalnum        19166 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          93966 
+  mesh_facenum          6626 
+  mesh_bvhadr           187965 
+  mesh_bvhnum           13251 
+  mesh_graphadr         -1 
+
+MESH 16:
+  name                  ur5e/wrist2_0
+  mesh_vertadr          296699 
+  mesh_vertnum          9961 
+  mesh_normaladr        296699 
+  mesh_normalnum        9961 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          100592 
+  mesh_facenum          3451 
+  mesh_bvhadr           201216 
+  mesh_bvhnum           6901 
+  mesh_graphadr         -1 
+
+MESH 17:
+  name                  ur5e/wrist2_1
+  mesh_vertadr          306660 
+  mesh_vertnum          24787 
+  mesh_normaladr        306660 
+  mesh_normalnum        24787 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          104043 
+  mesh_facenum          8310 
+  mesh_bvhadr           208117 
+  mesh_bvhnum           16619 
+  mesh_graphadr         -1 
+
+MESH 18:
+  name                  ur5e/wrist2_2
+  mesh_vertadr          331447 
+  mesh_vertnum          24681 
+  mesh_normaladr        331447 
+  mesh_normalnum        24681 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          112353 
+  mesh_facenum          8519 
+  mesh_bvhadr           224736 
+  mesh_bvhnum           17037 
+  mesh_graphadr         -1 
+
+MESH 19:
+  name                  ur5e/wrist3
+  mesh_vertadr          356128 
+  mesh_vertnum          2490 
+  mesh_normaladr        356128 
+  mesh_normalnum        2490 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          120872 
+  mesh_facenum          911 
+  mesh_bvhadr           241773 
+  mesh_bvhnum           1821 
+  mesh_graphadr         -1 
+
+MESH 20:
+  name                  ur5e/robotiq_2f85/base_mount
+  mesh_vertadr          358618 
+  mesh_vertnum          10905 
+  mesh_normaladr        358618 
+  mesh_normalnum        10905 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          121783 
+  mesh_facenum          21834 
+  mesh_bvhadr           243594 
+  mesh_bvhnum           43667 
+  mesh_graphadr         0 
+  qhull face            1236
+  qhull vert            620
+
+MESH 21:
+  name                  ur5e/robotiq_2f85/base
+  mesh_vertadr          369523 
+  mesh_vertnum          17156 
+  mesh_normaladr        369523 
+  mesh_normalnum        17156 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          143617 
+  mesh_facenum          34248 
+  mesh_bvhadr           287261 
+  mesh_bvhnum           68495 
+  mesh_graphadr         9278 
+  qhull face            1602
+  qhull vert            803
+
+MESH 22:
+  name                  ur5e/robotiq_2f85/driver
+  mesh_vertadr          386679 
+  mesh_vertnum          672 
+  mesh_normaladr        386679 
+  mesh_normalnum        672 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          177865 
+  mesh_facenum          1340 
+  mesh_bvhadr           355756 
+  mesh_bvhnum           2679 
+  mesh_graphadr         21301 
+  qhull face            420
+  qhull vert            212
+
+MESH 23:
+  name                  ur5e/robotiq_2f85/coupler
+  mesh_vertadr          387351 
+  mesh_vertnum          888 
+  mesh_normaladr        387351 
+  mesh_normalnum        888 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          179205 
+  mesh_facenum          1780 
+  mesh_bvhadr           358435 
+  mesh_bvhnum           3559 
+  mesh_graphadr         24459 
+  qhull face            344
+  qhull vert            174
+
+MESH 24:
+  name                  ur5e/robotiq_2f85/follower
+  mesh_vertadr          388239 
+  mesh_vertnum          1104 
+  mesh_normaladr        388239 
+  mesh_normalnum        1104 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          180985 
+  mesh_facenum          2208 
+  mesh_bvhadr           361994 
+  mesh_bvhnum           4415 
+  mesh_graphadr         27047 
+  qhull face            368
+  qhull vert            186
+
+MESH 25:
+  name                  ur5e/robotiq_2f85/pad
+  mesh_vertadr          389343 
+  mesh_vertnum          152 
+  mesh_normaladr        389343 
+  mesh_normalnum        152 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          183193 
+  mesh_facenum          300 
+  mesh_bvhadr           366409 
+  mesh_bvhnum           599 
+  mesh_graphadr         -1 
+
+MESH 26:
+  name                  ur5e/robotiq_2f85/silicone_pad
+  mesh_vertadr          389495 
+  mesh_vertnum          152 
+  mesh_normaladr        389495 
+  mesh_normalnum        152 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          183493 
+  mesh_facenum          300 
+  mesh_bvhadr           367008 
+  mesh_bvhnum           599 
+  mesh_graphadr         -1 
+
+MESH 27:
+  name                  ur5e/robotiq_2f85/spring_link
+  mesh_vertadr          389647 
+  mesh_vertnum          840 
+  mesh_normaladr        389647 
+  mesh_normalnum        840 
+  mesh_texcoordadr      -1 
+  mesh_texcoordnum      0 
+  mesh_faceadr          183793 
+  mesh_facenum          1696 
+  mesh_bvhadr           367607 
+  mesh_bvhnum           3391 
+  mesh_graphadr         29815 
+  qhull face            296
+  qhull vert            150
+
+
+MATERIAL 0:
+  name                  ur5e/black
+  mat_texid             -1 
+  mat_texuniform        0 
+  mat_texrepeat         1         1        
+  mat_emission          0        
+  mat_specular          0.5      
+  mat_shininess         0.25     
+  mat_reflectance       0        
+  mat_rgba              0.033     0.033     0.033     1        
+
+MATERIAL 1:
+  name                  ur5e/jointgray
+  mat_texid             -1 
+  mat_texuniform        0 
+  mat_texrepeat         1         1        
+  mat_emission          0        
+  mat_specular          0.5      
+  mat_shininess         0.25     
+  mat_reflectance       0        
+  mat_rgba              0.28      0.28      0.28      1        
+
+MATERIAL 2:
+  name                  ur5e/linkgray
+  mat_texid             -1 
+  mat_texuniform        0 
+  mat_texrepeat         1         1        
+  mat_emission          0        
+  mat_specular          0.5      
+  mat_shininess         0.25     
+  mat_reflectance       0        
+  mat_rgba              0.82      0.82      0.82      1        
+
+MATERIAL 3:
+  name                  ur5e/urblue
+  mat_texid             -1 
+  mat_texuniform        0 
+  mat_texrepeat         1         1        
+  mat_emission          0        
+  mat_specular          0.5      
+  mat_shininess         0.25     
+  mat_reflectance       0        
+  mat_rgba              0.49      0.68      0.8       1        
+
+MATERIAL 4:
+  name                  ur5e/robotiq_2f85/metal
+  mat_texid             -1 
+  mat_texuniform        0 
+  mat_texrepeat         1         1        
+  mat_emission          0        
+  mat_specular          0.5      
+  mat_shininess         0.5      
+  mat_reflectance       0        
+  mat_rgba              0.58      0.58      0.58      1        
+
+MATERIAL 5:
+  name                  ur5e/robotiq_2f85/silicone
+  mat_texid             -1 
+  mat_texuniform        0 
+  mat_texrepeat         1         1        
+  mat_emission          0        
+  mat_specular          0.5      
+  mat_shininess         0.5      
+  mat_reflectance       0        
+  mat_rgba              0.19      0.19      0.19      1        
+
+MATERIAL 6:
+  name                  ur5e/robotiq_2f85/gray
+  mat_texid             -1 
+  mat_texuniform        0 
+  mat_texrepeat         1         1        
+  mat_emission          0        
+  mat_specular          0.5      
+  mat_shininess         0.5      
+  mat_reflectance       0        
+  mat_rgba              0.46      0.46      0.46      1        
+
+MATERIAL 7:
+  name                  ur5e/robotiq_2f85/black
+  mat_texid             -1 
+  mat_texuniform        0 
+  mat_texrepeat         1         1        
+  mat_emission          0        
+  mat_specular          0.5      
+  mat_shininess         0.5      
+  mat_reflectance       0        
+  mat_rgba              0.15      0.15      0.15      1        
+
+
+EXCLUDE 0:
+  name                  ur5e/robotiq_2f85//unnamed_contact_1
+  exclude_signature     786445 
+
+EXCLUDE 1:
+  name                  ur5e/robotiq_2f85//unnamed_contact_3
+  exclude_signature     786447 
+
+EXCLUDE 2:
+  name                  ur5e/robotiq_2f85//unnamed_contact_0
+  exclude_signature     786451 
+
+EXCLUDE 3:
+  name                  ur5e/robotiq_2f85//unnamed_contact_2
+  exclude_signature     786453 
+
+EXCLUDE 4:
+  name                  ur5e/robotiq_2f85//unnamed_contact_4
+  exclude_signature     917520 
+
+EXCLUDE 5:
+  name                  ur5e/robotiq_2f85//unnamed_contact_5
+  exclude_signature     1310742 
+
+
+EQUALITY 0:
+  name                  ur5e/robotiq_2f85//unnamed_equality_0
+  eq_type               0 
+  eq_obj1id             15 
+  eq_obj2id             13 
+  eq_active             1 
+  eq_solref             0.005     1        
+  eq_solimp             0.95      0.99      0.001     0.5       2        
+  eq_data               0         0         0        -0         0.0061    0.048     0         0         0         0         1        
+
+EQUALITY 1:
+  name                  ur5e/robotiq_2f85//unnamed_equality_1
+  eq_type               0 
+  eq_obj1id             21 
+  eq_obj2id             19 
+  eq_active             1 
+  eq_solref             0.005     1        
+  eq_solimp             0.95      0.99      0.001     0.5       2        
+  eq_data               0         0         0         0         0.0061    0.048     0         0         0         0         1        
+
+EQUALITY 2:
+  name                  ur5e/robotiq_2f85//unnamed_equality_2
+  eq_type               2 
+  eq_obj1id             6 
+  eq_obj2id             10 
+  eq_active             1 
+  eq_solref             0.005     1        
+  eq_solimp             0.95      0.99      0.001     0.5       2        
+  eq_data               0         1         0         0         0         0         0         0         0         0         1        
+
+
+TENDON 0:
+  name                  ur5e/robotiq_2f85/split
+  tendon_adr            0 
+  tendon_num            2 
+  tendon_matid          -1 
+  tendon_group          0 
+  tendon_limited        0 
+  tendon_width          0.003    
+  tendon_solref_lim     0.02      1        
+  tendon_solimp_lim     0.9       0.95      0.001     0.5       2        
+  tendon_solref_fri     0.02      1        
+  tendon_solimp_fri     0.9       0.95      0.001     0.5       2        
+  tendon_range          0         0        
+  tendon_margin         0        
+  tendon_stiffness      0        
+  tendon_damping        0        
+  tendon_frictionloss   0        
+  tendon_lengthspring   0         0        
+  tendon_length0        0        
+  tendon_invweight0     1e+02    
+  tendon_rgba           0.5       0.5       0.5       1        
+  path         
+    1 6  0.5     
+    1 10  0.5     
+
+
+
+ACTUATOR 0:
+  name                  ur5e/shoulder_pan
+  actuator_trntype      0 
+  actuator_dyntype      0 
+  actuator_gaintype     0 
+  actuator_biastype     1 
+  actuator_trnid        0  -1 
+  actuator_actadr       -1 
+  actuator_actnum       0 
+  actuator_group        0 
+  actuator_ctrllimited  1 
+  actuator_forcelimited 1 
+  actuator_actlimited   0 
+  actuator_dynprm       1         0         0         0         0         0         0         0         0         0        
+  actuator_gainprm      2e+03     0         0         0         0         0         0         0         0         0        
+  actuator_biasprm      0        -2e+03    -4e+02     0         0         0         0         0         0         0        
+  actuator_ctrlrange   -6.3       6.3      
+  actuator_forcerange  -1.5e+02   1.5e+02  
+  actuator_actrange     0         0        
+  actuator_gear         1         0         0         0         0         0        
+  actuator_cranklength  0        
+  actuator_acc0         9.1      
+  actuator_length0      0        
+  actuator_lengthrange  0         0        
+  actuator_plugin       -1 
+
+ACTUATOR 1:
+  name                  ur5e/shoulder_lift
+  actuator_trntype      0 
+  actuator_dyntype      0 
+  actuator_gaintype     0 
+  actuator_biastype     1 
+  actuator_trnid        1  -1 
+  actuator_actadr       -1 
+  actuator_actnum       0 
+  actuator_group        0 
+  actuator_ctrllimited  1 
+  actuator_forcelimited 1 
+  actuator_actlimited   0 
+  actuator_dynprm       1         0         0         0         0         0         0         0         0         0        
+  actuator_gainprm      2e+03     0         0         0         0         0         0         0         0         0        
+  actuator_biasprm      0        -2e+03    -4e+02     0         0         0         0         0         0         0        
+  actuator_ctrlrange   -6.3       6.3      
+  actuator_forcerange  -1.5e+02   1.5e+02  
+  actuator_actrange     0         0        
+  actuator_gear         1         0         0         0         0         0        
+  actuator_cranklength  0        
+  actuator_acc0         2.7      
+  actuator_length0      0        
+  actuator_lengthrange  0         0        
+  actuator_plugin       -1 
+
+ACTUATOR 2:
+  name                  ur5e/elbow
+  actuator_trntype      0 
+  actuator_dyntype      0 
+  actuator_gaintype     0 
+  actuator_biastype     1 
+  actuator_trnid        2  -1 
+  actuator_actadr       -1 
+  actuator_actnum       0 
+  actuator_group        0 
+  actuator_ctrllimited  1 
+  actuator_forcelimited 1 
+  actuator_actlimited   0 
+  actuator_dynprm       1         0         0         0         0         0         0         0         0         0        
+  actuator_gainprm      2e+03     0         0         0         0         0         0         0         0         0        
+  actuator_biasprm      0        -2e+03    -4e+02     0         0         0         0         0         0         0        
+  actuator_ctrlrange   -3.1       3.1      
+  actuator_forcerange  -1.5e+02   1.5e+02  
+  actuator_actrange     0         0        
+  actuator_gear         1         0         0         0         0         0        
+  actuator_cranklength  0        
+  actuator_acc0         8.5      
+  actuator_length0      0        
+  actuator_lengthrange  0         0        
+  actuator_plugin       -1 
+
+ACTUATOR 3:
+  name                  ur5e/wrist_1
+  actuator_trntype      0 
+  actuator_dyntype      0 
+  actuator_gaintype     0 
+  actuator_biastype     1 
+  actuator_trnid        3  -1 
+  actuator_actadr       -1 
+  actuator_actnum       0 
+  actuator_group        0 
+  actuator_ctrllimited  1 
+  actuator_forcelimited 1 
+  actuator_actlimited   0 
+  actuator_dynprm       1         0         0         0         0         0         0         0         0         0        
+  actuator_gainprm      5e+02     0         0         0         0         0         0         0         0         0        
+  actuator_biasprm      0        -5e+02    -1e+02     0         0         0         0         0         0         0        
+  actuator_ctrlrange   -6.3       6.3      
+  actuator_forcerange  -28        28       
+  actuator_actrange     0         0        
+  actuator_gear         1         0         0         0         0         0        
+  actuator_cranklength  0        
+  actuator_acc0         27       
+  actuator_length0      0        
+  actuator_lengthrange  0         0        
+  actuator_plugin       -1 
+
+ACTUATOR 4:
+  name                  ur5e/wrist_2
+  actuator_trntype      0 
+  actuator_dyntype      0 
+  actuator_gaintype     0 
+  actuator_biastype     1 
+  actuator_trnid        4  -1 
+  actuator_actadr       -1 
+  actuator_actnum       0 
+  actuator_group        0 
+  actuator_ctrllimited  1 
+  actuator_forcelimited 1 
+  actuator_actlimited   0 
+  actuator_dynprm       1         0         0         0         0         0         0         0         0         0        
+  actuator_gainprm      5e+02     0         0         0         0         0         0         0         0         0        
+  actuator_biasprm      0        -5e+02    -1e+02     0         0         0         0         0         0         0        
+  actuator_ctrlrange   -6.3       6.3      
+  actuator_forcerange  -28        28       
+  actuator_actrange     0         0        
+  actuator_gear         1         0         0         0         0         0        
+  actuator_cranklength  0        
+  actuator_acc0         79       
+  actuator_length0      0        
+  actuator_lengthrange  0         0        
+  actuator_plugin       -1 
+
+ACTUATOR 5:
+  name                  ur5e/wrist_3
+  actuator_trntype      0 
+  actuator_dyntype      0 
+  actuator_gaintype     0 
+  actuator_biastype     1 
+  actuator_trnid        5  -1 
+  actuator_actadr       -1 
+  actuator_actnum       0 
+  actuator_group        0 
+  actuator_ctrllimited  1 
+  actuator_forcelimited 1 
+  actuator_actlimited   0 
+  actuator_dynprm       1         0         0         0         0         0         0         0         0         0        
+  actuator_gainprm      5e+02     0         0         0         0         0         0         0         0         0        
+  actuator_biasprm      0        -5e+02    -1e+02     0         0         0         0         0         0         0        
+  actuator_ctrlrange   -6.3       6.3      
+  actuator_forcerange  -28        28       
+  actuator_actrange     0         0        
+  actuator_gear         1         0         0         0         0         0        
+  actuator_cranklength  0        
+  actuator_acc0         9.9      
+  actuator_length0      0        
+  actuator_lengthrange  0         0        
+  actuator_plugin       -1 
+
+ACTUATOR 6:
+  name                  ur5e/robotiq_2f85/fingers_actuator
+  actuator_trntype      3 
+  actuator_dyntype      0 
+  actuator_gaintype     0 
+  actuator_biastype     1 
+  actuator_trnid        0  -1 
+  actuator_actadr       -1 
+  actuator_actnum       0 
+  actuator_group        0 
+  actuator_ctrllimited  1 
+  actuator_forcelimited 1 
+  actuator_actlimited   0 
+  actuator_dynprm       1         0         0         0         0         0         0         0         0         0        
+  actuator_gainprm      0.31      0         0         0         0         0         0         0         0         0        
+  actuator_biasprm      0        -1e+02    -10        0         0         0         0         0         0         0        
+  actuator_ctrlrange    0         2.6e+02  
+  actuator_forcerange  -5         5        
+  actuator_actrange     0         0        
+  actuator_gear         1         0         0         0         0         0        
+  actuator_cranklength  0        
+  actuator_acc0         2e+02    
+  actuator_length0      0        
+  actuator_lengthrange  0         0        
+  actuator_plugin       -1 
+
+key_name0    ur5e/home
+key_qpos0   -1.6     -1.6      1.6     -1.6     -1.6      0        0        0        0        0        0        0        0        0       
+key_ctrl0   -1.6     -1.6      1.6     -1.6     -1.6      0        0       
+

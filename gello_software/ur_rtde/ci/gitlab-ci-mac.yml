@@ -1,0 +1,31 @@
+.mac-build:
+  extends: .linux-build
+  before_script:
+    - THREADS=3
+    - WERROR=ON
+  tags:
+    - mac
+    - sdur
+
+.mac-build-examples:
+  extends: .linux-build-examples
+  before_script:
+    - THREADS=3
+    - WERROR=ON
+  tags:
+    - mac
+    - sdur
+
+.mac-cibuildwheel:
+  extends: .CI-common
+  stage: build_wheels
+  before_script:
+    - WERROR=ON
+  script:
+    - cibuildwheel --output-dir wheelhouse
+  artifacts:
+    paths:
+      - wheelhouse/
+  tags:
+    - mac
+    - sdur

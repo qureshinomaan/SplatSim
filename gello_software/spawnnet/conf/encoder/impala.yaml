@@ -1,0 +1,10 @@
+name: IMPALA
+obs_shapes: ${obs_shapes}
+num_frames: ${num_frames}
+out_shape: 384
+shape: [ 224, 224 ]
+in_channels: ${in_channels}
+large: True
+larger: True
+use_depth: True
+num_views: ${num_views}

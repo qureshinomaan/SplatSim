@@ -1,0 +1,12 @@
+h5py
+imageio
+matplotlib
+opencv-python
+Pillow
+progressbar2
+requests
+scipy
+transforms3d
+torch
+torchvision
+tensorboardX

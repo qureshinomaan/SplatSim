@@ -1,0 +1,70 @@
+stages:
+  - build
+  - build_examples
+  - build_wheels
+  - build_docs
+  - test
+  - deploy
+
+include:
+# templates
+  - '/ci/gitlab-ci-common.yml'
+  - '/ci/gitlab-ci-linux.yml'
+  - '/ci/gitlab-ci-windows.yml'
+  - '/ci/gitlab-ci-mac.yml'
+# jobs
+  - '/ci/platforms/ubuntu1804.yml'
+  - '/ci/platforms/ubuntu2004.yml'
+  - '/ci/platforms/ubuntu2204.yml'
+  - '/ci/platforms/windows10-vs16.yml'
+  - '/ci/platforms/mac-catalina.yml'
+
+############################################
+#                  Test                    #
+############################################
+
+wheels:
+  stage: deploy
+  image: python:3.8
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  only:
+    refs:
+      - tags
+  dependencies:
+    - cibuildwheel-linux
+    - cibuildwheel-windows
+    - cibuildwheel-mac
+  script:
+    - ls wheelhouse || echo "wheelhouse does not exist"
+    - python -m pip install pip -U
+    - python -m pip install twine wheel
+    - python setup.py sdist -d wheelhouse/
+    - twine upload --skip-existing -u "${K8S_SECRET_TWINE_USERNAME}" -p "${K8S_SECRET_TWINE_PASSWORD}" wheelhouse/*
+  tags:
+    - linux
+    - sdur
+
+pages:
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+  only:
+    refs:
+      - master
+  dependencies:
+    - build_docs
+  image: gitlab.sdu.dk:5050/sdurobotics/docker-images/ur_rtde-build:ubuntu-1804-doc
+  script:
+    - mv build/doc/html/_static/googled5bfdc1684e49924.html build/doc/html/googled5bfdc1684e49924.html
+    - mv build/doc/html public
+    
+  artifacts:
+    paths:
+      - public
+  tags:
+    - linux
+    - sdur
+
+
+    

@@ -1,0 +1,40 @@
+# Please only add package to this yml, do not remove any existing packages
+name: mani_skill
+channels:
+  - conda-forge
+  - pytorch
+  - defaults
+dependencies:
+  - python=3.8.10
+  - pip
+  - future
+  - h5py
+  - matplotlib
+  - numpy
+  - pathlib2
+  - pylint
+  - pytest
+  - pytorch=1.8.1
+  - torchvision=0.9.0
+  - pyyaml
+  - tqdm
+  - yaml
+  - transforms3d
+  - scipy
+  - yacs
+  - requests
+  - shapely
+  - tabulate
+  - pip:
+    - sapien
+    - opencv-python
+    - gym
+    - transform3d
+    - trimesh
+    - open3d
+    - Pillow
+    - yapf
+    - ffmpeg
+    - pandas
+    - tables
+    - coverage

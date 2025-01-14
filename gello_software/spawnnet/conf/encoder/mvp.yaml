@@ -1,0 +1,13 @@
+name: ViTDescriptor
+obs_shapes: ${obs_shapes}
+num_frames: ${num_frames}
+out_shape: (3, 768 + ${proprio_dim})
+
+vit_cfg:
+  model_type: "mvp_vitb-mae-egosoup"
+  freeze_pretrained: True
+  use_cached_token: False 
+  patch_size: 16
+  downsample: False
+  stride: 16
+  layer: 11
