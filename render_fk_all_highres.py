@@ -37,7 +37,7 @@ import pybullet as p
 p.connect(p.DIRECT)
 p.resetSimulation()
 flags = p.URDF_ENABLE_CACHED_GRAPHICS_SHAPES
-pandaUid = p.loadURDF('./pybullet-playground/urdf/sisbot.urdf', useFixedBase=True, basePosition=[0.0, 0.0, -0.1])
+pandaUid = p.loadURDF('./pybullet-playground_2/urdf/sisbot.urdf', useFixedBase=True, basePosition=[0.0, 0.0, -0.1])
 # pandaUid = p.loadURDF('pybullet_ur5_gripper/robots/urdf/ur5e.urdf', useFixedBase=True, basePosition=[0.0, 0.0, 0.0], flags=flags, globalScaling=1)
 
 
@@ -404,9 +404,9 @@ def transform_shs(shs_feat, rotation_matrix):
     rot_angles = o3._rotation.matrix_to_angles(torch.from_numpy(permuted_rotation_matrix).to(device=shs_feat.device).float())
     
     # Construction coefficient
-    D_1 = o3.wigner_D(1, rot_angles[0], - rot_angles[1], rot_angles[2])
-    D_2 = o3.wigner_D(2, rot_angles[0], - rot_angles[1], rot_angles[2])
-    D_3 = o3.wigner_D(3, rot_angles[0], - rot_angles[1], rot_angles[2])
+    D_1 = o3.wigner_D(1, rot_angles[0].cpu(), - rot_angles[1].cpu(), rot_angles[2].cpu()).to(device=shs_feat.device)
+    D_2 = o3.wigner_D(2, rot_angles[0].cpu(), - rot_angles[1].cpu(), rot_angles[2].cpu()).to(device=shs_feat.device)
+    D_3 = o3.wigner_D(3, rot_angles[0].cpu(), - rot_angles[1].cpu(), rot_angles[2].cpu()).to(device=shs_feat.device)
 
     #rotation of the shs features
     one_degree_shs = shs_feat[:, 0:3]

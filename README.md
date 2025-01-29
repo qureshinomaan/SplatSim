@@ -12,8 +12,16 @@ This repository contains the code for the paper "SplatSim".
 
 ```bash
 conda env create -f environment.yml
+conda activate splatsim
+pip3 install -r requirements.txt
 cd gello
 pip install -e .
+```
+
+## Running the rendering code 
+
+```bash
+python render_fk_all_highres.py -s test_data/robot_iphone -m gaussian-splatting/output/robot_iphone --objects plastic_apple
 ```
 
 ## A general description of the codebase
@@ -34,7 +42,9 @@ Very unorganized, will need to clean it up.
 
 ## A list of TODOs
 
-- [ ] Proper instructions for installation. Current instructions might not work. 
+- [x] ~~Proper instructions for installation. Current instructions might not work.~~
+    - [x] Installation instructions should work now.
+- [ ] Add links to pretrain gaussian-splats and trajectories, so that people can run rendering script. 
 - [ ] Clean up the gello folder and only keep files that are necessary. 
 - [ ] Instructions to generate a trajectory and render it. 
 - [ ] Clean up the splat folder for only keeping necessary files. 
