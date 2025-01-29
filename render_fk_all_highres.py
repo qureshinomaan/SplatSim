@@ -1,4 +1,3 @@
-
 #
 # This software is free for non-commercial, research and evaluation use 
 # under the terms of the LICENSE.md file.
@@ -117,7 +116,7 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
             continue
         
 
-        traj_folder = '/home/nomaan/bc_data/gello/'
+        traj_folder = args.traj_folder
         # traj folder contains folders containing the trajectory data
         for j, folder in enumerate(sorted(os.listdir(traj_folder))):
             # if j>0:
@@ -555,6 +554,8 @@ if __name__ == "__main__":
     parser.add_argument("--skip_test", action="store_true")
     parser.add_argument("--objects", default='plastic_apple', type=str)
     parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--traj_folder", default='/home/nomaan/bc_data/gello/', type=str,
+                      help="Path to the trajectory folder containing demonstration data")
     args = get_combined_args(parser)
 
 
