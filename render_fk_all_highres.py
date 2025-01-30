@@ -82,7 +82,7 @@ def get_transfomration_list(new_joint_poses):
 
 
 
-def render_set(model_path, name, iteration, views, gaussians, pipeline, background, object_list, robot_name):
+def render_set(model_path, name, iteration, views, gaussians, pipeline, background, object_list, robot_name, object_splat_folder):
     render_path = os.path.join(model_path, name, "ours_{}".format(iteration), "renders")
     gts_path = os.path.join(model_path, name, "ours_{}".format(iteration), "gt")
 
@@ -95,7 +95,7 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
     object_gaussians = [GaussianModel(3) for _ in range(len(object_list))]
 
     for _ in range(len(object_list)):
-        object_gaussians[_].load_ply("../corl24/ocean_backup/gaussian-splatting/output/{}/point_cloud/iteration_7000/point_cloud.ply".format(object_list[_]))
+        object_gaussians[_].load_ply(object_splat_folder + "{}/point_cloud/iteration_7000/point_cloud.ply".format(object_list[_]))
 
 
 
@@ -215,7 +215,7 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
         # if idx>-1:
         #     break
 
-def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, object_list : list, robot_name : str):
+def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, object_list : list, robot_name : str, object_splat_folder : str):
     with torch.no_grad():
         gaussians = GaussianModel(dataset.sh_degree)
                 
@@ -225,10 +225,10 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
         background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
         
         if not skip_train:
-             render_set(dataset.model_path, "train", scene.loaded_iter, scene.getTrainCameras(), gaussians, pipeline, background,  object_list=object_list, robot_name=robot_name)
+             render_set(dataset.model_path, "train", scene.loaded_iter, scene.getTrainCameras(), gaussians, pipeline, background,  object_list=object_list, robot_name=robot_name, object_splat_folder=object_splat_folder)
 
         if not skip_test:
-            render_set(dataset.model_path, "test", scene.loaded_iter, scene.getTestCameras(), gaussians, pipeline, background, object_list=object_list, robot_name=robot_name)
+            render_set(dataset.model_path, "test", scene.loaded_iter, scene.getTestCameras(), gaussians, pipeline, background, object_list=object_list, robot_name=robot_name, object_splat_folder=object_splat_folder)
 
 
 
@@ -561,6 +561,9 @@ if __name__ == "__main__":
 
     #get the robot name from model path 
     robot_name = args.model_path.split('/')[-1]
+    
+    #get the object output folder
+    object_splat_folder = args.model_path.replace(robot_name, '')
 
     
     if args.objects == " ":
@@ -573,4 +576,4 @@ if __name__ == "__main__":
     # Initialize system state (RNG)
     safe_state(args.quiet)
 
-    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, object_list=object_list, robot_name=robot_name)
+    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, object_list=object_list, robot_name=robot_name, object_splat_folder=object_splat_folder)
