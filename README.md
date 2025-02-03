@@ -52,8 +52,11 @@ Very unorganized, will need to clean it up.
     - [x] Installation instructions should work now.
 - [x] ~~Add links to pretrain gaussian-splats and trajectories, so that people can run rendering script.~~
     - [x] Links to pretrain gaussian-splats, colmap and trajectories are added.
-- [ ] Clean up the gello folder and only keep files that are necessary. 
+- [x] Create a new file for rendering robot and objects, without hardcoding the segmentation and shifting everything to KNN based segmentation.
+- [x] Clean up the splat folder for only keeping necessary files and easy creation of KNN based segmentation for robots.
+- [ ] Documentation for the codebase.
+- [ ] Adding new robots (in sim or any other environment).
 - [ ] Instructions to generate a trajectory and render it. 
-- [ ] Clean up the splat folder for only keeping necessary files. 
-- [ ] Adding new robots and unifying the rendering code for d
+    - [ ] Trajectory format should be specified properly.
+- [ ] Clean up the gello folder and only keep files that are necessary. 
  
