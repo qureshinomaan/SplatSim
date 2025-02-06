@@ -16,6 +16,8 @@ conda activate splatsim
 pip3 install -r requirements.txt
 cd gello
 pip install -e .
+cd pybullet-URDF-models
+pip install -e .
 ```
 
 ## Running the rendering code 
