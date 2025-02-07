@@ -39,7 +39,7 @@ def main(args):
 
     #load the robot
     robot_path = args.robot
-    robot_id = p.loadURDF(robot_path, useFixedBase=True, basePosition=[0.0, 0.0, -0.1])
+    robot_id = p.loadURDF(robot_path, useFixedBase=True, basePosition=[0.0, 0.0, 0.])
 
     #get the joint states from args
     joint_states = args.joint_states
@@ -54,16 +54,19 @@ def main(args):
     link_pcds = []
     link_labels = []
 
-    for link_index in range(0, num_links):
+    for link_index in range(-1, num_links):
+        p.changeVisualShape(robot_id, link_index, rgbaColor=[1, 1, 1, 0])
 
-        for link_index_1 in range(0, num_links):
+    for link_index in range(-1, num_links):
+
+        for link_index_1 in range(-1, num_links):
             if link_index_1 == link_index:
                 #make the link visible
                 p.changeVisualShape(robot_id, link_index_1, rgbaColor=[1, 1, 1, 1])
             else:
                 p.changeVisualShape(robot_id, link_index_1, rgbaColor=[1, 1, 1, 0])
 
-        pcd = get_overall_pcd(imgx = 100, imgy = 100)
+        pcd = get_overall_pcd(imgx = 1000, imgy = 1000)
 
         link_pcds.append(pcd)
         link_labels.append(link_index)
@@ -100,6 +103,8 @@ def main(args):
     pcd_colors = np.array([colors[int(label)] for label in predictions])
 
     pcd.colors = o3d.utility.Vector3dVector(pcd_colors)
+    #save the pcd
+    o3d.io.write_point_cloud(args.robot_name + '_pcd.ply', pcd)
 
     #visualize the knn predictions
     o3d.visualization.draw_geometries([pcd])
@@ -112,6 +117,10 @@ def main(args):
         object_configs = yaml.safe_load(file)
 
     #get the transformation matrix for the glasses
+    #check if the robot_name is in the object_configs
+    if args.robot_name not in object_configs:
+        raise ValueError(f"Robot name {args.robot_name} not found in object_configs, please find the transformation matrix and update the object_configs/objects.yaml file")
+    
     transformation_matrix = np.array(object_configs[args.robot_name]["transformation"]['matrix'])
     
 
@@ -183,7 +192,7 @@ if __name__ == '__main__':
 
     #add arguments with default values
     parser.add_argument('--robot', type=str, default='../../pybullet-playground_2/urdf/sisbot.urdf')
-    parser.add_argument('--joint_states', type=list, default=[0, 0.0, -1.5707963267948966, 1.5707963267948966, -1.5707963267948966, -1.5707963267948966, 0.0, 0.0, 0.0, 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548, 0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127])
+    parser.add_argument('--joint_states', nargs='+', type=float, default=[0, 0.0, -1.5707963267948966, 1.5707963267948966, -1.5707963267948966, -1.5707963267948966, 0.0, 0.0, 0.0, 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548, 0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127])
     parser.add_argument('--splat_path', type=str, default='../../../corl24/ocean_backup/gaussian-splatting/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply')
     parser.add_argument('--robot_name', type=str, default='robot_iphone')
 
