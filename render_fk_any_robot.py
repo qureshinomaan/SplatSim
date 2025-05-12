@@ -32,8 +32,6 @@ import numpy as np
 import yaml
 
 
-
-
 def get_transfomration_list(new_joint_poses):
 
     for i in range(len(new_joint_poses)):
@@ -417,8 +415,6 @@ def get_segmented_indices(pc, robot_transformation, aabb, robot_name):
     
     return segmented_points, points
 
-
-
 if __name__ == "__main__":
     # Set up command line argument parser
     parser = ArgumentParser(description="Testing script parameters")
@@ -453,12 +449,6 @@ if __name__ == "__main__":
         object_list = args.objects.split(' ')
 
     print("Rendering " + args.model_path)
-
-
-
-
-
-    # ######### Setup the pybullet engine #########
 
     # ######### Setup the pybullet engine #########
     import pybullet as p

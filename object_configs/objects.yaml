@@ -7,17 +7,16 @@ robot_iphone:
     - [0, 0, 0, 1]
   aabb:
     bounding_box:
-    - [-0.0734, -0.11, -0.008]
-    - [0.5283, 0.2087, 0.5867]
-
+    - [-0.0734, -0.11, 0.0961]
+    - [0.6501, 0.2043, 0.7533]
   urdf_path:
-    - "./pybullet-playground_2/urdf/sisbot.urdf"
+  - ./pybullet-playground_2/urdf/sisbot.urdf
   base_position:
-    - [0.0, 0.0, -0.1]
-
+  - [0.0, 0.0, -0.1]
   joint_states:
-    - [0, 0.0, -1.5707963267948966, 1.5707963267948966, -1.5707963267948966, -1.5707963267948966, 0.0, 0.0, 0.0, 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548, 0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127]
-
+  - [0, 0.0, -1.5707963267948966, 1.5707963267948966, -1.5707963267948966, -1.5707963267948966,
+    0.0, 0.0, 0.0, 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548,
+    0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127]
 sim_franka:
   transformation:
     matrix:
@@ -29,16 +28,12 @@ sim_franka:
     bounding_box:
     - [-0.1541, -0.1294, -0.0008]
     - [0.6763, 0.1342, 0.8317]
-  urdf_path: 
-    - '/home/nomaan/miniconda3/envs/splatsim/lib/python3.7/site-packages/pybullet_data/franka_panda/panda.urdf'
-
+  urdf_path:
+  - /home/nomaan/miniconda3/envs/splatsim/lib/python3.7/site-packages/pybullet_data/franka_panda/panda.urdf
   base_position:
-    - [0.0, 0.0, -0.0]
-
+  - [0.0, 0.0, -0.0]
   joint_states:
-    - []
-
-
+  - []
 mug:
   transformation:
     matrix:

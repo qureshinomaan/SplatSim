@@ -1,4 +1,3 @@
-
 import numpy as np
 import torch
 
@@ -9,9 +8,6 @@ def quaternion_to_rot_matrix_torch(quat):
                         2*x*y + 2*z*w, 1 - 2*x**2 - 2*z**2, 2*y*z - 2*x*w,
                         2*x*z - 2*y*w, 2*y*z + 2*x*w, 1 - 2*x**2 - 2*y**2], dim=1).view(-1, 3, 3)
     
-    
-
-
 def quaternion_multiply(q1, q2):
     """
     Multiplies two quaternions.
