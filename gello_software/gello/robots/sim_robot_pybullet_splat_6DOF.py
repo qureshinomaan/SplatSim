@@ -29,15 +29,16 @@ from gaussian_splatting.scene import Scene
 import os
 from tqdm import tqdm
 from os import makedirs
-from gaussian_splatting.gaussian_renderer import render
+from gaussian_renderer import render
 import torchvision
 from gaussian_splatting.utils.general_utils import safe_state
 from argparse import ArgumentParser
 from gaussian_splatting.arguments import ModelParams, PipelineParams, get_combined_args
 from gaussian_splatting.gaussian_renderer import GaussianModel
-from gaussian_splatting.utils_fk import *
-from gaussian_splatting.utils_fk import compute_transformation
-from gaussian_splatting.scene.cameras import Camera
+# from gaussian_splatting.utils_fk import *
+# from gaussian_splatting.utils_fk import compute_transformation
+from utils_fk import compute_transformation
+from scene.cameras import Camera
 #import RGB2SH
 from gaussian_splatting.utils.sh_utils import eval_sh, RGB2SH
 
@@ -67,6 +68,13 @@ from collections import namedtuple
 
 
 ####################################
+
+ROBOT_TRANSFORMATION = np.array([
+    [0.091979, 0.040193, -0.202176, 0.771204],
+    [0.205922, -0.007912, 0.09211, -0.335536],
+    [0.009315, -0.221975, -0.039892, 0.520633],
+    [0, 0, 0, 1]
+])
 
 
 
@@ -252,12 +260,12 @@ class PybulletRobotServer:
         self.T_object_gaussian = GaussianModel(3)
 
         #load the gaussian model for the robot
-        self.robot_gaussian.load_ply("/home/nomaan/Desktop/corl24/ocean_backup/gaussian-splatting/output/new_ur/point_cloud/iteration_100000/point_cloud.ply")
+        self.robot_gaussian.load_ply("/home/jennyw2/data/output/robot_iphone_orig/point_cloud/iteration_30000/point_cloud.ply")
         self.gaussians_backup = copy.deepcopy(self.robot_gaussian)
 
         self.object_gaussians = [GaussianModel(3) for _ in range(len(self.urdf_object_list))]
         for _ in range(len(self.urdf_object_list)):
-            self.object_gaussians[_].load_ply("/home/nomaan/Desktop/corl24/ocean_backup/gaussian-splatting/output/{}/point_cloud/iteration_7000/point_cloud.ply".format(self.splat_object_name_list[_]))
+            self.object_gaussians[_].load_ply("/home/jennyw2/data/output/{}/point_cloud/iteration_7000/point_cloud.ply".format(self.splat_object_name_list[_]))
 
 
 
@@ -281,7 +289,7 @@ class PybulletRobotServer:
         # self.pybullet_client.changeDynamics(self.plane, -1, lateralFriction=random.uniform(0.2, 1.1))
 
         import yaml
-        with open('/home/nomaan/Desktop/corl24/ocean_backup/gaussian-splatting/object_configs/objects.yaml', 'r') as file:
+        with open('/home/jennyw2/code/SplatSim/object_configs/objects.yaml', 'r') as file:
             self.object_config = yaml.safe_load(file)
 
         self.current_gripper_action = 0
@@ -567,9 +575,9 @@ class PybulletRobotServer:
         colmap_id = 1
         R = torch.from_numpy(np.array([[-0.98784567,  0.00125165,  0.15543282],
                         [0.1153457,   0.67620402,  0.72762868],
-                        [ -0.10419356,  0.73671335, -0.66812959]])).float()
+                        [ -0.10419356,  0.73671335, -0.66812959]])).float().numpy()
         
-        T = torch.Tensor([ 1.04674738, -0.96049824,  2.03845016] ).float()
+        T = torch.Tensor([ 1.04674738, -0.96049824,  2.03845016] ).float().numpy()
 
 
 
@@ -598,9 +606,9 @@ class PybulletRobotServer:
         colmap_id = 1
         R = torch.from_numpy(np.array([[1.27679278e-01, -4.36057591e-01,  8.90815233e-01],
                         [6.15525303e-02,  8.99918716e-01,  4.31691546e-01],
-                        [ -9.89903676e-01, -2.86133428e-04,  1.41741420e-01]])).float()
+                        [ -9.89903676e-01, -2.86133428e-04,  1.41741420e-01]])).float().numpy()
         
-        T = torch.Tensor([ -1.88933526, -0.6446558,   2.98276143] ).float()
+        T = torch.Tensor([ -1.88933526, -0.6446558,   2.98276143] ).float().numpy()
 
 
 
@@ -620,6 +628,11 @@ class PybulletRobotServer:
 
         #order is  colmap_id, R, T, FoVx, FoVy, image, gt_alpha_mask, image_name, uid,
 
+# self, resolution, colmap_id, R, T, FoVx, FoVy, depth_params, image, invdepthmap,
+#                  image_name, uid,
+#                  trans=np.array([0.0, 0.0, 0.0]), scale=1.0, data_device = "cuda",
+#                  train_test_exp = False, is_test_dataset = False, is_test_view = False
+#                  ):
         camera = Camera(colmap_id, R, T, FoVx, FoVy, image, gt_mask_alpha, image_name, uid)
 
         return camera
@@ -712,7 +725,6 @@ def transform_means(pc, xyz, segmented_list, transformations_list):
                             [-0.026895, -0.172049, -0.017558, 0.371520],
                             [0, 0, 0, 1]]).to(device=xyz.device) # shape
 
-    
     scale_robot = torch.pow(torch.linalg.det(Trans[:3, :3]), 1/3)
     rotation_matrix = Trans[:3, :3] / scale_robot
     translation = Trans[:3, 3]
@@ -757,35 +769,35 @@ def transform_means(pc, xyz, segmented_list, transformations_list):
             shs_featrest[segment] = shs_feat
         # shs_dc[segment] = shs_dc_segment
         # shs_featrest[segment] = torch.zeros_like(shs_featrest[segment])
-    cnt = 7
-    for joint_index in [8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 12]:
-        r_rel, t = transformations_list[joint_index]
-        segment = segmented_list[cnt]
-        transformed_segment = torch.matmul(r_rel, xyz[segment].T).T + t
-        xyz[segment] = transformed_segment
+    # cnt = 7
+    # for joint_index in [8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 12]:
+    #     r_rel, t = transformations_list[joint_index]
+    #     segment = segmented_list[cnt]
+    #     transformed_segment = torch.matmul(r_rel, xyz[segment].T).T + t
+    #     xyz[segment] = transformed_segment
         
-        # Defining rotation matrix for the covariance
-        rot_rotation_matrix = (inv_rotation_matrix*scale_robot) @ r_rel @ rotation_matrix
+    #     # Defining rotation matrix for the covariance
+    #     rot_rotation_matrix = (inv_rotation_matrix*scale_robot) @ r_rel @ rotation_matrix
         
-        tranformed_rot = rot[segment]  
-        tranformed_rot = o3.quaternion_to_matrix(tranformed_rot) ### --> zyx    
+    #     tranformed_rot = rot[segment]  
+    #     tranformed_rot = o3.quaternion_to_matrix(tranformed_rot) ### --> zyx    
         
-        transformed_rot = rot_rotation_matrix  @ tranformed_rot # shape (N, 3, 3)
+    #     transformed_rot = rot_rotation_matrix  @ tranformed_rot # shape (N, 3, 3)
         
-        transformed_rot = o3.matrix_to_quaternion(transformed_rot)
+    #     transformed_rot = o3.matrix_to_quaternion(transformed_rot)
         
-        rot[segment] = transformed_rot
+    #     rot[segment] = transformed_rot
 
-        #transform the shs features
-        shs_feat = shs_featrest[segment]
-        shs_dc_segment = shs_dc[segment]
-        shs_feat = transform_shs(shs_feat, rot_rotation_matrix)
-        # print('shs_feat : ', shs_feat.shape)
-        with torch.no_grad():
-            shs_featrest[segment] = shs_feat
-        # shs_dc[segment] = shs_dc_segment
-        # shs_featrest[segment] = torch.zeros_like(shs_featrest[segment])
-        cnt += 1
+    #     #transform the shs features
+    #     shs_feat = shs_featrest[segment]
+    #     shs_dc_segment = shs_dc[segment]
+    #     shs_feat = transform_shs(shs_feat, rot_rotation_matrix)
+    #     # print('shs_feat : ', shs_feat.shape)
+    #     with torch.no_grad():
+    #         shs_featrest[segment] = shs_feat
+    #     # shs_dc[segment] = shs_dc_segment
+    #     # shs_featrest[segment] = torch.zeros_like(shs_featrest[segment])
+    #     cnt += 1
     
 
         
@@ -819,11 +831,12 @@ def transform_object(pc, object_config, pos = torch.tensor([0, 0.3, 0.09]).to(de
     translation_c = Trans_canonical[:3, 3]
     scale_obj = torch.pow(torch.linalg.det(rotation_matrix_c), 1/3)
 
+    Trans_robot = torch.from_numpy(ROBOT_TRANSFORMATION).to(device=pc.get_xyz.device).float() # shape (4, 4)
     
-    Trans_robot = torch.tensor([[-0.171274, 0.028960, -0.021428, 0.532716],
-                            [0.023970, 0.013890, -0.172815, -0.322159],
-                            [-0.026895, -0.172049, -0.017558, 0.371520],
-                            [0, 0, 0, 1]]).to(device=pc.get_xyz.device) # shape (4, 4)
+    # Trans_robot = torch.tensor([[-0.171274, 0.028960, -0.021428, 0.532716],
+    #                         [0.023970, 0.013890, -0.172815, -0.322159],
+    #                         [-0.026895, -0.172049, -0.017558, 0.371520],
+    #                         [0, 0, 0, 1]]).to(device=pc.get_xyz.device) # shape (4, 4)
 
     
     rotation_matrix_r = Trans_robot[:3, :3]
@@ -894,10 +907,16 @@ def transform_shs(shs_feat, rotation_matrix):
     permuted_rotation_matrix = np.linalg.inv(P) @ rotation_matrix.cpu().numpy() @ P
     rot_angles = o3._rotation.matrix_to_angles(torch.from_numpy(permuted_rotation_matrix).to(device=shs_feat.device).float())
     
+    rot_angles = [a.detach().cpu() for a in rot_angles]  # convert to numpy for wigner_D computation
+
     # Construction coefficient
     D_1 = o3.wigner_D(1, rot_angles[0], - rot_angles[1], rot_angles[2])
     D_2 = o3.wigner_D(2, rot_angles[0], - rot_angles[1], rot_angles[2])
     D_3 = o3.wigner_D(3, rot_angles[0], - rot_angles[1], rot_angles[2])
+
+    D_1 = D_1.to(device=shs_feat.device)
+    D_2 = D_2.to(device=shs_feat.device)
+    D_3 = D_3.to(device=shs_feat.device)
 
     #rotation of the shs features
     one_degree_shs = shs_feat[:, 0:3]
@@ -1023,26 +1042,30 @@ def get_segmented_indices(pc):
     #undo the temporary transformation
     points = torch.matmul(torch.inverse(temp_matrix)[:3, :3], points.T).T + torch.inverse(temp_matrix)[:3, 3]
 
+
     #load labels.npy
-    labels = np.load('/home/nomaan/Desktop/corl24/ocean_backup/gaussian-splatting/labels.npy')
-    labels = torch.from_numpy(labels).to(device=xyz.device).long()
+    # labels = np.load('/home/nomaan/Desktop/corl24/ocean_backup/gaussian-splatting/labels.npy')
+    # labels = torch.from_numpy(labels).to(device=xyz.device).long()
 
     # condition = (points[:, 2] > 0.2) & (points[:, 2] < 0.5) & (points[:, 1] < 0.2) & (points[:, 1] > 0.) & (points[:, 0] < 0.6) & (points[:, 0] > -0.)
 
     condition = (points[:, 2] > 0.2) & (points[:, 2] < 0.4) & (points[:, 1] < 0.2) & (points[:, 1] > 0.) & (points[:, 0] < 0.6) & (points[:, 0] > -0.)
     condition = torch.where(condition)[0]
 
-    segmented_points.append(condition[labels== 1])
-    segmented_points.append(condition[labels== 2])
-    segmented_points.append(condition[labels== 3])
-    segmented_points.append(condition[labels== 4])
-    segmented_points.append(condition[labels== 5])
-    segmented_points.append(condition[labels== 6])
-    segmented_points.append(condition[labels== 7])
-    segmented_points.append(condition[labels== 8])
-    segmented_points.append(condition[labels== 9])
-    segmented_points.append(condition[labels== 10])
-    segmented_points.append(condition[labels== 11])
+    segmented_points.append(condition)
+
+
+    # segmented_points.append(condition[labels== 1])
+    # segmented_points.append(condition[labels== 2])
+    # segmented_points.append(condition[labels== 3])
+    # segmented_points.append(condition[labels== 4])
+    # segmented_points.append(condition[labels== 5])
+    # segmented_points.append(condition[labels== 6])
+    # segmented_points.append(condition[labels== 7])
+    # segmented_points.append(condition[labels== 8])
+    # segmented_points.append(condition[labels== 9])
+    # segmented_points.append(condition[labels== 10])
+    # segmented_points.append(condition[labels== 11])
 
 
     

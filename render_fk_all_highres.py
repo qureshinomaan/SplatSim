@@ -112,7 +112,7 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
         if idx == 255:
             break
 
-        if idx not in [5, 254]:
+        if idx not in [16]:
             continue
         
 
@@ -121,10 +121,14 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
         for j, folder in enumerate(sorted(os.listdir(traj_folder))):
             # if j>0:
             #     break
-            if idx == 254:
-                image_folder = os.path.join(traj_folder, folder, 'images_2')
-            if idx == 5:
-                image_folder = os.path.join(traj_folder, folder, 'images_1')
+
+            image_folder = os.path.join(traj_folder, folder, 'images_0')
+
+
+            # if idx == 254:
+                # image_folder = os.path.join(traj_folder, folder, 'images_2')
+            # if idx == 5:
+                # image_folder = os.path.join(traj_folder, folder, 'images_1')
 
             #print all the variables in view object
             # for key in view.__dict__.keys():
@@ -170,7 +174,12 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
                 transformations_list = get_transfomration_list(cur_joint)
                 segmented_list, xyz = get_segmented_indices(gaussians_backup, robot_transformation)
 
+                # TODO undo: this disables transformation of robot joints based on trajectory movement
+                # identity for all transformations
+                # transformations_list = [(torch.tensor(np.eye(3)).to(device=xyz.device).float(), torch.tensor(np.array([0, 0, 0])).to(device=xyz.device).float()) for _ in range(7)]
+                
                 xyz, rot, opacity, shs_featrest, shs_dc  = transform_means(gaussians_backup, xyz, segmented_list, transformations_list, robot_transformation)
+                
                 xyz_obj_list = []
                 rot_obj_list = []
                 opacity_obj_list = []
@@ -219,7 +228,7 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
     with torch.no_grad():
         gaussians = GaussianModel(dataset.sh_degree)
                 
-        scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False)
+        scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False, num_cams=-1)
 
         bg_color = [1,1,1] if dataset.white_background else [0, 0, 0]
         background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
@@ -285,34 +294,34 @@ def transform_means(pc, xyz, segmented_list, transformations_list, robot_transfo
         # shs_dc[segment] = shs_dc_segment
         # shs_featrest[segment] = torch.zeros_like(shs_featrest[segment])
     cnt = 7
-    for joint_index in [8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 12]:
-        r_rel, t = transformations_list[joint_index]
-        segment = segmented_list[cnt]
-        transformed_segment = torch.matmul(r_rel, xyz[segment].T).T + t
-        xyz[segment] = transformed_segment
+    # for joint_index in [8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 12]:
+    #     r_rel, t = transformations_list[joint_index]
+    #     segment = segmented_list[cnt]
+    #     transformed_segment = torch.matmul(r_rel, xyz[segment].T).T + t
+    #     xyz[segment] = transformed_segment
         
-        # Defining rotation matrix for the covariance
-        rot_rotation_matrix = (inv_rotation_matrix*scale_robot) @ r_rel @ rotation_matrix
+    #     # Defining rotation matrix for the covariance
+    #     rot_rotation_matrix = (inv_rotation_matrix*scale_robot) @ r_rel @ rotation_matrix
         
-        tranformed_rot = rot[segment]  
-        tranformed_rot = o3.quaternion_to_matrix(tranformed_rot) ### --> zyx    
+    #     tranformed_rot = rot[segment]  
+    #     tranformed_rot = o3.quaternion_to_matrix(tranformed_rot) ### --> zyx    
         
-        transformed_rot = rot_rotation_matrix  @ tranformed_rot # shape (N, 3, 3)
+    #     transformed_rot = rot_rotation_matrix  @ tranformed_rot # shape (N, 3, 3)
         
-        transformed_rot = o3.matrix_to_quaternion(transformed_rot)
+    #     transformed_rot = o3.matrix_to_quaternion(transformed_rot)
         
-        rot[segment] = transformed_rot
+    #     rot[segment] = transformed_rot
 
-        #transform the shs features
-        shs_feat = shs_featrest[segment]
-        shs_dc_segment = shs_dc[segment]
-        shs_feat = transform_shs(shs_feat, rot_rotation_matrix)
-        # print('shs_feat : ', shs_feat.shape)
-        with torch.no_grad():
-            shs_featrest[segment] = shs_feat
-        # shs_dc[segment] = shs_dc_segment
-        # shs_featrest[segment] = torch.zeros_like(shs_featrest[segment])
-        cnt += 1
+    #     #transform the shs features
+    #     shs_feat = shs_featrest[segment]
+    #     shs_dc_segment = shs_dc[segment]
+    #     shs_feat = transform_shs(shs_feat, rot_rotation_matrix)
+    #     # print('shs_feat : ', shs_feat.shape)
+    #     with torch.no_grad():
+    #         shs_featrest[segment] = shs_feat
+    #     # shs_dc[segment] = shs_dc_segment
+    #     # shs_featrest[segment] = torch.zeros_like(shs_featrest[segment])
+    #     cnt += 1
            
     #transform_back
     xyz = torch.matmul(inv_rotation_matrix, xyz.T).T + inv_translation
@@ -457,9 +466,13 @@ def get_segmented_indices(pc, robot_transformation):
                                 [1, 0, 0, 0],
                                 [0, 0, 1, 0],
                                 [0, 0, 0, 1]]).to(device=means3D.device).float() # shape (4, 4)
-    
+
     Trans = torch.matmul(temp_matrix, Trans)
     
+    # scale_factor = torch.eye(4).to(device=means3D.device).float() * 0.45
+    # scale_factor[3, 3] = 1.0  # Keep the homogeneous coordinate
+    # Trans = torch.matmul(scale_factor, Trans)
+
     R = Trans[:3, :3]
     translation = Trans[:3, 3]
     
@@ -476,7 +489,37 @@ def get_segmented_indices(pc, robot_transformation):
     # Box condition
     box_condition = ((points[:, 0] > -0.25) * (points[:, 0] < 0.2) * (points[:, 1] > -0.3) * (points[:, 1] < 0.6) * (points[:, 2] > 0.0) * (points[:, 2] < 0.6))
     
-    
+    # visualize the points that are in the box condition as red and outside the box condition as blue
+    # this is a 3d point cloud visualization
+    # import open3d as o3d
+    # pcd = o3d.geometry.PointCloud()
+    # # pcd.points = o3d.utility.Vector3dVector(points.cpu().numpy()[box_condition.cpu().numpy()])
+    # pcd.points = o3d.utility.Vector3dVector(points.cpu().numpy())
+    # colors = np.zeros((points.shape[0], 3))
+    # colors[box_condition.cpu().numpy()] = [1, 0, 0]  # Red for points inside the box condition
+    # colors[~box_condition.cpu().numpy()] = [0, 0, 1]  # Blue for points outside the box
+    # # colors = colors[box_condition.cpu().numpy()]  # Only keep colors for points inside the box condition
+    # pcd.colors = o3d.utility.Vector3dVector(colors)   
+
+    # # visualize a plane describing points[:, 0] > -0.25 as green
+    # spread = 10
+    # plane_points = np.zeros((spread, spread, spread, 3))
+    # for i, x in enumerate(np.linspace(-0.25, 0.2, spread)):
+    #     for j, y in enumerate(np.linspace(-0.3, 0.6, spread)):
+    #         for k, z in enumerate(np.linspace(0.0, 0.6, spread)):
+    #             plane_points[i, j, k] = [x, y, z]
+    # plane_points = plane_points.reshape(-1, 3)
+    # plane_points = torch.tensor(plane_points, device=xyz.device).float()
+    # # plane_points = torch.matmul(R, plane_points.T).T + translation
+    # plane_pcd = o3d.geometry.PointCloud()
+    # plane_pcd.points = o3d.utility.Vector3dVector(plane_points.cpu().numpy())
+    # plane_colors = np.zeros((plane_points.shape[0], 3))
+    # plane_colors[:] = [0, 1, 0]  # Green for points inside the plane condition
+    # plane_pcd.colors = o3d.utility.Vector3dVector(plane_colors)
+
+    # o3d.visualization.draw_geometries([pcd, plane_pcd], window_name="Segmented Points Visualization", width=800, height=600)
+    # import pdb; pdb.set_trace()
+
     # Segment Base
     condition = torch.where((points[:, 2] < centers[0, 2]) * box_condition)[0]
     segmented_points.append(condition)
@@ -518,27 +561,31 @@ def get_segmented_indices(pc, robot_transformation):
     points = torch.matmul(torch.inverse(temp_matrix)[:3, :3], points.T).T + torch.inverse(temp_matrix)[:3, 3]
 
     #load labels.npy
-    labels = np.load('labels_iphone.npy')
-    labels = torch.from_numpy(labels).to(device=xyz.device).long()
+    # labels = np.load('labels_iphone.npy')
+    # labels = torch.from_numpy(labels).to(device=xyz.device).long()
 
     # condition = (points[:, 2] > 0.2) & (points[:, 2] < 0.5) & (points[:, 1] < 0.2) & (points[:, 1] > 0.) & (points[:, 0] < 0.6) & (points[:, 0] > -0.)
 
     condition = (points[:, 2] > 0.2) & (points[:, 2] < 0.4) & (points[:, 1] < 0.2) & (points[:, 1] > 0.) & (points[:, 0] < 0.6) & (points[:, 0] > -0.)
     condition = torch.where(condition)[0]
+    # Append everything because no labels
+    segmented_points.append(condition)
 
-    segmented_points.append(condition[labels== 1])
-    segmented_points.append(condition[labels== 2])
-    segmented_points.append(condition[labels== 3])
-    segmented_points.append(condition[labels== 4])
-    segmented_points.append(condition[labels== 5])
-    segmented_points.append(condition[labels== 6])
-    segmented_points.append(condition[labels== 7])
-    segmented_points.append(condition[labels== 8])
-    segmented_points.append(condition[labels== 9])
-    segmented_points.append(condition[labels== 10])
-    segmented_points.append(condition[labels== 11])
+    # segmented_points.append(condition[labels== 1])
+    # segmented_points.append(condition[labels== 2])
+    # segmented_points.append(condition[labels== 3])
+    # segmented_points.append(condition[labels== 4])
+    # segmented_points.append(condition[labels== 5])
+    # segmented_points.append(condition[labels== 6])
+    # segmented_points.append(condition[labels== 7])
+    # segmented_points.append(condition[labels== 8])
+    # segmented_points.append(condition[labels== 9])
+    # segmented_points.append(condition[labels== 10])
+    # segmented_points.append(condition[labels== 11])
 
 
+    # print("Segmented points: ", sum([len(segmented) for segmented in segmented_points]))
+    # print("Total points: ", len(points))
     
     return segmented_points, points
 
