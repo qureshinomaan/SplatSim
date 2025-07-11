@@ -260,7 +260,7 @@ class PybulletRobotServer:
         self.T_object_gaussian = GaussianModel(3)
 
         #load the gaussian model for the robot
-        self.robot_gaussian.load_ply("/home/jennyw2/data/output/robot_iphone_orig/point_cloud/iteration_30000/point_cloud.ply")
+        self.robot_gaussian.load_ply("/home/jennyw2/data/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply")
         self.gaussians_backup = copy.deepcopy(self.robot_gaussian)
 
         self.object_gaussians = [GaussianModel(3) for _ in range(len(self.urdf_object_list))]

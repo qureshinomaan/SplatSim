@@ -13,7 +13,7 @@ class Args:
     robot_port: int = 6001
     hostname: str = "127.0.0.1"
     robot_ip: str = "192.168.1.10"
-    gaussian_path : str = "/home/nomaan/Desktop/corl24/ocean_backup/gaussian-splatting/output/new_ur/point_cloud/iteration_100000/point_cloud.ply"
+    gaussian_path : str = "/home/jennyw2/data/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply"
 
 
 def launch_robot_server(args: Args):
