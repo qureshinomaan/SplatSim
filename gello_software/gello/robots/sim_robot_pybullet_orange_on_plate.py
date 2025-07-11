@@ -559,6 +559,27 @@ class PybulletRobotServer:
             if np.linalg.norm(np.array(object_pos)[:2] - np.array([x, y])) > 0.2:
                 break
 
+    def randomize_ee_pose(self):
+        # generating random initial joint state using random end effector position and orientation
+        random_ee_pos, random_ee_quat = self.get_random_ee_pose()
+
+        # joint angles using inverse kinematics
+        initial_joint_positions = self.pybullet_client.calculateInverseKinematics(
+            self.dummy_robot,
+            6,
+            random_ee_pos,
+            random_ee_quat,
+            maxNumIterations=100000,
+            residualThreshold=1e-10,
+        )
+
+        # reset the joint positions to the initial joint positions
+        for i in range(1, 7):
+            self.pybullet_client.resetJointState(
+                self.dummy_robot, i, initial_joint_positions[i - 1]
+            )
+        return initial_joint_positions
+
     def get_random_ee_pose(self):
         # random end effector position
         if random.uniform(0, 1) > 0.2:
@@ -847,6 +868,41 @@ class PybulletRobotServer:
                 return False
         return True
 
+    def plan_execute_record_trajectory(
+        self, initial_joint_positions, initial_joint_state, joint_signs
+    ):
+        # Returns whether it was a success
+
+        all_paths = self.plan_approach_grasp_move_drop_plan(initial_joint_positions)
+
+        for i in range(100):
+            self.pybullet_client.stepSimulation()
+            # time.sleep(1/240)
+            self.move_gripper(0.0)
+            for k in range(1, 7):
+                self.pybullet_client.resetJointState(
+                    self.dummy_robot,
+                    k,
+                    initial_joint_positions[k - 1] * joint_signs[k - 1],
+                )
+
+        if len(all_paths) != 5:
+            self.delete_trajectory_folder()
+            return False
+
+        self.follow_paths_and_record(
+            all_paths, initial_joint_positions, initial_joint_state, joint_signs
+        )
+
+        # evaluate the success of the trajectory
+        correct_trajectory = self.eval_trajectory_success()
+
+        if correct_trajectory:
+            return True
+        else:
+            self.delete_trajectory_folder()
+            return False
+
     def serve(self) -> None:
         # start the zmq server
         self._zmq_server_thread.start()
@@ -900,57 +956,16 @@ class PybulletRobotServer:
             os.makedirs(self.path + str(self.trajectory_count).zfill(3), exist_ok=True)
             self.trajectory_length = 0
 
-            # generating random initial joint state using random end effector position and orientation
-            random_ee_pos, random_ee_quat = self.get_random_ee_pose()
+            initial_joint_positions = self.randomize_ee_pose()
 
-            # joint angles using inverse kinematics
-            initial_joint_positions = self.pybullet_client.calculateInverseKinematics(
-                self.dummy_robot,
-                6,
-                random_ee_pos,
-                random_ee_quat,
-                maxNumIterations=100000,
-                residualThreshold=1e-10,
+            success = self.plan_execute_record_trajectory(
+                initial_joint_positions, initial_joint_state, joint_signs
             )
-
-            # reset the joint positions to the initial joint positions
-            for i in range(1, 7):
-                self.pybullet_client.resetJointState(
-                    self.dummy_robot, i, initial_joint_positions[i - 1]
-                )
-
-            all_paths = self.plan_approach_grasp_move_drop_plan(initial_joint_positions)
-
-            for i in range(100):
-                self.pybullet_client.stepSimulation()
-                # time.sleep(1/240)
-                self.move_gripper(0.0)
-                for k in range(1, 7):
-                    self.pybullet_client.resetJointState(
-                        self.dummy_robot,
-                        k,
-                        initial_joint_positions[k - 1] * joint_signs[k - 1],
-                    )
-
-            if len(all_paths) != 5:
-                self.delete_trajectory_folder()
-                continue
-
-            self.follow_paths_and_record(
-                all_paths, initial_joint_positions, initial_joint_state, joint_signs
-            )
-
-            # evaluate the success of the trajectory
-            correct_trajectory = self.eval_trajectory_success()
-
-            if correct_trajectory:
+            if success:
                 self.trajectory_count += 1
 
-                if self.trajectory_count > 500:
-                    exit()
-            else:
-                self.delete_trajectory_folder()
-                break
+            if self.trajectory_count > 500:
+                exit()
 
     def delete_trajectory_folder(self):
         shutil.rmtree(self.path + str(self.trajectory_count).zfill(3))
