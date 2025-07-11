@@ -39,19 +39,19 @@ if __name__ == "__main__":
         while True:
             # Set a random joint state for a 7 dof robot
             target_joint_state =  np.random.uniform(-3.14, 3.14, size=7).tolist()
+            import pdb; pdb.set_trace()
             # the gripper has the limits [0, 1] i think
-            target_joint_state[-1] = (target_joint_state[-1] + 3.14) / 6.28 # normalize to [0, 1]
+            # target_joint_state[-1] = (target_joint_state[-1] + 3.14) / 6.28 # normalize to [0, 1]
 
             print("target_joint_state:", target_joint_state)
             print("command_joint_state:", send_command("command_joint_state", {"joint_state": target_joint_state}))
 
 
             # get observations and display visualization
-            obs = send_command("get_observations")
-            print("observations keys:", obs.keys())
+            # obs = send_command("get_observations")
+            # print("observations keys:", obs.keys())
 
-            print('hi')
-            time.sleep(0.05)
+            time.sleep(2)
     except KeyboardInterrupt:
         print("Stopped by user.")
     
