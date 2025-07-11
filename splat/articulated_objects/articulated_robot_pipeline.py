@@ -1,6 +1,8 @@
 import pybullet as p
 import numpy as np
 import open3d as o3d
+import open3d.visualization.gui as gui
+import open3d.visualization.rendering as rendering
 from sklearn.neighbors import KNeighborsClassifier
 import argparse
 import torch
@@ -28,8 +30,16 @@ class FlowStyleMatrixDumper(yaml.SafeDumper):
             return super(FlowStyleMatrixDumper, self).represent_sequence(
                 tag, sequence, flow_style=flow_style
             )
-
-
+        
+def create_window(app, title, geometry_list, x, y):
+    w = app.create_window(title, 800, 600, x, y)
+    scene = gui.SceneWidget()
+    scene.scene = rendering.Open3DScene(w.renderer)
+    for i, geometry in enumerate(geometry_list):
+        scene.scene.add_geometry(f"geometry_{i}", geometry, rendering.MaterialRecord())
+    bounds = geometry_list[0].get_axis_aligned_bounding_box()
+    scene.setup_camera(60, bounds, bounds.get_center())
+    w.add_child(scene)
 
 def main(args):
     #connect to pybullet
@@ -45,7 +55,12 @@ def main(args):
     joint_states = args.joint_states
 
     #set the joint states
+    num_joints = p.getNumJoints(robot_id)
     for joint_index, joint_state in enumerate(joint_states):
+        if joint_index >= num_joints:
+            print(f"Warning: More joint indexes provided ({joint_index + 1}) than available joints ({num_joints}). Skipping excess joint states.")
+            break
+        # Set the joint state for the robot
         p.resetJointState(robot_id, joint_index, joint_state)
 
     #get number of links in the object
@@ -134,7 +149,12 @@ def main(args):
 
     #filter the points based on the aabb
     #get aabb of the robot from array X which is basically the pointcloud of the robot
+    # TODO undo the offset
+    # aabb = ((np.min(X[:, 0]), np.min(X[:, 1]), np.min(X[:, 2])), (np.max(X[:, 0]) + 0.2, np.max(X[:, 1]), np.max(X[:, 2])))
+    # aabb = ((np.min(X[:, 0]), np.min(X[:, 1]), np.min(X[:, 2]) + 0.05), (np.max(X[:, 0]) + 0.2, np.max(X[:, 1]), np.max(X[:, 2])))
     aabb = ((np.min(X[:, 0]), np.min(X[:, 1]), np.min(X[:, 2])), (np.max(X[:, 0]), np.max(X[:, 1]), np.max(X[:, 2])))
+
+
     aabb_list = [[float(val) for val in point] for point in aabb]
     #make the aabb_list upto 4 decimal places
     aabb_list = [[round(val, 4) for val in point] for point in aabb_list]
@@ -150,6 +170,8 @@ def main(args):
             sort_keys=False,
             default_flow_style=False
         )
+
+    print('aabb of the robot', aabb_list)
 
     print('splat points', splat_points.shape)
 
@@ -173,16 +195,26 @@ def main(args):
     new_pcd.colors = o3d.utility.Vector3dVector(pcd_colors)
 
     coordinate_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.1)
-    o3d.visualization.draw_geometries([pcd, coordinate_frame])
-    o3d.visualization.draw_geometries([new_pcd, coordinate_frame])
 
+    # Open side by side view for original and new point clouds
+    gui.Application.instance.initialize()
+    # Combine geometries
+    pcd_with_frame = [pcd, coordinate_frame]
+    new_pcd_with_frame = [new_pcd, coordinate_frame]
+    # Register windows
+    create_window(gui.Application.instance, "Original Point Cloud", pcd_with_frame, 50, 50)
+    create_window(gui.Application.instance, "New Point Cloud", new_pcd_with_frame, 900, 50)
+    # Run app (blocks until all windows closed)
+    gui.Application.instance.run()
 
     #save labels
+    print("Saving labels to numpy file...")
     np.save(args.robot_name + '_labels.npy', splat_labels)
 
-    #run the simulation
-    while True:
-        p.stepSimulation()  
+    # #run the simulation
+    # print("Running simulation...")
+    # while True:
+    #     p.stepSimulation()  
 
     
 
@@ -193,8 +225,14 @@ if __name__ == '__main__':
     #add arguments with default values
     parser.add_argument('--robot', type=str, default='../../pybullet-playground_2/urdf/sisbot.urdf')
     parser.add_argument('--joint_states', nargs='+', type=float, default=[0, 0.0, -1.5707963267948966, 1.5707963267948966, -1.5707963267948966, -1.5707963267948966, 0.0, 0.0, 0.0, 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548, 0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127])
-    parser.add_argument('--splat_path', type=str, default='../../../corl24/ocean_backup/gaussian-splatting/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply')
+    parser.add_argument('--splat_path', type=str, default='/home/jennyw2/data/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply')
     parser.add_argument('--robot_name', type=str, default='robot_iphone')
+
+    # 0, 0, -np.pi/2, np.pi/2, 0, np.pi/2, 0
+    # parser.add_argument('--robot', type=str, default='../../pybullet-playground_2/urdf/pybullet_ur5_gripper/robots/urdf/ur5e.urdf')
+    # parser.add_argument('--joint_states', nargs='+', type=float, default=[0, 0, -1.5707963267948966, 1.5707963267948966, 0, 1.5707963267948966, 0, 0.0, 0.0, 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548, 0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127])
+    # parser.add_argument('--splat_path', type=str, default='/home/jennyw2/code/gaussian-splatting-repo/gaussian_splatting/output/robot_jenny/point_cloud/iteration_30000/point_cloud.ply')
+    # parser.add_argument('--robot_name', type=str, default='robot_jenny')
 
     #parse the arguments
     args = parser.parse_args()
