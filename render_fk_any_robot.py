@@ -30,25 +30,39 @@ import einops
 import pickle
 import numpy as np
 import yaml
+import math
 
 
 def get_transfomration_list(new_joint_poses):
+    num_joints = p.getNumJoints(pandaUid)
 
-    for i in range(len(new_joint_poses)):
+    for i in range(min(num_joints, len(new_joint_poses))):
         p.resetJointState(pandaUid, i, new_joint_poses[i])
         
     new_joints = []
-    for joint_index in range(p.getNumJoints(pandaUid)):
+    for joint_index in range(num_joints):
         joint_info = p.getJointInfo(pandaUid, joint_index)
         joint_name = joint_info[1].decode("utf-8") 
-        link_state = p.getLinkState(pandaUid, joint_index, computeForwardKinematics=True)
-        new_joints.append(link_state)
+
+        if args.use_link_centers:
+            link_state = p.getLinkState(pandaUid, joint_index, computeForwardKinematics=True)
+            new_joints.append({
+                "pos": link_state[0],
+                "q": link_state[1]
+            })
+        else:
+            link_state = p.getLinkState(pandaUid, joint_index, computeForwardKinematics=True)
+            new_joints.append({
+                "pos": link_state[4],
+                "q": link_state[5]
+            })
         
         
     transformations_list = []
-    for joint_index in range(p.getNumJoints(pandaUid)):
-        input_1 = (initial_joints[joint_index][0][0], initial_joints[joint_index][0][1], initial_joints[joint_index][0][2], np.array(initial_joints[joint_index][1]))
-        input_2 = (new_joints[joint_index][0][0], new_joints[joint_index][0][1], new_joints[joint_index][0][2], np.array(new_joints[joint_index][1]))
+    for joint_index in range(num_joints):
+        # x, y, z, q
+        input_1 = (initial_joints[joint_index]["pos"][0], initial_joints[joint_index]["pos"][1], initial_joints[joint_index]["pos"][2], np.array(initial_joints[joint_index]["q"]))
+        input_2 = (new_joints[joint_index]["pos"][0], new_joints[joint_index]["pos"][1], new_joints[joint_index]["pos"][2], np.array(new_joints[joint_index]["q"]))
         r_rel, t = compute_transformation(input_1, input_2)
         r_rel = torch.from_numpy(r_rel).to(device='cuda').float()
         t = torch.from_numpy(t).to(device='cuda').float()
@@ -89,7 +103,7 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
         if idx == 255:
             break
 
-        if idx not in [5, 254]:
+        if idx not in [253]:
             continue
         
 
@@ -98,10 +112,7 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
         for j, folder in enumerate(sorted(os.listdir(traj_folder))):
             # if j>0:
             #     break
-            if idx == 254:
-                image_folder = os.path.join(traj_folder, folder, 'images_2')
-            if idx == 5:
-                image_folder = os.path.join(traj_folder, folder, 'images_1')
+            image_folder = os.path.join(traj_folder, folder, 'images_1')
 
             #print all the variables in view object
             # for key in view.__dict__.keys():
@@ -129,7 +140,42 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
                 cur_joint = data['joint_positions'][:]
                 #add 0 at front of cur_joint
                 cur_joint = cur_joint.tolist()
+    #             cur_joint = [0, -1.5707963267948966 + k / 10, 1.5707963267948966, 0, 1.5707963267948966, 0, 0.0,
+    # 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548, 0.799996381456464,
+    # 0.0, -0.799988452159267, 0.0, 0.7999926186486127]
+                # cur_joint[4] = 0 + k/10
+                # import pdb; pdb.set_trace()
+                # import pdb; pdb.set_trace()
+
+                # cur_joint = [0, -1.5707963267948966, 1.5707963267948966, 0 , 1.5707963267948966 , 0 + k/10, 0]
+
+                # TODO undo: do offsets for the robot joints
+                # cur_joint[4] = cur_joint[4] - np.pi/2
+                # cur_joint[5] = cur_joint[5] + np.pi
+
+                # cur_joint = [0]*7
+
+                # cur_joint = [0, -np.pi/2, np.pi/2 + k/10, 0, np.pi/2, 0, 0]
+
+                # In PyBullet, use p.getJointInfo and p.getLinkState to print and visualize joint axes and origins.
+                # for problem_joint_index in [1, 2, 3, 4, 5, 6]:
+                #     # p.getjointinfo
+                #     print("Joint {}: {}".format(problem_joint_index, p.getJointInfo(pandaUid, problem_joint_index)))
+                #     # p.getLinkState
+                #     print("Link {}: {}".format(problem_joint_index, p.getLinkState(pandaUid, problem_joint_index, computeForwardKinematics=True)))
+
+                # my splat in order to render the same in this script
+                # cur_joint = [0, -np.pi/2, np.pi/2, 0, np.pi/2, 0, 0]
+
+                # my splat's initial pose from pybullet sim
+                # cur_joint = [0, 0, -np.pi/2, np.pi/2, 0, np.pi/2, 0]
+
+                # original splat initial pose from pybullet sim
                 # cur_joint = [0, 0, -np.pi/2, np.pi/2, -np.pi/2, -np.pi/2, 0]
+
+                # cur_joint = np.roll(cur_joint, 1)  # roll the joint positions to match the order in the simulation
+                cur_joint = [0] + cur_joint 
+
                 cur_joint = np.array(cur_joint)
 
                 cur_object_position_list = []
@@ -196,10 +242,74 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
     with torch.no_grad():
         gaussians = GaussianModel(dataset.sh_degree)
                 
-        scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False)
+        scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False, num_cams=255) #shuffle=False, num_cams=-1)
 
         bg_color = [1,1,1] if dataset.white_background else [0, 0, 0]
         background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
+
+        # visualize the robot point cloud with colors in COLORS (a different color for each link) and overlay the initial joint poses as big red points in open3d
+        COLORS = [
+            [0, 1, 0],  # Green
+            [0, 0, 1],  # Blue
+            [1, 1, 0],  # Yellow
+            [1, 0, 1],  # Magenta
+            [0, 1, 1],  # Cyan
+            [0.5, 0.5, 0.5],  # Gray
+            [1, 0.5, 0],  # Orange
+            [0.5, 0, 1],  # Purple
+            [0, 0.5, 0.5],   # Teal
+            [0, 0, 0], # Black
+        ]
+        point_cloud_path = "../gaussian-splatting-repo/gaussian_splatting/output/robot_jenny/point_cloud/iteration_30000/point_cloud.ply"
+        aabb = robot_config[robot_name]['aabb']['bounding_box']
+        robot_transformation = robot_config[robot_name]["transformation"]["matrix"]
+
+        # gt_point_cloud_path = "splat/articulated_objects/robot_iphone_pcd.ply"
+        gt_point_cloud_path = "splat/articulated_objects/robot_jenny_pcd.ply"
+
+        
+        import open3d as o3d
+
+        # The gaussian splat means
+        pcd = o3d.io.read_point_cloud(point_cloud_path)
+        segmented_points, xyz = get_segmented_indices(gaussians, robot_transformation, aabb, robot_name)
+        pcd.points = o3d.utility.Vector3dVector(np.concatenate([xyz[segmented_points[i]].cpu().numpy() for i in range(len(segmented_points))]))
+        pcd.colors = o3d.utility.Vector3dVector(np.array(sum([
+            [COLORS[i % len(COLORS)]]*len(segmented_points[i]) for i in range(len(segmented_points))
+        ], [])))
+
+        # The ground truth / URDF robot point cloud
+        # pcd = o3d.io.read_point_cloud(gt_point_cloud_path)
+        # pcd.points = o3d.utility.Vector3dVector(np.asarray(pcd.points) + np.array(base_position))
+        
+        initial_joint_positions = np.array([joint["pos"] for joint in initial_joints])
+        initial_joint_orientations = [joint["q"] for joint in initial_joints]
+        initial_joint_points = o3d.geometry.PointCloud()
+        initial_joint_points.points = o3d.utility.Vector3dVector(initial_joint_positions)
+        initial_joint_points.paint_uniform_color([1, 0, 0])  # Red color for the initial joint poses
+        # make initial_joint_points bigger
+        # o3d.visualization.draw_geometries([pcd, initial_joint_points], window_name="Robot Point Cloud with Initial Joint Poses")
+        
+        vis = o3d.visualization.Visualizer()
+        vis.create_window(window_name="Robot Point Cloud with Initial Joint Poses")
+
+        # Add both point clouds
+        vis.add_geometry(pcd)
+        vis.add_geometry(initial_joint_points)
+
+        # Get render option
+        opt = vis.get_render_option()
+        opt.point_size = 1.0  # Default size for regular point cloud
+
+        # Hack: Increase size of initial_joint_points manually using a sphere mesh
+        for pos in initial_joint_positions:
+            sphere = o3d.geometry.TriangleMesh.create_sphere(radius=0.01)  # adjust radius for visibility
+            sphere.translate(pos)
+            sphere.paint_uniform_color([1, 0, 0])
+            vis.add_geometry(sphere)
+
+        vis.run()
+        vis.destroy_window()
         
         if not skip_train:
              render_set(dataset.model_path, "train", scene.loaded_iter, scene.getTrainCameras(), gaussians, pipeline, background,  object_list=object_list, robot_name=robot_name, object_splat_folder=object_splat_folder)
@@ -210,6 +320,7 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
 
 
 def transform_means(pc, xyz, segmented_list, transformations_list, robot_transformation):
+    # xyz is in global frame. pc is in splat frame
 
     Trans = torch.tensor(robot_transformation).to(device=xyz.device).float()
 
@@ -228,7 +339,9 @@ def transform_means(pc, xyz, segmented_list, transformations_list, robot_transfo
         shs_featrest = copy.deepcopy(pc._features_rest)
 
     for joint_index in range(p.getNumJoints(pandaUid)):
-        r_rel, t = transformations_list[joint_index]
+        # import pdb; pdb.set_trace()
+        r_rel, t = transformations_list[joint_index] # T between initial link and current link
+
         segment = segmented_list[joint_index]
         transformed_segment = torch.matmul(r_rel, xyz[segment].T).T + t
         xyz[segment] = transformed_segment
@@ -255,7 +368,7 @@ def transform_means(pc, xyz, segmented_list, transformations_list, robot_transfo
         # shs_dc[segment] = shs_dc_segment
         # shs_featrest[segment] = torch.zeros_like(shs_featrest[segment])
            
-    #transform_back
+    #transform_back to splat frame
     xyz = torch.matmul(inv_rotation_matrix, xyz.T).T + inv_translation
     
         
@@ -415,6 +528,65 @@ def get_segmented_indices(pc, robot_transformation, aabb, robot_name):
     
     return segmented_points, points
 
+# def __parse_joint_info__(self):
+#     numJoints = p.getNumJoints(self.dummy_robot)
+#     jointInfo = namedtuple('jointInfo', 
+#         ['id','name','type','damping','friction','lowerLimit','upperLimit','maxForce','maxVelocity','controllable'])
+#     self.joints = []
+#     self.controllable_joints = []
+#     for i in range(numJoints):
+#         info = p.getJointInfo(self.dummy_robot, i)
+#         jointID = info[0]
+#         jointName = info[1].decode("utf-8")
+#         jointType = info[2]  # JOINT_REVOLUTE, JOINT_PRISMATIC, JOINT_SPHERICAL, JOINT_PLANAR, JOINT_FIXED
+#         jointDamping = info[6]
+#         jointFriction = info[7]
+#         jointLowerLimit = info[8]
+#         jointUpperLimit = info[9]
+#         jointMaxForce = info[10]
+#         jointMaxVelocity = info[11]
+#         controllable = (jointType != p.JOINT_FIXED)
+#         if controllable:
+#             self.controllable_joints.append(jointID)
+#             self.pybullet_client.setJointMotorControl2(self.dummy_robot, jointID, self.pybullet_client.VELOCITY_CONTROL, targetVelocity=0, force=0)
+#         info = jointInfo(jointID,jointName,jointType,jointDamping,jointFriction,jointLowerLimit,
+#                         jointUpperLimit,jointMaxForce,jointMaxVelocity,controllable)
+#         self.joints.append(info)
+
+# def setup_gripper():
+#     # Copied from gello_software/gello/robots/sim_robot_pybullet_splat_6DOF.py
+#     self.__parse_joint_info__()
+#     self.gripper_range = [0, 0.085]
+    
+#     mimic_parent_name = 'finger_joint'
+#     mimic_children_names = {'right_outer_knuckle_joint': 1,
+#                             'left_inner_knuckle_joint': 1,
+#                             'right_inner_knuckle_joint': 1,
+#                             'left_inner_finger_joint': -1,
+#                             'right_inner_finger_joint': -1}
+#     # self.__setup_mimic_joints__(mimic_parent_name, mimic_children_names)
+
+#     self.mimic_parent_id = [joint.id for joint in self.joints if joint.name == mimic_parent_name][0]
+#     self.mimic_child_multiplier = {joint.id: mimic_children_names[joint.name] for joint in self.joints if joint.name in mimic_children_names}
+
+#     for joint_id, multiplier in self.mimic_child_multiplier.items():
+#         c = self.pybullet_client.createConstraint(self.dummy_robot, self.mimic_parent_id,
+#                             self.dummy_robot, joint_id,
+#                             jointType=self.pybullet_client.JOINT_GEAR,
+#                             jointAxis=[0, 1, 0],
+#                             parentFramePosition=[0, 0, 0],
+#                             childFramePosition=[0, 0, 0])
+#         self.pybullet_client.changeConstraint(c, gearRatio=-multiplier, maxForce=100, erp=1)  # Note: the mysterious `erp` is of EXTREME importance
+
+# def move_gripper(self, open_length):
+#     # Copied from gello_software/gello/robots/sim_robot_pybullet_splat_6DOF.py
+
+#     # open_length = np.clip(open_length, *self.gripper_range)
+#     open_angle = 0.715 - math.asin((open_length - 0.010) / 0.1143)  # angle calculation
+#     # Control the mimic gripper joint(s)
+#     p.setJointMotorControl2(pandaUid, self.mimic_parent_id, self.pybullet_client.POSITION_CONTROL, targetPosition=open_angle,
+#                             force=20, maxVelocity=self.joints[self.mimic_parent_id].maxVelocity)
+
 if __name__ == "__main__":
     # Set up command line argument parser
     parser = ArgumentParser(description="Testing script parameters")
@@ -427,6 +599,8 @@ if __name__ == "__main__":
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--traj_folder", default='/home/nomaan/bc_data/gello/', type=str,
                       help="Path to the trajectory folder containing demonstration data")
+    parser.add_argument("--use_link_centers", action="store_true")
+    parser.add_argument("--use_gripper", action="store_true")
     args = get_combined_args(parser)
 
 
@@ -441,8 +615,6 @@ if __name__ == "__main__":
     
     #get the object output folder
     object_splat_folder = args.model_path.replace(robot_name, '')
-
-    
     if args.objects == " ":
         object_list = []
     else:
@@ -452,12 +624,17 @@ if __name__ == "__main__":
 
     # ######### Setup the pybullet engine #########
     import pybullet as p
+    # p.connect(p.GUI)
     p.connect(p.DIRECT)
     p.resetSimulation()
     flags = p.URDF_ENABLE_CACHED_GRAPHICS_SHAPES
     urdf_path = robot_config[robot_name]['urdf_path'][0]
     base_position = robot_config[robot_name]['base_position'][0]
     pandaUid = p.loadURDF(urdf_path, useFixedBase=True, basePosition=base_position)
+
+    # TODO
+    # if args.use_gripper:
+    #     setup_gripper()
 
 
     joint_poses = robot_config[robot_name]['joint_states'][0] # initial joint poses 
@@ -473,16 +650,26 @@ if __name__ == "__main__":
             upper_limits.append(joint_info[9])
         joint_poses = [(lower_limits[i] + upper_limits[i]) / 2 for i in range(num_joints)]
 
-    for i in range(len(joint_poses)):
+    for i in range(min(len(joint_poses), num_joints)):
         p.resetJointState(pandaUid, i, joint_poses[i])
         
     initial_joints = []
     for joint_index in range(num_joints):
         joint_info = p.getJointInfo(pandaUid, joint_index)
         joint_name = joint_info[1].decode("utf-8")  
-        link_state = p.getLinkState(pandaUid, joint_index, computeForwardKinematics=True)
-        initial_joints.append(link_state)
         
+        if args.use_link_centers:
+            link_state = p.getLinkState(pandaUid, joint_index, computeForwardKinematics=True)
+            initial_joints.append({
+                "pos": link_state[0],
+                "q": link_state[1]
+            })
+        else:
+            link_state = p.getLinkState(pandaUid, joint_index, computeForwardKinematics=True)
+            initial_joints.append({
+                "pos": link_state[4],
+                "q": link_state[5]
+            })
 
     # Initialize system state (RNG)
     safe_state(args.quiet)
