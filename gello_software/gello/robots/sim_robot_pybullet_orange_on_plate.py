@@ -117,6 +117,8 @@ class ZMQRobotServer:
 
 
 class PybulletRobotServer:
+    MAX_TRAJECTORY_COUNT = 0
+
     def __init__(
         self,
         # urdf_path: str = './pybullet-playground_2/urdf/sisbot.urdf',
@@ -163,12 +165,11 @@ class PybulletRobotServer:
         # self.pybullet_client.resetBasePositionAndOrientation(self.dummy_robot, [0, 0, -0.1], [0, 0, 0, 1])
         self.joint_signs = [1, 1, -1, 1, 1, 1, 1]
         self.offsets = [np.pi / 2, 0, 0, 0, 0, 0, 0]
+        self.initial_joint_state = [0, -np.pi / 2, np.pi / 2, -np.pi / 2, -np.pi / 2, 0]
 
         model_lib = md.model_lib()
         # objectid = self.pybullet_client.loadURDF(model_lib['potato_chip_1'], [0.5, 0.15, 0])
 
-        # x = random.uniform(0.4, 0.6)
-        # y = random.uniform(-0.3, 0.3)
         x = random.uniform(0.2, 0.7)
         y = random.uniform(-0.4, 0.4)
         # random euler angles for the orientation of the object
@@ -280,10 +281,9 @@ class PybulletRobotServer:
         )
 
         # set initial joint positions
-        initial_joint_state = [0, -np.pi / 2, np.pi / 2, -np.pi / 2, -np.pi / 2, 0]
         for i in range(1, 7):
             self.pybullet_client.resetJointState(
-                self.dummy_robot, i, initial_joint_state[i - 1]
+                self.dummy_robot, i, self.initial_joint_state[i - 1]
             )
 
         # limits are +-pi of the initial joint positions
@@ -766,9 +766,7 @@ class PybulletRobotServer:
 
         return all_paths
 
-    def follow_paths_and_record(
-        self, all_paths, initial_joint_positions, initial_joint_state, joint_signs
-    ):
+    def follow_paths_and_record(self, all_paths, initial_joint_positions, joint_signs):
         for k in range(1):
             # go to first object
             self.follow_trajectory(
@@ -844,13 +842,13 @@ class PybulletRobotServer:
         # create a path from the drop location to the initial joint positions
         path = [
             np.array(self.drop_ee_joint[:6]) * 0.1 * (10 - i)
-            + np.array(initial_joint_state[:6]) * 0.1 * (i)
+            + np.array(self.initial_joint_state[:6]) * 0.1 * (i)
             for i in range(1, 11)
         ]
 
         self.follow_trajectory(path, 0)
 
-        path = [initial_joint_state for _ in range(5)]
+        path = [self.initial_joint_state for _ in range(5)]
         self.follow_trajectory(path, 0)
 
     def eval_trajectory_success(self):
@@ -868,10 +866,13 @@ class PybulletRobotServer:
                 return False
         return True
 
-    def plan_execute_record_trajectory(
-        self, initial_joint_positions, initial_joint_state, joint_signs
-    ):
+    def plan_execute_record_trajectory(self, initial_joint_positions, joint_signs):
         # Returns whether it was a success
+
+        self.trajectory_length = 0
+
+        # make path+trajectory_count folder
+        os.makedirs(self.path + str(self.trajectory_count).zfill(3), exist_ok=True)
 
         all_paths = self.plan_approach_grasp_move_drop_plan(initial_joint_positions)
 
@@ -890,9 +891,7 @@ class PybulletRobotServer:
             self.delete_trajectory_folder()
             return False
 
-        self.follow_paths_and_record(
-            all_paths, initial_joint_positions, initial_joint_state, joint_signs
-        )
+        self.follow_paths_and_record(all_paths, initial_joint_positions, joint_signs)
 
         # evaluate the success of the trajectory
         correct_trajectory = self.eval_trajectory_success()
@@ -906,12 +905,12 @@ class PybulletRobotServer:
     def serve(self) -> None:
         # start the zmq server
         self._zmq_server_thread.start()
-        initial_joint_state = [0, -np.pi / 2, np.pi / 2, -np.pi / 2, -np.pi / 2, 0]
-        self.initial_joint_state = initial_joint_state
         joint_signs = [1, 1, 1, 1, 1, 1]
         for i in range(1, 7):
             self.pybullet_client.resetJointState(
-                self.dummy_robot, i, initial_joint_state[i - 1] * joint_signs[i - 1]
+                self.dummy_robot,
+                i,
+                self.initial_joint_state[i - 1] * joint_signs[i - 1],
             )
             self.move_gripper(0.0)
 
@@ -931,7 +930,9 @@ class PybulletRobotServer:
         for i in range(10000):
             for i in range(1, 7):
                 self.pybullet_client.resetJointState(
-                    self.dummy_robot, i, initial_joint_state[i - 1] * joint_signs[i - 1]
+                    self.dummy_robot,
+                    i,
+                    self.initial_joint_state[i - 1] * joint_signs[i - 1],
                 )
             self.pybullet_client.stepSimulation()
 
@@ -948,23 +949,22 @@ class PybulletRobotServer:
                     self.pybullet_client.resetJointState(
                         self.dummy_robot,
                         k,
-                        initial_joint_state[k - 1] * joint_signs[k - 1],
+                        self.initial_joint_state[k - 1] * joint_signs[k - 1],
                     )
             self.pybullet_client.stepSimulation()
-
-            # make path+trajectory_count folder
-            os.makedirs(self.path + str(self.trajectory_count).zfill(3), exist_ok=True)
-            self.trajectory_length = 0
 
             initial_joint_positions = self.randomize_ee_pose()
 
             success = self.plan_execute_record_trajectory(
-                initial_joint_positions, initial_joint_state, joint_signs
+                initial_joint_positions, joint_signs
             )
             if success:
                 self.trajectory_count += 1
 
-            if self.trajectory_count > 500:
+            if self.trajectory_count > self.MAX_TRAJECTORY_COUNT:
+                print(
+                    f"Exiting because max trajectory count was reached in folder {self.path}"
+                )
                 exit()
 
     def delete_trajectory_folder(self):
