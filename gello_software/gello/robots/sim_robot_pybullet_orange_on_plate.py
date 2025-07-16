@@ -141,7 +141,6 @@ class PybulletRobotServer:
             ),
             "object_rot": [0, 0],
         },
-
         "banana1": {
             "grasp_pose": np.array(
                 [
@@ -153,7 +152,6 @@ class PybulletRobotServer:
             ),
             "object_rot": [0, 0],
         },
-
         "banana2": {
             "grasp_pose": np.array(
                 [
@@ -165,7 +163,6 @@ class PybulletRobotServer:
             ),
             "object_rot": [0, np.pi],
         },
-
         "apple": {
             "grasp_pose": np.array(
                 [
@@ -177,7 +174,6 @@ class PybulletRobotServer:
             ),
             "object_rot": [0, 0],
         },
-
         # self.strawberry_grasp_pose = np.array([[-0.19612399,  0.06661985,  0.97831344 ,-0.03194745],
         #                                 [-0.90997152, -0.38409934, -0.15626751,  0.10821076],
         #                                 [ 0.36535902, -0.92088517,  0.13595326,  0.23474673],
@@ -215,7 +211,10 @@ class PybulletRobotServer:
                 {
                     "object_name": "plastic_banana",
                     "splat_object_name": "plastic_banana",
-                    "grasp_config": [GRASP_CONFIGS["banana1"], GRASP_CONFIGS["banana2"]],
+                    "grasp_config": [
+                        GRASP_CONFIGS["banana1"],
+                        GRASP_CONFIGS["banana2"],
+                    ],
                 },
                 {
                     "object_name": "plate",
@@ -250,7 +249,7 @@ class PybulletRobotServer:
         print_joints: bool = False,
         use_gripper: bool = True,
         serve_mode: str = SERVE_MODES.GENERATE_DEMOS,
-        env_config_name: str = "apple_on_plate",
+        env_config_name: str = "orange_on_plate",
     ):
         self.serve_mode = serve_mode
         self.env_config_name = env_config_name
@@ -304,14 +303,18 @@ class PybulletRobotServer:
         quat = self.pybullet_client.getQuaternionFromEuler([0, 0, 0])
 
         models_lib = md.model_lib()
-        self.object_name_list = list(map(
-            lambda object_cfg: object_cfg["object_name"],
-            self.ENV_NAME_TO_CONFIG[env_config_name]["objects"]
-        ))
-        self.splat_object_name_list = list(map(
-            lambda object_cfg: object_cfg["splat_object_name"],
-            self.ENV_NAME_TO_CONFIG[env_config_name]["objects"]
-        ))
+        self.object_name_list = list(
+            map(
+                lambda object_cfg: object_cfg["object_name"],
+                self.ENV_NAME_TO_CONFIG[env_config_name]["objects"],
+            )
+        )
+        self.splat_object_name_list = list(
+            map(
+                lambda object_cfg: object_cfg["splat_object_name"],
+                self.ENV_NAME_TO_CONFIG[env_config_name]["objects"],
+            )
+        )
         self.grasp_configs = {
             object_cfg["object_name"]: object_cfg["grasp_config"]
             for object_cfg in self.ENV_NAME_TO_CONFIG[env_config_name]["objects"]
@@ -475,13 +478,13 @@ class PybulletRobotServer:
             self.serve_mode = serve_mode
 
     def set_object_pose(
-            self, object_name: str, position: np.ndarray, orientation: np.ndarray
+        self, object_name: str, position: np.ndarray, orientation: np.ndarray
     ) -> None:
         """Set the pose of an object in the simulation."""
         if object_name not in self.splat_object_name_list:
             print(f"Object {object_name} not found in splat_object_name_list.")
             return
-        
+
         object_id = self.splat_object_name_list.index(object_name)
         self.pybullet_client.resetBasePositionAndOrientation(
             self.urdf_object_list[object_id], position, orientation
@@ -589,13 +592,12 @@ class PybulletRobotServer:
                     object_name = self.object_name_list[object_id]
                     grasp_config = random.choice(self.grasp_configs[object_name])
                     self.grasp_poses[object_id] = grasp_config["grasp_pose"]
-                    object_rot = grasp_config['object_rot']
+                    object_rot = grasp_config["object_rot"]
                     quat = self.pybullet_client.getQuaternionFromEuler(
                         [object_rot[0], object_rot[1], euler_z]
                     )
                     self.pybullet_client.resetBasePositionAndOrientation(
-                        self.urdf_object_list[object_id], [x, y, 0],
-                        quat
+                        self.urdf_object_list[object_id], [x, y, 0], quat
                     )
 
             for object_id in range(len(self.urdf_object_list)):

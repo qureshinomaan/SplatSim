@@ -77,7 +77,8 @@ def launch_robot_server(args: Args):
         from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 
         server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS
+           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
+           env_config_name="orange_on_plate",
         )
         server.serve()
 
@@ -90,7 +91,64 @@ def launch_robot_server(args: Args):
         from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 
         server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE
+           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           env_config_name="orange_on_plate",
+        )
+        server.serve()
+
+    elif args.robot == "sim_ur_pybullet_apple":
+        MENAGERIE_ROOT: Path = (
+            Path(__file__).parent.parent / "third_party" / "mujoco_menagerie"
+        )
+        xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "ur5e.xml"
+        gripper_xml = MENAGERIE_ROOT / "robotiq_2f85" / "2f85.xml"
+        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+
+        server = PybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
+           env_config_name="apple_on_plate",
+        )
+        server.serve()
+
+    elif args.robot == "sim_ur_pybullet_apple_interactive":
+        MENAGERIE_ROOT: Path = (
+            Path(__file__).parent.parent / "third_party" / "mujoco_menagerie"
+        )
+        xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "ur5e.xml"
+        gripper_xml = MENAGERIE_ROOT / "robotiq_2f85" / "2f85.xml"
+        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+
+        server = PybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           env_config_name="apple_on_plate",
+        )
+        server.serve()
+
+    elif args.robot == "sim_ur_pybullet_banana":
+        MENAGERIE_ROOT: Path = (
+            Path(__file__).parent.parent / "third_party" / "mujoco_menagerie"
+        )
+        xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "ur5e.xml"
+        gripper_xml = MENAGERIE_ROOT / "robotiq_2f85" / "2f85.xml"
+        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+
+        server = PybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
+           env_config_name="banana_on_plate",
+        )
+        server.serve()
+
+    elif args.robot == "sim_ur_pybullet_banana_interactive":
+        MENAGERIE_ROOT: Path = (
+            Path(__file__).parent.parent / "third_party" / "mujoco_menagerie"
+        )
+        xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "ur5e.xml"
+        gripper_xml = MENAGERIE_ROOT / "robotiq_2f85" / "2f85.xml"
+        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+
+        server = PybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           env_config_name="banana_on_plate",
         )
         server.serve()
 
