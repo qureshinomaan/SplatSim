@@ -47,7 +47,7 @@ class Args:
 
 def main(args):
     if args.mock:
-        robot_client = PrintRobot(8, dont_print=True)
+        robot_client = PrintRobot(8, dont_print=False)
         camera_clients = {}
     else:
         camera_clients = {
@@ -161,7 +161,10 @@ def main(args):
             agent = ServoingAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
         elif args.agent == "interface":
             from gello.agents.interface_agent import InterfaceAgent
-            agent = InterfaceAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
+            agent = InterfaceAgent()
+        elif args.agent == "text_interface":
+            from gello.agents.text_interface_agent import TextInterfaceAgent
+            agent = TextInterfaceAgent()
         else:
             raise ValueError("Invalid agent name")
 

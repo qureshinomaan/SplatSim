@@ -164,13 +164,16 @@ def main(args):
         elif args.agent == "policy6DOF":
             from gello.agents.policy_agent_6DOF import DiffusionAgent
             agent = DiffusionAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
+        elif args.agent == "text_interface":
+            from gello.agents.text_interface_agent import TextInterfaceAgent
+            agent = TextInterfaceAgent()
         else:
             raise ValueError("Invalid agent name")
 
     # going to start position
     print("Going to start position")
-    start_pos = agent.act(env.get_obs())
     obs = env.get_obs()
+    start_pos = agent.act(obs)
     joints = obs["joint_positions"]
     
     if not isinstance(joints, np.ndarray):

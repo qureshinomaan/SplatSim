@@ -39,7 +39,6 @@ if __name__ == "__main__":
         while True:
             # Set a random joint state for a 7 dof robot
             target_joint_state =  np.random.uniform(-3.14, 3.14, size=7).tolist()
-            import pdb; pdb.set_trace()
             # the gripper has the limits [0, 1] i think
             # target_joint_state[-1] = (target_joint_state[-1] + 3.14) / 6.28 # normalize to [0, 1]
 

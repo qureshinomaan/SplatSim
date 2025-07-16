@@ -2,6 +2,7 @@ import pickle
 import threading
 import time
 from typing import Any, Dict, Optional
+import enum
 
 import mujoco
 import mujoco.viewer
@@ -90,6 +91,7 @@ class ZMQRobotServer:
                 method = request.get("method")
                 args = request.get("args", {})
                 result: Any
+                print(f"Received request: {method}, {args}")
                 if method == "num_dofs":
                     result = self._robot.num_dofs()
                 elif method == "get_joint_state":
@@ -118,6 +120,10 @@ class ZMQRobotServer:
 
 class PybulletRobotServer:
     MAX_TRAJECTORY_COUNT = 0
+    # Enum for serve modes
+    class SERVE_MODES(enum.Enum):
+        GENERATE_DEMOS = "generate_demos"
+        INTERACTIVE = "interactive"
 
     def __init__(
         self,
@@ -127,8 +133,10 @@ class PybulletRobotServer:
         port: int = 5556,
         print_joints: bool = False,
         use_gripper: bool = True,
+        serve_mode: str = SERVE_MODES.GENERATE_DEMOS,
     ):
 
+        self.serve_mode = serve_mode
         self._zmq_server = ZMQRobotServer(robot=self, host=host, port=port)
         self._zmq_server_thread = ZMQServerThread(self._zmq_server)
         self.pybullet_client = p
@@ -381,6 +389,15 @@ class PybulletRobotServer:
                 self.pybullet_client.getJointState(self.dummy_robot, i)[0]
             )
         return np.array(joint_states)
+
+    def set_serve_mode(self, serve_mode: SERVE_MODES) -> None:
+        if not isinstance(serve_mode, self.SERVE_MODES):
+            print(
+                f"ERROR: Expected serve_mode to be an enum instance of SERVE_MODES, got {type(serve_mode)}"
+            )
+        else:
+            print(f"Setting serve mode to {serve_mode}")
+            self.serve_mode = serve_mode
 
     def command_joint_state(self, joint_state: np.ndarray) -> None:
         assert len(joint_state) == self._num_joints, (
@@ -937,35 +954,41 @@ class PybulletRobotServer:
             self.pybullet_client.stepSimulation()
 
         while True:
-            # self.get_camera_image_from_end_effector()
-            self.randomize_object_pose()
-            self.randomize_plate_and_drop_pose()
-
-            # Let the simulation settle
-            for i in range(10000):
+            if self.serve_mode == self.SERVE_MODES.INTERACTIVE:
                 self.pybullet_client.stepSimulation()
-                self.move_gripper(0.084)
-                for k in range(1, 7):
-                    self.pybullet_client.resetJointState(
-                        self.dummy_robot,
-                        k,
-                        self.initial_joint_state[k - 1] * joint_signs[k - 1],
-                    )
-            self.pybullet_client.stepSimulation()
+                time.sleep(1 / 240)
+            elif self.serve_mode == self.SERVE_MODES.GENERATE_DEMOS:
+                # self.get_camera_image_from_end_effector()
+                self.randomize_object_pose()
+                self.randomize_plate_and_drop_pose()
 
-            initial_joint_positions = self.randomize_ee_pose()
+                # Let the simulation settle
+                for i in range(10000):
+                    self.pybullet_client.stepSimulation()
+                    self.move_gripper(0.084)
+                    for k in range(1, 7):
+                        self.pybullet_client.resetJointState(
+                            self.dummy_robot,
+                            k,
+                            self.initial_joint_state[k - 1] * joint_signs[k - 1],
+                        )
+                self.pybullet_client.stepSimulation()
 
-            success = self.plan_execute_record_trajectory(
-                initial_joint_positions, joint_signs
-            )
-            if success:
-                self.trajectory_count += 1
+                initial_joint_positions = self.randomize_ee_pose()
 
-            if self.trajectory_count > self.MAX_TRAJECTORY_COUNT:
-                print(
-                    f"Exiting because max trajectory count was reached in folder {self.path}"
+                success = self.plan_execute_record_trajectory(
+                    initial_joint_positions, joint_signs
                 )
-                exit()
+                if success:
+                    self.trajectory_count += 1
+
+                if self.trajectory_count > self.MAX_TRAJECTORY_COUNT:
+                    print(
+                        f"Exiting record_demos mode because max trajectory count was reached in folder {self.path}"
+                    )
+                    self.set_serve_mode(self.SERVE_MODES.INTERACTIVE)
+            else:
+                raise ValueError(f"Unknown serve mode {self.serve_mode}. ")
 
     def delete_trajectory_folder(self):
         shutil.rmtree(self.path + str(self.trajectory_count).zfill(3))
