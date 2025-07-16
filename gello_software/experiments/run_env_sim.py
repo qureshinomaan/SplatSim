@@ -140,31 +140,45 @@ def main(args):
                 for jnt in np.linspace(curr_joints, reset_joints, steps):
                     env.step(jnt)
                     time.sleep(0.001)
+            do_startup = True
         elif args.agent == "quest":
             from gello.agents.quest_agent import SingleArmQuestAgent
 
             agent = SingleArmQuestAgent(robot_type=args.robot_type, which_hand="l")
+            do_startup = True
         elif args.agent == "spacemouse":
             from gello.agents.spacemouse_agent import SpacemouseAgent
 
             agent = SpacemouseAgent(robot_type=args.robot_type, verbose=args.verbose)
+            do_startup = True
         elif args.agent == "dummy" or args.agent == "none":
             agent = DummyAgent(num_dofs=robot_client.num_dofs())
+            do_startup = True
         elif args.agent == "policy":
             from gello.agents.policy_agent import DiffusionAgent
             agent = DiffusionAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
+            do_startup = True
         elif args.agent == "policy6DOF":
             from gello.agents.policy_agent_6DOF import DiffusionAgent
             agent = DiffusionAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
+            do_startup = True
         elif args.agent == "servoing":
             from gello.agents.servoing_agent import ServoingAgent
             agent = ServoingAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
+            do_startup = True
         elif args.agent == "interface":
             from gello.agents.interface_agent import InterfaceAgent
             agent = InterfaceAgent()
+            do_startup = True
         elif args.agent == "text_interface":
             from gello.agents.text_interface_agent import TextInterfaceAgent
             agent = TextInterfaceAgent()
+            do_startup = False # So that it doesn't skip commands at first
+        elif args.agent == "replay_trajectory":
+            from gello.agents.replay_trajectory_agent import ReplayTrajectoryAgent
+            traj_folder = "/home/jennyw2/data/bc_data/gello/"
+            agent = ReplayTrajectoryAgent(traj_folder=traj_folder, env=env)
+            do_startup = True # So that it doesn't skip the first part of the first recording
         else:
             raise ValueError("Invalid agent name")
 
@@ -212,7 +226,10 @@ def main(args):
     max_delta = 0.05
     for _ in range(25):
         obs = env.get_obs()
-        command_joints = agent.act(obs)
+        if do_startup:
+            command_joints = agent.act(obs)
+        else:
+            command_joints = start_pos
         current_joints = obs["joint_positions"]
         if not isinstance(current_joints, np.ndarray):
             current_joints = np.array(current_joints)
@@ -264,6 +281,8 @@ def main(args):
     save_path = None
     start_time = time.time()
     while True:
+        loop_start = time.time()
+
         num = time.time() - start_time
         message = f"\rTime passed: {round(num, 2)}          "
         print_color(
@@ -301,7 +320,12 @@ def main(args):
         if flag:
             action = action[:-1]
         obs = env.step(action)
-        # time.sleep(0.1)
+
+        loop_end = time.time()
+        # Keep the time locked at a fixed rate
+        sleep_time = max(0, (1 / 240) - (loop_end - loop_start))
+        if sleep_time > 0:
+            time.sleep(sleep_time)
 
 
 if __name__ == "__main__":

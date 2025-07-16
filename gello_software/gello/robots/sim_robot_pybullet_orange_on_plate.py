@@ -98,6 +98,8 @@ class ZMQRobotServer:
                     result = self._robot.get_joint_state()
                 elif method == "command_joint_state":
                     result = self._robot.command_joint_state(**args)
+                elif method == "set_object_pose":
+                    result = self._robot.set_object_pose(**args)
                 elif method == "get_observations":
                     result = self._robot.get_observations()
                 else:
@@ -119,11 +121,125 @@ class ZMQRobotServer:
 
 
 class PybulletRobotServer:
-    MAX_TRAJECTORY_COUNT = 0
+    MAX_TRAJECTORY_COUNT = 500
+
     # Enum for serve modes
     class SERVE_MODES(enum.Enum):
         GENERATE_DEMOS = "generate_demos"
         INTERACTIVE = "interactive"
+
+    # object_rot is only x and y. Since it's a tabletop, z is randomized
+    GRASP_CONFIGS = {
+        "orange": {
+            "grasp_pose": np.array(
+                [
+                    [0.03420832, 0.29551898, 0.95472421, -0.08157158],
+                    [-0.82904722, 0.54187654, -0.13802362, -0.14110232],
+                    [-0.55813126, -0.7867899, 0.26353588, 0.20728098],
+                    [0.0, 0.0, 0.0, 1.0],
+                ]
+            ),
+            "object_rot": [0, 0],
+        },
+
+        "banana1": {
+            "grasp_pose": np.array(
+                [
+                    [-0.13784676, -0.14873802, 0.97922177, 0.01055928],
+                    [-0.98239786, 0.14637033, -0.11606107, -0.06527538],
+                    [-0.12606632, -0.97798401, -0.16629659, 0.23013977],
+                    [0.0, 0.0, 0.0, 1.0],
+                ]
+            ),
+            "object_rot": [0, 0],
+        },
+
+        "banana2": {
+            "grasp_pose": np.array(
+                [
+                    [0.12773567, 0.02665088, -0.99145011, 0.00692899],
+                    [-0.87105321, 0.481048, -0.09929316, -0.14203231],
+                    [0.47428884, 0.87628908, 0.08466133, -0.20627994],
+                    [0.0, 0.0, 0.0, 1.0],
+                ]
+            ),
+            "object_rot": [0, np.pi],
+        },
+
+        "apple": {
+            "grasp_pose": np.array(
+                [
+                    [-0.12515046, -0.0412762, 0.99127879, 0.00471373],
+                    [-0.98896543, -0.07464537, -0.12796658, 0.01413896],
+                    [0.07927635, -0.99635553, -0.03147883, 0.27105228],
+                    [0.0, 0.0, 0.0, 1.0],
+                ]
+            ),
+            "object_rot": [0, 0],
+        },
+
+        # self.strawberry_grasp_pose = np.array([[-0.19612399,  0.06661985,  0.97831344 ,-0.03194745],
+        #                                 [-0.90997152, -0.38409934, -0.15626751,  0.10821076],
+        #                                 [ 0.36535902, -0.92088517,  0.13595326,  0.23474673],
+        #                                 [ 0.,          0. ,         0. ,         1.        ]])
+        "strawberry": {
+            "grasp_pose": np.array(
+                [
+                    [6.03600159e-04, 4.74883933e-01, 8.80048229e-01, -1.17034260e-01],
+                    [-7.31850150e-01, -5.99512796e-01, 3.24005810e-01, 1.57542460e-01],
+                    [6.81465328e-01, -6.44258999e-01, 3.47182012e-01, 1.72402069e-01],
+                    [0.00000000e00, 0.00000000e00, 0.00000000e00, 1.00000000e00],
+                ]
+            ),
+            "object_rot": [0, 0],
+        },
+    }
+
+    ENV_NAME_TO_CONFIG = {
+        "apple_on_plate": {
+            "objects": [
+                {
+                    "object_name": "plastic_apple",
+                    "splat_object_name": "plastic_apple",
+                    "grasp_config": [GRASP_CONFIGS["apple"]],
+                },
+                {
+                    "object_name": "plate",
+                    "splat_object_name": "plate",
+                    "grasp_config": [],
+                },
+            ]
+        },
+        "banana_on_plate": {
+            "objects": [
+                {
+                    "object_name": "plastic_banana",
+                    "splat_object_name": "plastic_banana",
+                    "grasp_config": [GRASP_CONFIGS["banana1"], GRASP_CONFIGS["banana2"]],
+                },
+                {
+                    "object_name": "plate",
+                    "splat_object_name": "plate",
+                    "grasp_config": [],
+                },
+            ]
+        },
+        "orange_on_plate": {
+            "objects": [
+                {
+                    "object_name": "plastic_orange",
+                    "splat_object_name": "plastic_orange",
+                    "grasp_config": [GRASP_CONFIGS["orange"]],
+                },
+                {
+                    "object_name": "plate",
+                    "splat_object_name": "plate",
+                    "grasp_config": [],
+                },
+            ]
+        },
+        # TODO is there a plastic strawberry?
+    }
 
     def __init__(
         self,
@@ -134,14 +250,16 @@ class PybulletRobotServer:
         print_joints: bool = False,
         use_gripper: bool = True,
         serve_mode: str = SERVE_MODES.GENERATE_DEMOS,
+        env_config_name: str = "apple_on_plate",
     ):
-
         self.serve_mode = serve_mode
+        self.env_config_name = env_config_name
         self._zmq_server = ZMQRobotServer(robot=self, host=host, port=port)
         self._zmq_server_thread = ZMQServerThread(self._zmq_server)
         self.pybullet_client = p
         self.urdf_path = urdf_path
         self._num_joints = 7
+        self.grasp_poses = {}
         self.pybullet_client.connect(p.GUI)
         self.pybullet_client.setAdditionalSearchPath(
             "./pybullet-playground_2/urdf/pybullet_ur5_gripper/urdf"
@@ -186,8 +304,21 @@ class PybulletRobotServer:
         quat = self.pybullet_client.getQuaternionFromEuler([0, 0, 0])
 
         models_lib = md.model_lib()
-        self.object_name_list = ["plastic_orange", "plate"]
-        self.splat_object_name_list = ["plastic_orange", "plate"]
+        self.object_name_list = list(map(
+            lambda object_cfg: object_cfg["object_name"],
+            self.ENV_NAME_TO_CONFIG[env_config_name]["objects"]
+        ))
+        self.splat_object_name_list = list(map(
+            lambda object_cfg: object_cfg["splat_object_name"],
+            self.ENV_NAME_TO_CONFIG[env_config_name]["objects"]
+        ))
+        self.grasp_configs = {
+            object_cfg["object_name"]: object_cfg["grasp_config"]
+            for object_cfg in self.ENV_NAME_TO_CONFIG[env_config_name]["objects"]
+        }
+
+        # self.object_name_list = ["plastic_orange", "plate"]
+        # self.splat_object_name_list = ["plastic_orange", "plate"]
         self.randomize_object_positions = [True, False]
         self.randomize_object_rotations = [False, True]
         self.rotation_values = [[0, 0], [-np.pi / 6, np.pi / 6]]
@@ -224,62 +355,6 @@ class PybulletRobotServer:
             [0.3, -0.5, 0.07],
             p.getQuaternionFromEuler([0, 0, np.pi / 2]),
         )
-
-        # set the grasp pose for the apple and banana
-
-        self.orange_grasp_pose = np.array(
-            [
-                [0.03420832, 0.29551898, 0.95472421, -0.08157158],
-                [-0.82904722, 0.54187654, -0.13802362, -0.14110232],
-                [-0.55813126, -0.7867899, 0.26353588, 0.20728098],
-                [0.0, 0.0, 0.0, 1.0],
-            ]
-        )
-
-        self.banana_grasp_pose_1 = np.array(
-            [
-                [-0.13784676, -0.14873802, 0.97922177, 0.01055928],
-                [-0.98239786, 0.14637033, -0.11606107, -0.06527538],
-                [-0.12606632, -0.97798401, -0.16629659, 0.23013977],
-                [0.0, 0.0, 0.0, 1.0],
-            ]
-        )
-
-        self.banana_grasp_pose_2 = np.array(
-            [
-                [0.12773567, 0.02665088, -0.99145011, 0.00692899],
-                [-0.87105321, 0.481048, -0.09929316, -0.14203231],
-                [0.47428884, 0.87628908, 0.08466133, -0.20627994],
-                [0.0, 0.0, 0.0, 1.0],
-            ]
-        )
-
-        self.apple_grasp_pose = np.array(
-            [
-                [-0.12515046, -0.0412762, 0.99127879, 0.00471373],
-                [-0.98896543, -0.07464537, -0.12796658, 0.01413896],
-                [0.07927635, -0.99635553, -0.03147883, 0.27105228],
-                [0.0, 0.0, 0.0, 1.0],
-            ]
-        )
-
-        # self.strawberry_grasp_pose = np.array([[-0.19612399,  0.06661985,  0.97831344 ,-0.03194745],
-        #                                 [-0.90997152, -0.38409934, -0.15626751,  0.10821076],
-        #                                 [ 0.36535902, -0.92088517,  0.13595326,  0.23474673],
-        #                                 [ 0.,          0. ,         0. ,         1.        ]])
-
-        self.strawberry_grasp_pose = np.array(
-            [
-                [6.03600159e-04, 4.74883933e-01, 8.80048229e-01, -1.17034260e-01],
-                [-7.31850150e-01, -5.99512796e-01, 3.24005810e-01, 1.57542460e-01],
-                [6.81465328e-01, -6.44258999e-01, 3.47182012e-01, 1.72402069e-01],
-                [0.00000000e00, 0.00000000e00, 0.00000000e00, 1.00000000e00],
-            ]
-        )
-
-        self.grasp_poses = [
-            self.orange_grasp_pose,
-        ]
 
         # set the drop location for the apple and banana
         self.drop_ee_pos = [0.3, -0.5, 0.3]
@@ -399,6 +474,19 @@ class PybulletRobotServer:
             print(f"Setting serve mode to {serve_mode}")
             self.serve_mode = serve_mode
 
+    def set_object_pose(
+            self, object_name: str, position: np.ndarray, orientation: np.ndarray
+    ) -> None:
+        """Set the pose of an object in the simulation."""
+        if object_name not in self.splat_object_name_list:
+            print(f"Object {object_name} not found in splat_object_name_list.")
+            return
+        
+        object_id = self.splat_object_name_list.index(object_name)
+        self.pybullet_client.resetBasePositionAndOrientation(
+            self.urdf_object_list[object_id], position, orientation
+        )
+
     def command_joint_state(self, joint_state: np.ndarray) -> None:
         assert len(joint_state) == self._num_joints, (
             f"Expected joint state of length {self._num_joints}, "
@@ -499,33 +587,16 @@ class PybulletRobotServer:
                     # random quaternion for the orientation of the object
                     # get object name from the object id
                     object_name = self.object_name_list[object_id]
-                    if object_name == "plastic_banana":
-                        flip = random.choice([0, 1])
-                        if flip == 1:
-                            self.grasp_poses[object_id] = self.banana_grasp_pose_2
-                            quat = self.pybullet_client.getQuaternionFromEuler(
-                                [0, np.pi, euler_z]
-                            )
-                            self.pybullet_client.resetBasePositionAndOrientation(
-                                self.urdf_object_list[object_id], [x, y, 0], quat
-                            )
-
-                        else:
-                            self.grasp_poses[object_id] = self.banana_grasp_pose_1
-                            quat = self.pybullet_client.getQuaternionFromEuler(
-                                [0, 0, euler_z]
-                            )
-                            self.pybullet_client.resetBasePositionAndOrientation(
-                                self.urdf_object_list[object_id], [x, y, 0], quat
-                            )
-
-                    else:
-                        quat = self.pybullet_client.getQuaternionFromEuler(
-                            [0, 0, euler_z]
-                        )
-                        self.pybullet_client.resetBasePositionAndOrientation(
-                            self.urdf_object_list[object_id], [x, y, 0], quat
-                        )
+                    grasp_config = random.choice(self.grasp_configs[object_name])
+                    self.grasp_poses[object_id] = grasp_config["grasp_pose"]
+                    object_rot = grasp_config['object_rot']
+                    quat = self.pybullet_client.getQuaternionFromEuler(
+                        [object_rot[0], object_rot[1], euler_z]
+                    )
+                    self.pybullet_client.resetBasePositionAndOrientation(
+                        self.urdf_object_list[object_id], [x, y, 0],
+                        quat
+                    )
 
             for object_id in range(len(self.urdf_object_list)):
                 for object_id_2 in range(len(self.urdf_object_list)):
@@ -984,7 +1055,7 @@ class PybulletRobotServer:
 
                 if self.trajectory_count > self.MAX_TRAJECTORY_COUNT:
                     print(
-                        f"Exiting record_demos mode because max trajectory count was reached in folder {self.path}"
+                        f"Exiting record_demos mode because max trajectory count of {self.MAX_TRAJECTORY_COUNT} was reached in folder {self.path}"
                     )
                     self.set_serve_mode(self.SERVE_MODES.INTERACTIVE)
             else:
