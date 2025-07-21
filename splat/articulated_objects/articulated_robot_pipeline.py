@@ -42,6 +42,11 @@ def create_window(app, title, geometry_list, x, y):
     w.add_child(scene)
 
 def main(args):
+
+    #load the transformation matrix (yaml file)
+    with open("../../object_configs/objects.yaml", "r") as file:
+        object_configs = yaml.safe_load(file)
+
     #connect to pybullet
     physicsClient = p.connect(p.GUI)
     p.setGravity(0, 0, -9.8)
@@ -49,7 +54,8 @@ def main(args):
 
     #load the robot
     robot_path = args.robot
-    robot_id = p.loadURDF(robot_path, useFixedBase=True, basePosition=[0.0, 0.0, 0.])
+    base_position = object_configs[args.robot_name]["base_position"][0]
+    robot_id = p.loadURDF(robot_path, useFixedBase=True, basePosition=base_position)
 
     #get the joint states from args
     joint_states = args.joint_states
@@ -126,10 +132,6 @@ def main(args):
 
     #load the splat pcd
     pcd_splat = o3d.io.read_point_cloud(args.splat_path)
-
-    #load the transormation matrix (yaml file)
-    with open("../../object_configs/objects.yaml", "r") as file:
-        object_configs = yaml.safe_load(file)
 
     #get the transformation matrix for the glasses
     #check if the robot_name is in the object_configs
