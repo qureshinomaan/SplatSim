@@ -7,6 +7,10 @@ from typing import Optional, Tuple
 
 import numpy as np
 import tyro
+import termcolor
+
+import cv2
+
 
 from gello.agents.agent import BimanualAgent, DummyAgent
 from gello.agents.gello_agent import GelloAgent
@@ -19,8 +23,6 @@ from gello.zmq_core.camera_node import ZMQClientCamera
 
 
 def print_color(*args, color=None, attrs=(), **kwargs):
-    import termcolor
-
     if len(args) > 0:
         args = tuple(termcolor.colored(arg, color=color, attrs=attrs) for arg in args)
     print(*args, **kwargs)
@@ -181,6 +183,11 @@ def main(args):
             do_startup = True # So that it doesn't skip the first part of the first recording
         else:
             raise ValueError("Invalid agent name")
+        
+    if args.use_save_interface:
+        from gello.data_utils.keyboard_interface import KBReset
+
+    # No more importing after this point
 
     # going to start position
     print("Going to start position")
@@ -272,8 +279,6 @@ def main(args):
     #         )
 
     if args.use_save_interface:
-        from gello.data_utils.keyboard_interface import KBReset
-
         kb_interface = KBReset()
 
     print_color("\nStart 🚀🚀🚀", color="green", attrs=("bold",))
@@ -320,6 +325,10 @@ def main(args):
         if flag:
             action = action[:-1]
         obs = env.step(action)
+
+        if "base_rgb" in obs:
+            cv2.imshow("robot", obs["base_rgb"])
+            cv2.waitKey(1)
 
         loop_end = time.time()
         # Keep the time locked at a fixed rate

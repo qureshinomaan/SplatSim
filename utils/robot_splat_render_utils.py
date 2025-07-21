@@ -32,36 +32,48 @@ import numpy as np
 import yaml
 import math
 
+import pybullet as p
 
-def get_transfomration_list(new_joint_poses):
-    num_joints = p.getNumJoints(pandaUid)
+def get_curr_link_states(robot_uid, use_link_centers=True):
+    link_states = []
+    num_joints = p.getNumJoints(robot_uid)
 
-    for i in range(min(num_joints, len(new_joint_poses))):
-        p.resetJointState(pandaUid, i, new_joint_poses[i])
-        
-    new_joints = []
     for joint_index in range(num_joints):
-        joint_info = p.getJointInfo(pandaUid, joint_index)
+        joint_info = p.getJointInfo(robot_uid, joint_index)
         joint_name = joint_info[1].decode("utf-8") 
 
-        if args.use_link_centers:
-            link_state = p.getLinkState(pandaUid, joint_index, computeForwardKinematics=True)
-            new_joints.append({
+        if use_link_centers:
+            link_state = p.getLinkState(robot_uid, joint_index, computeForwardKinematics=True)
+            link_states.append({
                 "pos": link_state[0],
                 "q": link_state[1]
             })
         else:
-            link_state = p.getLinkState(pandaUid, joint_index, computeForwardKinematics=True)
-            new_joints.append({
+            link_state = p.getLinkState(robot_uid, joint_index, computeForwardKinematics=True)
+            link_states.append({
                 "pos": link_state[4],
                 "q": link_state[5]
             })
-        
+    
+    return link_states
+
+
+def get_transfomration_list(robot_uid, initial_link_states, new_joint_poses, use_link_centers=True):
+    num_joints = p.getNumJoints(robot_uid)
+
+    # for i in range(min(num_joints, len(new_joint_poses))):
+    #     p.resetJointState(robot_uid, i, new_joint_poses[i])
+
+    new_joints = get_curr_link_states(robot_uid, use_link_centers=use_link_centers)
+
+    if len(initial_link_states) != num_joints or len(new_joints) != num_joints:
+        print(f"Error: Number of joints mismatch. Initial: {len(initial_link_states)}, New: {len(new_joints)}, Expected: {num_joints}")
+
         
     transformations_list = []
     for joint_index in range(num_joints):
         # x, y, z, q
-        input_1 = (initial_joints[joint_index]["pos"][0], initial_joints[joint_index]["pos"][1], initial_joints[joint_index]["pos"][2], np.array(initial_joints[joint_index]["q"]))
+        input_1 = (initial_link_states[joint_index]["pos"][0], initial_link_states[joint_index]["pos"][1], initial_link_states[joint_index]["pos"][2], np.array(initial_link_states[joint_index]["q"]))
         input_2 = (new_joints[joint_index]["pos"][0], new_joints[joint_index]["pos"][1], new_joints[joint_index]["pos"][2], np.array(new_joints[joint_index]["q"]))
         r_rel, t = compute_transformation(input_1, input_2)
         r_rel = torch.from_numpy(r_rel).to(device='cuda').float()
@@ -160,9 +172,9 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
                 # In PyBullet, use p.getJointInfo and p.getLinkState to print and visualize joint axes and origins.
                 # for problem_joint_index in [1, 2, 3, 4, 5, 6]:
                 #     # p.getjointinfo
-                #     print("Joint {}: {}".format(problem_joint_index, p.getJointInfo(pandaUid, problem_joint_index)))
+                #     print("Joint {}: {}".format(problem_joint_index, p.getJointInfo(robot_uid, problem_joint_index)))
                 #     # p.getLinkState
-                #     print("Link {}: {}".format(problem_joint_index, p.getLinkState(pandaUid, problem_joint_index, computeForwardKinematics=True)))
+                #     print("Link {}: {}".format(problem_joint_index, p.getLinkState(robot_uid, problem_joint_index, computeForwardKinematics=True)))
 
                 # my splat in order to render the same in this script
                 # cur_joint = [0, -np.pi/2, np.pi/2, 0, np.pi/2, 0, 0]
@@ -191,7 +203,7 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
                 
                 
                 transformations_list = get_transfomration_list(cur_joint)
-                segmented_list, xyz = get_segmented_indices(gaussians_backup, robot_transformation, object_config[robot_name]['aabb']['bounding_box'], robot_name)
+                segmented_list, xyz = get_segmented_indices(robot_uid, gaussians_backup, robot_transformation, object_config[robot_name]['aabb']['bounding_box'], robot_name)
 
                 xyz, rot, opacity, shs_featrest, shs_dc  = transform_means(gaussians_backup, xyz, segmented_list, transformations_list, robot_transformation)
                 xyz_obj_list = []
@@ -272,7 +284,8 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
 
         # The gaussian splat means
         pcd = o3d.io.read_point_cloud(point_cloud_path)
-        segmented_points, xyz = get_segmented_indices(gaussians, robot_transformation, aabb, robot_name)
+        segmented_points, xyz = get_segmented_indices(robot_uid, 
+        gaussians, robot_transformation, aabb, robot_name)
         pcd.points = o3d.utility.Vector3dVector(np.concatenate([xyz[segmented_points[i]].cpu().numpy() for i in range(len(segmented_points))]))
         pcd.colors = o3d.utility.Vector3dVector(np.array(sum([
             [COLORS[i % len(COLORS)]]*len(segmented_points[i]) for i in range(len(segmented_points))
@@ -319,7 +332,7 @@ def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParam
 
 
 
-def transform_means(pc, xyz, segmented_list, transformations_list, robot_transformation):
+def transform_means(robot_uid, pc, xyz, segmented_list, transformations_list, robot_transformation):
     # xyz is in global frame. pc is in splat frame
 
     Trans = torch.tensor(robot_transformation).to(device=xyz.device).float()
@@ -338,8 +351,7 @@ def transform_means(pc, xyz, segmented_list, transformations_list, robot_transfo
         shs_dc = copy.deepcopy(pc._features_dc)
         shs_featrest = copy.deepcopy(pc._features_rest)
 
-    for joint_index in range(p.getNumJoints(pandaUid)):
-        # import pdb; pdb.set_trace()
+    for joint_index in range(p.getNumJoints(robot_uid)):
         r_rel, t = transformations_list[joint_index] # T between initial link and current link
 
         segment = segmented_list[joint_index]
@@ -494,7 +506,7 @@ def transform_shs(shs_feat, rotation_matrix):
     return shs_feat
 
 
-def get_segmented_indices(pc, robot_transformation, aabb, robot_name):
+def get_segmented_indices(robot_uid, pc, robot_transformation, aabb, robot_name):
     # empty torch cache
     torch.cuda.empty_cache()
     means3D = pc.get_xyz # 3D means shape (N, 3)
@@ -523,96 +535,7 @@ def get_segmented_indices(pc, robot_transformation, aabb, robot_name):
     condition = (points[:, 0] > aabb[0][0]) & (points[:, 0] < aabb[1][0]) & (points[:, 1] > aabb[0][1]) & (points[:, 1] < aabb[1][1]) & (points[:, 2] > aabb[0][2]) & (points[:, 2] < aabb[1][2])
     condition = torch.where(condition)[0]
     
-    for i in range(p.getNumJoints(pandaUid)):
+    for i in range(p.getNumJoints(robot_uid)):
         segmented_points.append(condition[labels==i])
     
     return segmented_points, points
-
-if __name__ == "__main__":
-    # Set up command line argument parser
-    parser = ArgumentParser(description="Testing script parameters")
-    model = ModelParams(parser, sentinel=True)
-    pipeline = PipelineParams(parser)
-    parser.add_argument("--iteration", default=-1, type=int)
-    parser.add_argument("--skip_train", action="store_true")
-    parser.add_argument("--skip_test", action="store_true")
-    parser.add_argument("--objects", default='plastic_apple', type=str)
-    parser.add_argument("--quiet", action="store_true")
-    parser.add_argument("--traj_folder", default='/home/nomaan/bc_data/gello/', type=str,
-                      help="Path to the trajectory folder containing demonstration data")
-    parser.add_argument("--use_link_centers", action="store_true")
-    parser.add_argument("--use_gripper", action="store_true")
-    args = get_combined_args(parser)
-
-
-    #get the robot name from model path 
-    robot_name = args.model_path.split('/')[-1]
-
-    #load config for the robot
-    with open('object_configs/objects.yaml', 'r') as file:
-        robot_config = yaml.safe_load(file)
-    urdf_path = robot_config[robot_name]['urdf_path']
-    print('urdf_path : ', urdf_path)
-    
-    #get the object output folder
-    object_splat_folder = args.model_path.replace(robot_name, '')
-    if args.objects == " ":
-        object_list = []
-    else:
-        object_list = args.objects.split(' ')
-
-    print("Rendering " + args.model_path)
-
-    # ######### Setup the pybullet engine #########
-    import pybullet as p
-    # p.connect(p.GUI)
-    p.connect(p.DIRECT)
-    p.resetSimulation()
-    flags = p.URDF_ENABLE_CACHED_GRAPHICS_SHAPES
-    urdf_path = robot_config[robot_name]['urdf_path'][0]
-    base_position = robot_config[robot_name]['base_position'][0]
-    pandaUid = p.loadURDF(urdf_path, useFixedBase=True, basePosition=base_position)
-
-    # TODO
-    # if args.use_gripper:
-    #     setup_gripper()
-
-
-    joint_poses = robot_config[robot_name]['joint_states'][0] # initial joint poses 
-
-    #if joint_poses is empty, then take the mid of the joint limits
-    num_joints = p.getNumJoints(pandaUid)
-    if len(joint_poses) == 0:
-        lower_limits = []
-        upper_limits = []
-        for i in range(num_joints):
-            joint_info = p.getJointInfo(pandaUid, i)
-            lower_limits.append(joint_info[8])
-            upper_limits.append(joint_info[9])
-        joint_poses = [(lower_limits[i] + upper_limits[i]) / 2 for i in range(num_joints)]
-
-    for i in range(min(len(joint_poses), num_joints)):
-        p.resetJointState(pandaUid, i, joint_poses[i])
-        
-    initial_joints = []
-    for joint_index in range(num_joints):
-        joint_info = p.getJointInfo(pandaUid, joint_index)
-        joint_name = joint_info[1].decode("utf-8")  
-        
-        if args.use_link_centers:
-            link_state = p.getLinkState(pandaUid, joint_index, computeForwardKinematics=True)
-            initial_joints.append({
-                "pos": link_state[0],
-                "q": link_state[1]
-            })
-        else:
-            link_state = p.getLinkState(pandaUid, joint_index, computeForwardKinematics=True)
-            initial_joints.append({
-                "pos": link_state[4],
-                "q": link_state[5]
-            })
-
-    # Initialize system state (RNG)
-    safe_state(args.quiet)
-
-    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test, object_list=object_list, robot_name=robot_name, object_splat_folder=object_splat_folder)

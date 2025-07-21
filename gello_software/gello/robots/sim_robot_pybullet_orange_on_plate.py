@@ -1,31 +1,43 @@
 import pickle
 import threading
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 import enum
-
-import mujoco
-import mujoco.viewer
-import numpy as np
-import zmq
-from dm_control import mjcf
-
-from gello.robots.robot import Robot
-
-assert mujoco.viewer is mujoco.viewer
-import pybullet as p
-
-
-import urdf_models.models_data as md
-from pybullet_planning.interfaces.robots.collision import pairwise_collision
-from pybullet_planning import plan_joint_motion, get_movable_joints, set_joint_positions
+import copy
 import random
 from collections import namedtuple
 import math
-
 import os
 import pickle
 import shutil
+import yaml
+from argparse import ArgumentParser
+
+import torch
+import numpy as np
+import mujoco
+import mujoco.viewer
+import zmq
+from dm_control import mjcf
+from gello.robots.robot import Robot
+
+assert mujoco.viewer is mujoco.viewer
+from scene.cameras import Camera
+from gaussian_renderer import render
+import urdf_models.models_data as md
+import pybullet as p
+from pybullet_planning.interfaces.robots.collision import pairwise_collision
+from pybullet_planning import plan_joint_motion, get_movable_joints, set_joint_positions
+from utils.robot_splat_render_utils import (
+    get_segmented_indices,
+    transform_means,
+    get_transfomration_list,
+    transform_object,
+    get_curr_link_states,
+)
+from gaussian_splatting.gaussian_renderer import GaussianModel
+from gaussian_splatting.arguments import ModelParams, PipelineParams, Namespace
+from scene import Scene
 
 
 class ZMQServerThread(threading.Thread):
@@ -111,7 +123,8 @@ class ZMQRobotServer:
 
                 self._socket.send(pickle.dumps(result))
             except zmq.error.Again:
-                print("Timeout in ZMQLeaderServer serve")
+                pass
+                # print("Timeout in ZMQLeaderServer serve")
                 # Timeout occurred, check if the stop event is set
 
     def stop(self) -> None:
@@ -250,9 +263,15 @@ class PybulletRobotServer:
         use_gripper: bool = True,
         serve_mode: str = SERVE_MODES.GENERATE_DEMOS,
         env_config_name: str = "orange_on_plate",
+        use_link_centers: bool = True,
+        robot_name: str = "robot_iphone",
+        render_camera_image: bool = True,
     ):
         self.serve_mode = serve_mode
+        self.use_link_centers = use_link_centers
+        self.robot_name = robot_name
         self.env_config_name = env_config_name
+        self.render_camera_image = render_camera_image
         self._zmq_server = ZMQRobotServer(robot=self, host=host, port=port)
         self._zmq_server_thread = ZMQServerThread(self._zmq_server)
         self.pybullet_client = p
@@ -445,6 +464,71 @@ class PybulletRobotServer:
             self.pybullet_client.stepSimulation()
             # time.sleep(1/240)
 
+        # Set up gaussian splat models
+        self.robot_gaussian = GaussianModel(3)
+        # self.T_object_gaussian = GaussianModel(3)
+
+        # load the gaussian model for the robot
+        self.robot_gaussian.load_ply(
+            "/home/jennyw2/data/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply"
+        )
+        self.gaussians_backup = copy.deepcopy(self.robot_gaussian)
+
+        self.object_gaussians = [
+            GaussianModel(3) for _ in range(len(self.urdf_object_list))
+        ]
+        for _ in range(len(self.urdf_object_list)):
+            self.object_gaussians[_].load_ply(
+                "/home/jennyw2/data/output/{}/point_cloud/iteration_7000/point_cloud.ply".format(
+                    self.splat_object_name_list[_]
+                )
+            )
+
+        # t_gaussians_backup = copy.deepcopy(t_gaussians)
+        self.object_gaussians_backup = copy.deepcopy(self.object_gaussians)
+
+        parser = ArgumentParser(description="Testing script parameters")
+        self.pipeline = PipelineParams(parser)
+        parser = ArgumentParser(description="Testing script parameters")
+        model = ModelParams(parser, sentinel=True)
+        dataset = model.extract(
+            Namespace(
+                sh_degree=3,
+                # TODO get these from the object config
+                source_path="/home/jennyw2/data/test_data/robot_iphone",
+                model_path="/home/jennyw2/data/output/robot_iphone",
+                images="images",
+                resolution=-1,
+                white_background=False,
+                data_device="cuda",
+                eval=False,
+            )
+        )
+        gaussians = GaussianModel(dataset.sh_degree)
+        self.scene = Scene(
+            dataset, gaussians, load_iteration=-1, shuffle=False, num_cams=10
+        )
+
+        bg_color = [1, 1, 1]
+        self.background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
+
+        # self.camera = self.setup_camera()
+        # self.camera2 = self.setup_camera2()
+        self.camera = self.setup_camera_from_dataset(use_train=True, cam_i=3)
+        self.camera2 = self.setup_camera_from_dataset(use_train=True, cam_i=4)
+
+        # x = random.uniform(-0.4, 0.5)
+        # y_low = 0.6 - np.sqrt(1 - (x-0.1)**2 / (0.5)**2) * 0.1
+        # y_high = 0.6 + np.sqrt(1 - (x-0.1)**2 / (0.5)**2) * 0.1
+        # y = random.uniform(y_low, y_high)
+        # self.pybullet_client.resetBasePositionAndOrientation(self.T_object, [x, y, 0], [0, 0, 0, 1])
+        # self.pybullet_client.changeDynamics(self.plane, -1, lateralFriction=random.uniform(0.2, 1.1))
+
+        with open(
+            "/home/jennyw2/code/SplatSim/object_configs/objects.yaml", "r"
+        ) as file:
+            self.object_config = yaml.safe_load(file)
+
     def num_dofs(self) -> int:
         return 7
 
@@ -517,7 +601,230 @@ class PybulletRobotServer:
     def set_freedrive_mode(self, enable: bool):
         pass
 
-    def get_observations(self) -> Dict[str, np.ndarray]:
+    def get_image_observation(self, data, camera="camera1") -> Dict[str, np.ndarray]:
+        if camera == "camera1":
+            cur_joint = self.get_joint_state_dummy()
+            cur_joint = [0] + cur_joint.tolist()
+            cur_joint = np.array(cur_joint)
+
+            # add 0 at front of cur_joint
+            cur_joint = [0] + cur_joint.tolist()
+            # cur_joint = [0, 0, -np.pi/2, np.pi/2, -np.pi/2, -np.pi/2, 0]
+            cur_joint = np.array(cur_joint)
+
+            cur_object_position_list = []
+            cur_object_rotation_list = []
+
+            for object_name in self.splat_object_name_list:
+                cur_object_position = np.array(data[object_name + "_position"])
+                cur_object_position_list.append(
+                    torch.from_numpy(cur_object_position).to(device="cuda").float()
+                )
+                cur_object_rotation = np.array(data[object_name + "_orientation"])
+                cur_object_rotation = np.roll(cur_object_rotation, 1)
+                cur_object_rotation_list.append(
+                    torch.from_numpy(cur_object_rotation).to(device="cuda").float()
+                )
+
+            transformations_list = get_transfomration_list(
+                self.dummy_robot, self.initial_link_states, cur_joint
+            )
+            # get_segmented_indices(robot_uid, pc, robot_transformation, aabb, robot_name)
+            robot_transformation = self.object_config[self.robot_name][
+                "transformation"
+            ]["matrix"]
+            aabb = self.object_config[self.robot_name]["aabb"]["bounding_box"]
+            segmented_list, xyz = get_segmented_indices(
+                self.dummy_robot,
+                self.gaussians_backup,
+                robot_transformation,
+                aabb,
+                self.robot_name,
+            )
+
+            # def transform_means(robot_uid, pc, xyz, segmented_list, transformations_list, robot_transformation)
+            xyz, rot, opacity, shs_featrest, shs_dc = transform_means(
+                self.dummy_robot,
+                self.gaussians_backup,
+                xyz,
+                segmented_list,
+                transformations_list,
+                robot_transformation,
+            )
+            # xyz_cube, rot_cube, opacity_cube, scales_cube, shs_dc_cube, sh_rest_cube = place_object(gaussians_backup, pos=torch.from_numpy(cur_object).to(device='cuda').float(), rotation=torch.from_numpy(curr_rotation).to(device='cuda').float())
+            # xyz_obj, rot_obj, opacity_obj, scales_obj, features_dc_obj, features_rest_obj = transform_object(t_gaussians, pos=cur_position, quat=cur_rotation)
+            xyz_obj_list = []
+            rot_obj_list = []
+            opacity_obj_list = []
+            scales_obj_list = []
+            features_dc_obj_list = []
+            features_rest_obj_list = []
+
+            for i in range(len(self.urdf_object_list)):
+                # transform_object(pc, object_config, pos, quat, robot_transformation)
+                robot_transformation = self.object_config[
+                    self.splat_object_name_list[i]
+                ]["transformation"]["matrix"]
+                (
+                    xyz_obj,
+                    rot_obj,
+                    opacity_obj,
+                    scales_obj,
+                    features_dc_obj,
+                    features_rest_obj,
+                ) = transform_object(
+                    self.object_gaussians_backup[i],
+                    object_config=self.object_config[self.splat_object_name_list[i]],
+                    pos=cur_object_position_list[i],
+                    quat=cur_object_rotation_list[i],
+                    robot_transformation=robot_transformation,
+                )
+                xyz_obj_list.append(xyz_obj)
+                rot_obj_list.append(rot_obj)
+                opacity_obj_list.append(opacity_obj)
+                scales_obj_list.append(scales_obj)
+                features_dc_obj_list.append(features_dc_obj)
+                features_rest_obj_list.append(features_rest_obj)
+
+            with torch.no_grad():
+                # gaussians.active_sh_degree = 0
+                self.robot_gaussian._xyz = torch.cat([xyz] + xyz_obj_list, dim=0)
+                self.robot_gaussian._rotation = torch.cat([rot] + rot_obj_list, dim=0)
+                self.robot_gaussian._opacity = torch.cat(
+                    [opacity] + opacity_obj_list, dim=0
+                )
+                self.robot_gaussian._features_rest = torch.cat(
+                    [shs_featrest] + features_rest_obj_list, dim=0
+                )
+                self.robot_gaussian._features_dc = torch.cat(
+                    [shs_dc] + features_dc_obj_list, dim=0
+                )
+                self.robot_gaussian._scaling = torch.cat(
+                    [self.gaussians_backup._scaling] + scales_obj_list, dim=0
+                )
+
+        if camera == "camera1":
+            rendering = render(
+                self.camera, self.robot_gaussian, self.pipeline, self.background
+            )["render"]
+        else:
+            rendering = render(
+                self.camera2, self.robot_gaussian, self.pipeline, self.background
+            )["render"]
+
+        # t_gaussians = copy.deepcopy(t_gaussians_backup)
+        self.object_gaussians = copy.deepcopy(self.object_gaussians_backup)
+
+        # convert into numpy
+        rendering = rendering.detach().cpu().numpy()
+
+        # convert to hxwxc from cxhxw
+        rendering = np.transpose(rendering, (1, 2, 0))
+
+        # convert to 0-255
+        rendering = (rendering * 255).astype(np.uint8)
+
+        # show the image
+        # cv2.imshow(camera, cv2.cvtColor(cv2.resize(rendering,(1200, 900) ), cv2.COLOR_BGR2RGB))
+        # cv2.waitKey(1)
+
+        # save the image
+        return rendering
+
+    def setup_camera2(self):
+        uid = 0
+        colmap_id = 1
+        R = (
+            torch.from_numpy(
+                np.array(
+                    [
+                        [-0.98784567, 0.00125165, 0.15543282],
+                        [0.1153457, 0.67620402, 0.72762868],
+                        [-0.10419356, 0.73671335, -0.66812959],
+                    ]
+                )
+            )
+            .float()
+            .numpy()
+        )
+
+        T = torch.Tensor([1.04674738, -0.96049824, 2.03845016]).float().numpy()
+
+        # T = torch.Tensor([ 0.09347542+0.5, -0.74648806+0.6,  5.57444971+0.2] ).float()
+
+        FoVx = 1.375955594372348
+        FoVy = 1.1025297299614814
+
+        gt_mask_alpha = None
+
+        image_width = 640
+        image_height = 480
+        image_name = "test"
+        image = torch.zeros((3, image_height, image_width)).float()
+
+        # order is  colmap_id, R, T, FoVx, FoVy, image, gt_alpha_mask, image_name, uid,
+
+        camera = Camera(
+            colmap_id, R, T, FoVx, FoVy, image, gt_mask_alpha, image_name, uid
+        )
+
+        return camera
+
+    def setup_camera_from_dataset(self, use_train=True, cam_i=3):
+        if use_train:
+            self.scene.getTrainCameras()
+            camera = self.scene.getTrainCameras()[cam_i]
+        else:
+            self.scene.getTestCameras()
+            camera = self.scene.getTestCameras()[cam_i]
+        return camera
+
+    def setup_camera(self):
+
+        uid = 0
+        colmap_id = 1
+        R = (
+            torch.from_numpy(
+                np.array(
+                    [
+                        [1.27679278e-01, -4.36057591e-01, 8.90815233e-01],
+                        [6.15525303e-02, 8.99918716e-01, 4.31691546e-01],
+                        [-9.89903676e-01, -2.86133428e-04, 1.41741420e-01],
+                    ]
+                )
+            )
+            .float()
+            .numpy()
+        )
+
+        T = torch.Tensor([-1.88933526, -0.6446558, 2.98276143]).float().numpy()
+
+        # T = torch.Tensor([ 0.09347542+0.5, -0.74648806+0.6,  5.57444971+0.2] ).float()
+
+        FoVx = 1.375955594372348
+        FoVy = 1.1025297299614814
+
+        gt_mask_alpha = None
+
+        image_width = 640 * 2
+        image_height = 480 * 2
+        image_name = "test"
+        image = torch.zeros((3, image_height, image_width)).float()
+
+        # order is  colmap_id, R, T, FoVx, FoVy, image, gt_alpha_mask, image_name, uid,
+
+        # self, resolution, colmap_id, R, T, FoVx, FoVy, depth_params, image, invdepthmap,
+        #                  image_name, uid,
+        #                  trans=np.array([0.0, 0.0, 0.0]), scale=1.0, data_device = "cuda",
+        #                  train_test_exp = False, is_test_dataset = False, is_test_view = False
+        #                  ):
+        camera = Camera(
+            colmap_id, R, T, FoVx, FoVy, image, gt_mask_alpha, image_name, uid
+        )
+
+        return camera
+
+    def get_observations(self, generate_wrist_rgb=False) -> Dict[str, np.ndarray]:
         joint_positions = self.get_joint_state()
         joint_positions_dummy = self.get_joint_state_dummy()
         joint_velocities = np.array(
@@ -561,6 +868,8 @@ class PybulletRobotServer:
             "action": action,
         }
 
+        observations["gripper_position"] = [self.current_gripper_state]
+
         for i in range(len(self.urdf_object_list)):
             (
                 object_pos,
@@ -570,6 +879,21 @@ class PybulletRobotServer:
             )
             observations[self.splat_object_name_list[i] + "_position"] = object_pos
             observations[self.splat_object_name_list[i] + "_orientation"] = object_quat
+
+        if self.render_camera_image:
+            image = self.get_image_observation(
+                data=observations,
+            )
+            if generate_wrist_rgb:
+                image2 = self.get_image_observation(data=observations, camera="camera2")
+            else:
+                image2 = None
+
+            # cv2.imshow('camera1', cv2.cvtColor(cv2.resize(image,(1200, 900) ), cv2.COLOR_BGR2RGB))
+            # cv2.waitKey(1)
+
+            observations["base_rgb"] = image
+            observations["wrist_rgb"] = image2
 
         return observations
 
@@ -996,6 +1320,23 @@ class PybulletRobotServer:
         # start the zmq server
         self._zmq_server_thread.start()
         joint_signs = [1, 1, 1, 1, 1, 1]
+
+        for i in range(len(self.initial_joint_state)):
+            self.pybullet_client.resetJointState(
+                self.dummy_robot, i, self.initial_joint_state[i]
+            )
+
+        self.initial_link_states = get_curr_link_states(
+            self.dummy_robot, self.use_link_centers
+        )
+
+        # get end effector position and orientation
+        ee_pos, ee_quat = (
+            self.pybullet_client.getLinkState(self.dummy_robot, 6)[0],
+            self.pybullet_client.getLinkState(self.dummy_robot, 6)[1],
+        )
+        self.iniital_ee_quat = ee_quat
+
         for i in range(1, 7):
             self.pybullet_client.resetJointState(
                 self.dummy_robot,
