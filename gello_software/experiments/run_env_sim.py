@@ -327,7 +327,7 @@ def main(args):
         obs = env.step(action)
 
         if "base_rgb" in obs:
-            cv2.imshow("robot", obs["base_rgb"])
+            cv2.imshow("robot", cv2.cvtColor(obs['base_rgb'], cv2.COLOR_RGB2BGR))
             cv2.waitKey(1)
 
         loop_end = time.time()

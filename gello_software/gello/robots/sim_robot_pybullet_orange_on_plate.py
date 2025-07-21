@@ -466,13 +466,13 @@ class PybulletRobotServer:
 
         # Set up gaussian splat models
         self.robot_gaussian = GaussianModel(3)
+        self.gaussians_backup = GaussianModel(3)
         # self.T_object_gaussian = GaussianModel(3)
 
         # load the gaussian model for the robot
-        self.robot_gaussian.load_ply(
+        self.gaussians_backup.load_ply(
             "/home/jennyw2/data/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply"
         )
-        self.gaussians_backup = copy.deepcopy(self.robot_gaussian)
 
         self.object_gaussians = [
             GaussianModel(3) for _ in range(len(self.urdf_object_list))
@@ -506,7 +506,7 @@ class PybulletRobotServer:
         )
         gaussians = GaussianModel(dataset.sh_degree)
         self.scene = Scene(
-            dataset, gaussians, load_iteration=-1, shuffle=False, num_cams=10
+            dataset, gaussians, load_iteration=-1, shuffle=False, num_cams=5
         )
 
         bg_color = [1, 1, 1]
@@ -607,11 +607,31 @@ class PybulletRobotServer:
             cur_joint = [0] + cur_joint.tolist()
             cur_joint = np.array(cur_joint)
 
-            # add 0 at front of cur_joint
-            cur_joint = [0] + cur_joint.tolist()
-            # cur_joint = [0, 0, -np.pi/2, np.pi/2, -np.pi/2, -np.pi/2, 0]
-            cur_joint = np.array(cur_joint)
+            transformations_list = get_transfomration_list(
+                self.dummy_robot, self.initial_link_states, cur_joint
+            )
+            robot_transformation = self.object_config[self.robot_name][
+                "transformation"
+            ]["matrix"]
+            aabb = self.object_config[self.robot_name]["aabb"]["bounding_box"]
+            segmented_list, xyz = get_segmented_indices(
+                self.dummy_robot,
+                self.gaussians_backup,
+                robot_transformation,
+                aabb,
+                self.robot_name,
+            )
 
+            xyz, rot, opacity, shs_featrest, shs_dc = transform_means(
+                self.dummy_robot,
+                self.gaussians_backup,
+                xyz,
+                segmented_list,
+                transformations_list,
+                robot_transformation,
+            )
+
+            # Transform each object splat to be in the right pose
             cur_object_position_list = []
             cur_object_rotation_list = []
 
@@ -625,32 +645,6 @@ class PybulletRobotServer:
                 cur_object_rotation_list.append(
                     torch.from_numpy(cur_object_rotation).to(device="cuda").float()
                 )
-
-            transformations_list = get_transfomration_list(
-                self.dummy_robot, self.initial_link_states, cur_joint
-            )
-            # get_segmented_indices(robot_uid, pc, robot_transformation, aabb, robot_name)
-            robot_transformation = self.object_config[self.robot_name][
-                "transformation"
-            ]["matrix"]
-            aabb = self.object_config[self.robot_name]["aabb"]["bounding_box"]
-            segmented_list, xyz = get_segmented_indices(
-                self.dummy_robot,
-                self.gaussians_backup,
-                robot_transformation,
-                aabb,
-                self.robot_name,
-            )
-
-            # def transform_means(robot_uid, pc, xyz, segmented_list, transformations_list, robot_transformation)
-            xyz, rot, opacity, shs_featrest, shs_dc = transform_means(
-                self.dummy_robot,
-                self.gaussians_backup,
-                xyz,
-                segmented_list,
-                transformations_list,
-                robot_transformation,
-            )
             # xyz_cube, rot_cube, opacity_cube, scales_cube, shs_dc_cube, sh_rest_cube = place_object(gaussians_backup, pos=torch.from_numpy(cur_object).to(device='cuda').float(), rotation=torch.from_numpy(curr_rotation).to(device='cuda').float())
             # xyz_obj, rot_obj, opacity_obj, scales_obj, features_dc_obj, features_rest_obj = transform_object(t_gaussians, pos=cur_position, quat=cur_rotation)
             xyz_obj_list = []
@@ -659,7 +653,6 @@ class PybulletRobotServer:
             scales_obj_list = []
             features_dc_obj_list = []
             features_rest_obj_list = []
-
             for i in range(len(self.urdf_object_list)):
                 # transform_object(pc, object_config, pos, quat, robot_transformation)
                 robot_transformation = self.object_config[
@@ -686,21 +679,33 @@ class PybulletRobotServer:
                 features_dc_obj_list.append(features_dc_obj)
                 features_rest_obj_list.append(features_rest_obj)
 
+            # Combine splats of robot and of objects
+            # with torch.no_grad():
+            #     # gaussians.active_sh_degree = 0
+            #     self.robot_gaussian._xyz = torch.cat([xyz] + xyz_obj_list, dim=0)
+            #     self.robot_gaussian._rotation = torch.cat([rot] + rot_obj_list, dim=0)
+            #     self.robot_gaussian._opacity = torch.cat(
+            #         [opacity] + opacity_obj_list, dim=0
+            #     )
+            #     self.robot_gaussian._features_rest = torch.cat(
+            #         [shs_featrest] + features_rest_obj_list, dim=0
+            #     )
+            #     self.robot_gaussian._features_dc = torch.cat(
+            #         [shs_dc] + features_dc_obj_list, dim=0
+            #     )
+            #     self.robot_gaussian._scaling = torch.cat(
+            #         [self.gaussians_backup._scaling] + scales_obj_list, dim=0
+            #     )
+
             with torch.no_grad():
                 # gaussians.active_sh_degree = 0
-                self.robot_gaussian._xyz = torch.cat([xyz] + xyz_obj_list, dim=0)
-                self.robot_gaussian._rotation = torch.cat([rot] + rot_obj_list, dim=0)
-                self.robot_gaussian._opacity = torch.cat(
-                    [opacity] + opacity_obj_list, dim=0
-                )
-                self.robot_gaussian._features_rest = torch.cat(
-                    [shs_featrest] + features_rest_obj_list, dim=0
-                )
-                self.robot_gaussian._features_dc = torch.cat(
-                    [shs_dc] + features_dc_obj_list, dim=0
-                )
+                self.robot_gaussian._xyz = torch.cat([xyz], dim=0)
+                self.robot_gaussian._rotation = torch.cat([rot], dim=0)
+                self.robot_gaussian._opacity = torch.cat([opacity], dim=0)
+                self.robot_gaussian._features_rest = torch.cat([shs_featrest], dim=0)
+                self.robot_gaussian._features_dc = torch.cat([shs_dc], dim=0)
                 self.robot_gaussian._scaling = torch.cat(
-                    [self.gaussians_backup._scaling] + scales_obj_list, dim=0
+                    [self.gaussians_backup._scaling], dim=0
                 )
 
         if camera == "camera1":
@@ -713,6 +718,7 @@ class PybulletRobotServer:
             )["render"]
 
         # t_gaussians = copy.deepcopy(t_gaussians_backup)
+        # TODO is this necessary?
         self.object_gaussians = copy.deepcopy(self.object_gaussians_backup)
 
         # convert into numpy
