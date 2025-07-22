@@ -112,11 +112,11 @@ def main(args):
             time.sleep(1/240)
             i += 1
 
-            if i == 100:
-                # Capture and save the point cloud every 100 iterations
-                points = get_point_cloud_from_camera(p)
-                save_point_cloud_as_ply(points, f"scene_pointcloud_{i}.ply")
-                print(f"Saved point cloud to scene_pointcloud_{i}.ply")
+            # if i == 100:
+            #     # Capture and save the point cloud every 100 iterations
+            #     points = get_point_cloud_from_camera(p)
+            #     save_point_cloud_as_ply(points, f"scene_pointcloud_{i}.ply")
+            #     print(f"Saved point cloud to scene_pointcloud_{i}.ply")
 
     except KeyboardInterrupt:
         print("Shutting down the server...")
