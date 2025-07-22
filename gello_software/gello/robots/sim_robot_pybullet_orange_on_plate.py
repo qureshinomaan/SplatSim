@@ -21,6 +21,8 @@ import zmq
 from dm_control import mjcf
 from gello.robots.robot import Robot
 
+import cv2
+
 assert mujoco.viewer is mujoco.viewer
 from scene.cameras import Camera
 from gaussian_renderer import render
@@ -104,6 +106,11 @@ class ZMQRobotServer:
                 args = request.get("args", {})
                 result: Any
                 print(f"Received request: {method}, {args}")
+                if not self._robot.ready_to_serve:
+                    result = {"error": "Robot not ready to serve"}
+                    print(result)
+                    self._socket.send(pickle.dumps(result))
+                    continue
                 if method == "num_dofs":
                     result = self._robot.num_dofs()
                 elif method == "get_joint_state":
@@ -255,8 +262,6 @@ class PybulletRobotServer:
 
     def __init__(
         self,
-        # urdf_path: str = './pybullet-playground_2/urdf/sisbot.urdf',
-        urdf_path: str = "./pybullet-playground_2/urdf/sisbot.urdf",
         host: str = "127.0.0.1",
         port: int = 5556,
         print_joints: bool = False,
@@ -266,7 +271,9 @@ class PybulletRobotServer:
         use_link_centers: bool = True,
         robot_name: str = "robot_iphone",
         render_camera_image: bool = True,
+        object_config_path: str = "./object_configs/objects.yaml",
     ):
+        self.ready_to_serve = False
         self.serve_mode = serve_mode
         self.use_link_centers = use_link_centers
         self.robot_name = robot_name
@@ -275,17 +282,24 @@ class PybulletRobotServer:
         self._zmq_server = ZMQRobotServer(robot=self, host=host, port=port)
         self._zmq_server_thread = ZMQServerThread(self._zmq_server)
         self.pybullet_client = p
-        self.urdf_path = urdf_path
-        self._num_joints = 7
+        self.object_config_path = object_config_path
         self.grasp_poses = {}
         self.pybullet_client.connect(p.GUI)
         self.pybullet_client.setAdditionalSearchPath(
             "./pybullet-playground_2/urdf/pybullet_ur5_gripper/urdf"
         )
 
+        with open(self.object_config_path, "r") as file:
+            self.object_config = yaml.safe_load(file)
+
+        urdf_path = self.object_config[self.robot_name]["urdf_path"][0]
+        if not os.path.exists(urdf_path):
+            raise FileNotFoundError(f"URDF file not found: {urdf_path}")
+        base_position = self.object_config[self.robot_name]["base_position"][0]
+
         flags = self.pybullet_client.URDF_USE_IMPLICIT_CYLINDER
         self.dummy_robot = self.pybullet_client.loadURDF(
-            self.urdf_path, [0, 0, -0.1], useFixedBase=True, flags=flags
+            urdf_path, useFixedBase=True, basePosition=base_position, flags=flags
         )
 
         self.skip_recording_first = 0
@@ -305,19 +319,24 @@ class PybulletRobotServer:
         #     self.setup_spatula()
         #     pass
 
-        # self.pybullet_client.resetBasePositionAndOrientation(self.robot, [0, 0, -0.1], [0, 0, 0, 1])
-        # self.pybullet_client.resetBasePositionAndOrientation(self.dummy_robot, [0, 0, -0.1], [0, 0, 0, 1])
-        self.joint_signs = [1, 1, -1, 1, 1, 1, 1]
-        self.offsets = [np.pi / 2, 0, 0, 0, 0, 0, 0]
-        self.initial_joint_state = [0, -np.pi / 2, np.pi / 2, -np.pi / 2, -np.pi / 2, 0]
+        # self.offsets = [np.pi / 2, 0, 0, 0, 0, 0, 0]
+        # This has an extra 0 at the beginning for the world joint, and then another 0 for a fixed joint, I think
+        self.initial_joint_state = self.object_config[self.robot_name]["joint_states"][
+            0
+        ]
+        # Remove the extra 0 for the world joint
+        self.initial_joint_state = self.initial_joint_state[1:]
+        self.joint_signs = [1] * len(self.initial_joint_state)
 
-        model_lib = md.model_lib()
+        # self.initial_joint_state = [0, -np.pi / 2, np.pi / 2, -np.pi / 2, -np.pi / 2, 0]
+
+        # model_lib = md.model_lib()
         # objectid = self.pybullet_client.loadURDF(model_lib['potato_chip_1'], [0.5, 0.15, 0])
 
         x = random.uniform(0.2, 0.7)
         y = random.uniform(-0.4, 0.4)
         # random euler angles for the orientation of the object
-        euler_z = random.uniform(-np.pi, np.pi)
+        # euler_z = random.uniform(-np.pi, np.pi)
         # random quaternion for the orientation of the object
         quat = self.pybullet_client.getQuaternionFromEuler([0, 0, 0])
 
@@ -386,7 +405,7 @@ class PybulletRobotServer:
         )
 
         # set initial joint positions
-        for i in range(1, 7):
+        for i in range(1, len(self.initial_joint_state)):
             self.pybullet_client.resetJointState(
                 self.dummy_robot, i, self.initial_joint_state[i - 1]
             )
@@ -409,7 +428,7 @@ class PybulletRobotServer:
 
         # set the joint positions to the drop location
 
-        for i in range(1, 7):
+        for i in range(1, self.num_dofs()):
             self.pybullet_client.resetJointState(
                 self.dummy_robot, i, self.drop_ee_joint[i - 1]
             )
@@ -487,35 +506,41 @@ class PybulletRobotServer:
         # t_gaussians_backup = copy.deepcopy(t_gaussians)
         self.object_gaussians_backup = copy.deepcopy(self.object_gaussians)
 
-        parser = ArgumentParser(description="Testing script parameters")
-        self.pipeline = PipelineParams(parser)
-        parser = ArgumentParser(description="Testing script parameters")
-        model = ModelParams(parser, sentinel=True)
-        dataset = model.extract(
-            Namespace(
-                sh_degree=3,
-                # TODO get these from the object config
-                source_path="/home/jennyw2/data/test_data/robot_iphone",
-                model_path="/home/jennyw2/data/output/robot_iphone",
-                images="images",
-                resolution=-1,
-                white_background=False,
-                data_device="cuda",
-                eval=False,
+        if self.render_camera_image:
+            parser = ArgumentParser(description="Testing script parameters")
+            self.pipeline = PipelineParams(parser)
+            model = ModelParams(parser, sentinel=True)
+            dataset = model.extract(
+                Namespace(
+                    sh_degree=3,
+                    # TODO get these from the object config
+                    source_path="/home/jennyw2/data/test_data/robot_iphone",
+                    model_path="/home/jennyw2/data/output/robot_iphone",
+                    images="images",
+                    resolution=-1,
+                    white_background=False,
+                    data_device="cuda",
+                    eval=False,
+                )
             )
-        )
-        gaussians = GaussianModel(dataset.sh_degree)
-        self.scene = Scene(
-            dataset, gaussians, load_iteration=-1, shuffle=False, num_cams=5
-        )
+            gaussians = GaussianModel(dataset.sh_degree)
+            self.scene = Scene(
+                dataset, gaussians, load_iteration=-1, shuffle=False, num_cams=255
+            )
 
-        bg_color = [1, 1, 1]
-        self.background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
+            bg_color = [1, 1, 1]
+            self.background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
 
-        # self.camera = self.setup_camera()
-        # self.camera2 = self.setup_camera2()
-        self.camera = self.setup_camera_from_dataset(use_train=True, cam_i=3)
-        self.camera2 = self.setup_camera_from_dataset(use_train=True, cam_i=4)
+            # self.camera = self.setup_camera()
+            # self.camera2 = self.setup_camera2()
+            self.camera = self.setup_camera_from_dataset(use_train=True, cam_i=254)
+            self.camera2 = self.setup_camera_from_dataset(use_train=True, cam_i=4)
+        else:
+            self.camera = None
+            self.camera2 = None
+            self.scene = None
+            self.pipeline = None
+            self.background = None
 
         # x = random.uniform(-0.4, 0.5)
         # y_low = 0.6 - np.sqrt(1 - (x-0.1)**2 / (0.5)**2) * 0.1
@@ -523,11 +548,6 @@ class PybulletRobotServer:
         # y = random.uniform(y_low, y_high)
         # self.pybullet_client.resetBasePositionAndOrientation(self.T_object, [x, y, 0], [0, 0, 0, 1])
         # self.pybullet_client.changeDynamics(self.plane, -1, lateralFriction=random.uniform(0.2, 1.1))
-
-        with open(
-            "/home/jennyw2/code/SplatSim/object_configs/objects.yaml", "r"
-        ) as file:
-            self.object_config = yaml.safe_load(file)
 
     def num_dofs(self) -> int:
         return 7
@@ -575,12 +595,12 @@ class PybulletRobotServer:
         )
 
     def command_joint_state(self, joint_state: np.ndarray) -> None:
-        assert len(joint_state) == self._num_joints, (
-            f"Expected joint state of length {self._num_joints}, "
+        assert len(joint_state) == self.num_dofs(), (
+            f"Expected joint state of length {self.num_dofs()}, "
             f"got {len(joint_state)}."
         )
 
-        for i in range(1, 7):
+        for i in range(1, self.num_dofs()):
             # self.pybullet_client.resetJointState(self.robot, i, joint_state[i-1])
             self.pybullet_client.setJointMotorControl2(
                 self.dummy_robot,
@@ -602,111 +622,98 @@ class PybulletRobotServer:
         pass
 
     def get_image_observation(self, data, camera="camera1") -> Dict[str, np.ndarray]:
-        if camera == "camera1":
-            cur_joint = self.get_joint_state_dummy()
-            cur_joint = [0] + cur_joint.tolist()
-            cur_joint = np.array(cur_joint)
+        # Gets transformations for all links of the robot based on the current simulation
+        transformations_list = get_transfomration_list(
+            self.dummy_robot, self.initial_link_states
+        )
 
-            transformations_list = get_transfomration_list(
-                self.dummy_robot, self.initial_link_states, cur_joint
+        # TODO does this need to be done every time?
+        # Ah. it's because xyz gets overwritten
+        robot_transformation = self.object_config[self.robot_name]["transformation"][
+            "matrix"
+        ]
+        aabb = self.object_config[self.robot_name]["aabb"]["bounding_box"]
+        segmented_list, xyz = get_segmented_indices(
+            self.dummy_robot,
+            self.gaussians_backup,
+            robot_transformation,
+            aabb,
+            self.robot_name,
+        )
+
+        xyz, rot, opacity, shs_featrest, shs_dc = transform_means(
+            self.dummy_robot,
+            self.gaussians_backup,
+            xyz,
+            segmented_list,
+            transformations_list,
+            robot_transformation,
+        )
+
+        # Transform each object splat to be in the right pose
+        cur_object_position_list = []
+        cur_object_rotation_list = []
+
+        for object_name in self.splat_object_name_list:
+            cur_object_position = np.array(data[object_name + "_position"])
+            cur_object_position_list.append(
+                torch.from_numpy(cur_object_position).to(device="cuda").float()
             )
-            robot_transformation = self.object_config[self.robot_name][
+            cur_object_rotation = np.array(data[object_name + "_orientation"])
+            cur_object_rotation = np.roll(cur_object_rotation, 1)
+            cur_object_rotation_list.append(
+                torch.from_numpy(cur_object_rotation).to(device="cuda").float()
+            )
+        # xyz_cube, rot_cube, opacity_cube, scales_cube, shs_dc_cube, sh_rest_cube = place_object(gaussians_backup, pos=torch.from_numpy(cur_object).to(device='cuda').float(), rotation=torch.from_numpy(curr_rotation).to(device='cuda').float())
+        # xyz_obj, rot_obj, opacity_obj, scales_obj, features_dc_obj, features_rest_obj = transform_object(t_gaussians, pos=cur_position, quat=cur_rotation)
+        xyz_obj_list = []
+        rot_obj_list = []
+        opacity_obj_list = []
+        scales_obj_list = []
+        features_dc_obj_list = []
+        features_rest_obj_list = []
+        for i in range(len(self.urdf_object_list)):
+            robot_transformation = self.object_config[self.splat_object_name_list[i]][
                 "transformation"
             ]["matrix"]
-            aabb = self.object_config[self.robot_name]["aabb"]["bounding_box"]
-            segmented_list, xyz = get_segmented_indices(
-                self.dummy_robot,
-                self.gaussians_backup,
-                robot_transformation,
-                aabb,
-                self.robot_name,
+            (
+                xyz_obj,
+                rot_obj,
+                opacity_obj,
+                scales_obj,
+                features_dc_obj,
+                features_rest_obj,
+            ) = transform_object(
+                self.object_gaussians_backup[i],
+                object_config=self.object_config[self.splat_object_name_list[i]],
+                pos=cur_object_position_list[i],
+                quat=cur_object_rotation_list[i],
+                robot_transformation=robot_transformation,
             )
+            xyz_obj_list.append(xyz_obj)
+            rot_obj_list.append(rot_obj)
+            opacity_obj_list.append(opacity_obj)
+            scales_obj_list.append(scales_obj)
+            features_dc_obj_list.append(features_dc_obj)
+            features_rest_obj_list.append(features_rest_obj)
 
-            xyz, rot, opacity, shs_featrest, shs_dc = transform_means(
-                self.dummy_robot,
-                self.gaussians_backup,
-                xyz,
-                segmented_list,
-                transformations_list,
-                robot_transformation,
+        # Combine splats of robot and of objects
+        with torch.no_grad():
+            # gaussians.active_sh_degree = 0
+            self.robot_gaussian._xyz = torch.cat([xyz] + xyz_obj_list, dim=0)
+            self.robot_gaussian._rotation = torch.cat([rot] + rot_obj_list, dim=0)
+            self.robot_gaussian._opacity = torch.cat(
+                [opacity] + opacity_obj_list, dim=0
             )
-
-            # Transform each object splat to be in the right pose
-            cur_object_position_list = []
-            cur_object_rotation_list = []
-
-            for object_name in self.splat_object_name_list:
-                cur_object_position = np.array(data[object_name + "_position"])
-                cur_object_position_list.append(
-                    torch.from_numpy(cur_object_position).to(device="cuda").float()
-                )
-                cur_object_rotation = np.array(data[object_name + "_orientation"])
-                cur_object_rotation = np.roll(cur_object_rotation, 1)
-                cur_object_rotation_list.append(
-                    torch.from_numpy(cur_object_rotation).to(device="cuda").float()
-                )
-            # xyz_cube, rot_cube, opacity_cube, scales_cube, shs_dc_cube, sh_rest_cube = place_object(gaussians_backup, pos=torch.from_numpy(cur_object).to(device='cuda').float(), rotation=torch.from_numpy(curr_rotation).to(device='cuda').float())
-            # xyz_obj, rot_obj, opacity_obj, scales_obj, features_dc_obj, features_rest_obj = transform_object(t_gaussians, pos=cur_position, quat=cur_rotation)
-            xyz_obj_list = []
-            rot_obj_list = []
-            opacity_obj_list = []
-            scales_obj_list = []
-            features_dc_obj_list = []
-            features_rest_obj_list = []
-            for i in range(len(self.urdf_object_list)):
-                # transform_object(pc, object_config, pos, quat, robot_transformation)
-                robot_transformation = self.object_config[
-                    self.splat_object_name_list[i]
-                ]["transformation"]["matrix"]
-                (
-                    xyz_obj,
-                    rot_obj,
-                    opacity_obj,
-                    scales_obj,
-                    features_dc_obj,
-                    features_rest_obj,
-                ) = transform_object(
-                    self.object_gaussians_backup[i],
-                    object_config=self.object_config[self.splat_object_name_list[i]],
-                    pos=cur_object_position_list[i],
-                    quat=cur_object_rotation_list[i],
-                    robot_transformation=robot_transformation,
-                )
-                xyz_obj_list.append(xyz_obj)
-                rot_obj_list.append(rot_obj)
-                opacity_obj_list.append(opacity_obj)
-                scales_obj_list.append(scales_obj)
-                features_dc_obj_list.append(features_dc_obj)
-                features_rest_obj_list.append(features_rest_obj)
-
-            # Combine splats of robot and of objects
-            # with torch.no_grad():
-            #     # gaussians.active_sh_degree = 0
-            #     self.robot_gaussian._xyz = torch.cat([xyz] + xyz_obj_list, dim=0)
-            #     self.robot_gaussian._rotation = torch.cat([rot] + rot_obj_list, dim=0)
-            #     self.robot_gaussian._opacity = torch.cat(
-            #         [opacity] + opacity_obj_list, dim=0
-            #     )
-            #     self.robot_gaussian._features_rest = torch.cat(
-            #         [shs_featrest] + features_rest_obj_list, dim=0
-            #     )
-            #     self.robot_gaussian._features_dc = torch.cat(
-            #         [shs_dc] + features_dc_obj_list, dim=0
-            #     )
-            #     self.robot_gaussian._scaling = torch.cat(
-            #         [self.gaussians_backup._scaling] + scales_obj_list, dim=0
-            #     )
-
-            with torch.no_grad():
-                # gaussians.active_sh_degree = 0
-                self.robot_gaussian._xyz = torch.cat([xyz], dim=0)
-                self.robot_gaussian._rotation = torch.cat([rot], dim=0)
-                self.robot_gaussian._opacity = torch.cat([opacity], dim=0)
-                self.robot_gaussian._features_rest = torch.cat([shs_featrest], dim=0)
-                self.robot_gaussian._features_dc = torch.cat([shs_dc], dim=0)
-                self.robot_gaussian._scaling = torch.cat(
-                    [self.gaussians_backup._scaling], dim=0
-                )
+            self.robot_gaussian._features_rest = torch.cat(
+                [shs_featrest] + features_rest_obj_list, dim=0
+            )
+            self.robot_gaussian._features_dc = torch.cat(
+                [shs_dc] + features_dc_obj_list, dim=0
+            )
+            self.robot_gaussian._scaling = torch.cat(
+                [self.gaussians_backup._scaling] + scales_obj_list, dim=0
+            )
 
         if camera == "camera1":
             rendering = render(
@@ -731,8 +738,11 @@ class PybulletRobotServer:
         rendering = (rendering * 255).astype(np.uint8)
 
         # show the image
-        # cv2.imshow(camera, cv2.cvtColor(cv2.resize(rendering,(1200, 900) ), cv2.COLOR_BGR2RGB))
-        # cv2.waitKey(1)
+        # resize the image to 640x480
+        cv2.imshow(
+            camera, cv2.cvtColor(cv2.resize(rendering, (640, 480)), cv2.COLOR_BGR2RGB)
+        )
+        cv2.waitKey(1)
 
         # save the image
         return rendering
@@ -994,10 +1004,12 @@ class PybulletRobotServer:
         )
 
         # reset the joint positions to the initial joint positions
-        for i in range(1, 7):
+        for i in range(1, self.num_dofs()):
             self.pybullet_client.resetJointState(
                 self.dummy_robot, i, initial_joint_positions[i - 1]
             )
+        # TODO possibly randomize gripper state here, too
+        # Though that might have to edit initial_joint_positions
         return initial_joint_positions
 
     def get_random_ee_pose(self):
@@ -1103,7 +1115,8 @@ class PybulletRobotServer:
             # set the joints to the last joint positions of path
             if path is not None:
                 # reset the joint positions to the initial joint positions
-                for i in range(1, 7):
+                # Note: Doesn't reset gripper open/close state
+                for i in range(1, self.num_dofs()):
                     self.pybullet_client.resetJointState(
                         self.dummy_robot, i, path[0][i - 1]
                     )
@@ -1119,7 +1132,8 @@ class PybulletRobotServer:
             all_paths.append(pre_grasp2grasp_path[::-1])
 
             # set the joint angle to pre_grasp2grasp_path[0]
-            for i in range(1, 7):
+            # Note: doesn't affect gripper open/close state
+            for i in range(1, self.num_dofs()):
                 self.pybullet_client.resetJointState(
                     self.dummy_robot, i, pre_grasp2grasp_path[0][i - 1]
                 )
@@ -1151,7 +1165,8 @@ class PybulletRobotServer:
             # set the joints to the last joint positions of path
             if path is not None:
                 # reset the joint positions to the initial joint positions
-                for i in range(1, 7):
+                # Note: doesn't affect gripper open/close state
+                for i in range(1, self.num_dofs()):
                     self.pybullet_client.resetJointState(
                         self.dummy_robot, i, path[-1][i - 1]
                     )
@@ -1170,7 +1185,8 @@ class PybulletRobotServer:
             # set the joints to the last joint positions of path
             if path is not None:
                 # reset the joint positions to the initial joint positions
-                for i in range(1, 7):
+                # Note: doesn't affect gripper open/close state
+                for i in range(1, self.num_dofs()):
                     self.pybullet_client.resetJointState(
                         self.dummy_robot, i, path[-1][i - 1]
                     )
@@ -1179,7 +1195,7 @@ class PybulletRobotServer:
 
                 # TODO why is this here. Can it be moved outside?
                 if self.skip_recording_first:
-                    for i in range(1, 7):
+                    for i in range(1, self.num_dofs()):
                         self.pybullet_client.resetJointState(
                             self.dummy_robot, i, initial_joint_positions[i - 1]
                         )
@@ -1199,10 +1215,9 @@ class PybulletRobotServer:
 
             # grasp the first object
             for i in range(160):
-                self.move_gripper(0.084)
+                self.open_gripper()
                 self.pybullet_client.stepSimulation()
 
-                self.current_gripper_action = 1
                 observations = self.get_observations()
                 # save the observations in the correct format zfill(5)
                 if i % 20 == 0 and not self.skip_recording_first:
@@ -1228,10 +1243,9 @@ class PybulletRobotServer:
 
             # drop the object
             for i in range(160):
-                self.move_gripper(0)
+                self.open_gripper()
                 self.pybullet_client.stepSimulation()
 
-                self.current_gripper_action = 0
                 observations = self.get_observations()
                 # save the observations
                 if i % 20 == 0 and not self.skip_recording_first:
@@ -1250,8 +1264,8 @@ class PybulletRobotServer:
                 for i in range(100):
                     self.pybullet_client.stepSimulation()
                     # time.sleep(1/240)
-                    self.move_gripper(0.0)
-                    for k in range(1, 7):
+                    self.close_gripper()
+                    for k in range(1, self.num_dofs()):
                         self.pybullet_client.resetJointState(
                             self.dummy_robot,
                             k,
@@ -1286,6 +1300,16 @@ class PybulletRobotServer:
                 return False
         return True
 
+    def open_gripper(self):
+        """Open the gripper."""
+        self.move_gripper(0.084)
+        self.current_gripper_action = 1
+
+    def close_gripper(self):
+        """Close the gripper."""
+        self.move_gripper(0.0)
+        self.current_gripper_action = 0
+
     def plan_execute_record_trajectory(self, initial_joint_positions, joint_signs):
         # Returns whether it was a success
 
@@ -1299,8 +1323,8 @@ class PybulletRobotServer:
         for i in range(100):
             self.pybullet_client.stepSimulation()
             # time.sleep(1/240)
-            self.move_gripper(0.0)
-            for k in range(1, 7):
+            self.close_gripper()
+            for k in range(1, self.num_dofs()):
                 self.pybullet_client.resetJointState(
                     self.dummy_robot,
                     k,
@@ -1325,13 +1349,19 @@ class PybulletRobotServer:
     def serve(self) -> None:
         # start the zmq server
         self._zmq_server_thread.start()
-        joint_signs = [1, 1, 1, 1, 1, 1]
 
+        # Prepare for teleport by removing forces
         for i in range(len(self.initial_joint_state)):
-            self.pybullet_client.resetJointState(
-                self.dummy_robot, i, self.initial_joint_state[i]
+            self.pybullet_client.setJointMotorControl2(
+                self.dummy_robot, i, self.pybullet_client.VELOCITY_CONTROL, force=0
             )
-
+        # Reset joint states by teleporting
+        for i in range(1, len(self.initial_joint_state)):
+            self.pybullet_client.resetJointState(
+                self.dummy_robot,
+                i,
+                self.initial_joint_state[i - 1] * self.joint_signs[i - 1],
+            )
         self.initial_link_states = get_curr_link_states(
             self.dummy_robot, self.use_link_centers
         )
@@ -1343,13 +1373,13 @@ class PybulletRobotServer:
         )
         self.iniital_ee_quat = ee_quat
 
-        for i in range(1, 7):
+        for i in range(1, self.num_dofs()):
             self.pybullet_client.resetJointState(
                 self.dummy_robot,
                 i,
-                self.initial_joint_state[i - 1] * joint_signs[i - 1],
+                self.initial_joint_state[i - 1] * self.joint_signs[i - 1],
             )
-            self.move_gripper(0.0)
+            self.close_gripper()
 
         # get initial ee position and orientation
         self.initial_ee_pos, self.initial_ee_quat = (
@@ -1365,13 +1395,16 @@ class PybulletRobotServer:
 
         # set to initial joint state
         for i in range(10000):
-            for i in range(1, 7):
+            for i in range(1, len(self.initial_joint_state)):
                 self.pybullet_client.resetJointState(
                     self.dummy_robot,
                     i,
-                    self.initial_joint_state[i - 1] * joint_signs[i - 1],
+                    self.initial_joint_state[i - 1] * self.joint_signs[i - 1],
                 )
             self.pybullet_client.stepSimulation()
+
+        print("Ready to serve.")
+        self.ready_to_serve = True
 
         while True:
             if self.serve_mode == self.SERVE_MODES.INTERACTIVE:
@@ -1385,19 +1418,19 @@ class PybulletRobotServer:
                 # Let the simulation settle
                 for i in range(10000):
                     self.pybullet_client.stepSimulation()
-                    self.move_gripper(0.084)
-                    for k in range(1, 7):
+                    self.open_gripper()
+                    for k in range(1, self.num_dofs()):
                         self.pybullet_client.resetJointState(
                             self.dummy_robot,
                             k,
-                            self.initial_joint_state[k - 1] * joint_signs[k - 1],
+                            self.initial_joint_state[k - 1] * self.joint_signs[k - 1],
                         )
                 self.pybullet_client.stepSimulation()
 
                 initial_joint_positions = self.randomize_ee_pose()
 
                 success = self.plan_execute_record_trajectory(
-                    initial_joint_positions, joint_signs
+                    initial_joint_positions, self.joint_signs
                 )
                 if success:
                     self.trajectory_count += 1
@@ -1482,6 +1515,7 @@ class PybulletRobotServer:
         mimic_parent_name = "finger_joint"
         mimic_children_names = {
             "right_outer_knuckle_joint": 1,
+            # "finger_joint": 1, # TODO: is this left_outer_knuckle_joint?
             "left_inner_knuckle_joint": 1,
             "right_inner_knuckle_joint": 1,
             "left_inner_finger_joint": -1,
@@ -1656,7 +1690,7 @@ class PybulletRobotServer:
         while k < len(path):
             error = 0
 
-            for j in range(1, 7):
+            for j in range(1, self.num_dofs()):
                 self.pybullet_client.setJointMotorControl2(
                     self.dummy_robot,
                     j,
@@ -1668,7 +1702,7 @@ class PybulletRobotServer:
 
             # get current joint positions
             joint_states = []
-            for i in range(1, 7):
+            for i in range(1, self.num_dofs()):
                 joint_states.append(
                     self.pybullet_client.getJointState(self.dummy_robot, i)[0]
                 )

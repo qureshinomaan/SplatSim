@@ -78,7 +78,7 @@ def launch_robot_server(args: Args):
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           env_config_name="orange_on_plate",
+           env_config_name="orange_on_plate", render_camera_image=False
         )
         server.serve()
 
@@ -106,7 +106,7 @@ def launch_robot_server(args: Args):
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           env_config_name="apple_on_plate",
+           env_config_name="apple_on_plate", render_camera_image=False,
         )
         server.serve()
 
@@ -134,7 +134,7 @@ def launch_robot_server(args: Args):
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           env_config_name="banana_on_plate",
+           env_config_name="banana_on_plate", render_camera_image=False,
         )
         server.serve()
 

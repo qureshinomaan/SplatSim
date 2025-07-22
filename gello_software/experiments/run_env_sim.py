@@ -326,9 +326,9 @@ def main(args):
             action = action[:-1]
         obs = env.step(action)
 
-        if "base_rgb" in obs:
-            cv2.imshow("robot", cv2.cvtColor(obs['base_rgb'], cv2.COLOR_RGB2BGR))
-            cv2.waitKey(1)
+        # if "base_rgb" in obs:
+        #     cv2.imshow("robot", cv2.cvtColor(obs['base_rgb'], cv2.COLOR_RGB2BGR))
+        #     cv2.waitKey(1)
 
         loop_end = time.time()
         # Keep the time locked at a fixed rate

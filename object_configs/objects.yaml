@@ -26,8 +26,8 @@ robot_iphone:
     - [0, 0, 0, 1]
   aabb:
     bounding_box:
-    - [-0.0734, -0.11, 0.0961]
-    - [0.5298, 0.2043, 0.6748]
+    - [-0.0734, -0.11, -0.0033]
+    - [0.5297, 0.2044, 0.5747]
   urdf_path:
   - ./pybullet-playground_2/urdf/sisbot.urdf
   base_position:

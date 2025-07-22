@@ -142,8 +142,7 @@ class ZMQRobotServer:
 class PybulletRobotServer:
     def __init__(
         self,
-        # urdf_path: str = '../gaussian-splatting/pybullet-playground/urdf/sisbot.urdf',
-        urdf_path: str = '../gaussian-splatting/pybullet-playground/urdf/sisbot.urdf',
+        urdf_path: str = './pybullet-playground_2/urdf/sisbot.urdf',
         host: str = "127.0.0.1",
         port: int = 5556,
         print_joints: bool = False,
@@ -332,12 +331,17 @@ class PybulletRobotServer:
 
             # for i in range(1, 7):
             #     self.pybullet_client.resetJointState(self.dummy_robot, i, joint_state[i-1])
+            if self.use_gripper:
+                # move_gripper(0) means close, move_gripper(0.084) means open
+                # joint_state[-1] == 1 means close, joint_state[-1] == 0 means open
+                print("moving gripper to", (1-joint_state[-1])*0.085)
+                self.move_gripper((1-joint_state[-1])*0.085)
+                self.current_gripper_action = joint_state[-1]
+
 
             self.pybullet_client.stepSimulation()
 
-        if self.use_gripper:
-            self.move_gripper((1-joint_state[-1])*0.085)
-            self.current_gripper_action = joint_state[-1]
+
 
         # self.total_count += 1
         # target_apple_pos = [0.5129530465428657, 0.10310958170994994, 0.235239846197727]

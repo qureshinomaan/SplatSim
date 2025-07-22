@@ -93,8 +93,12 @@ def main(args):
         i = 0
         while True:
             # Read slider values and set joint positions using position control
+            max_joint_i = -1
+            joint_positions = [0] * 30
             for idx, slider in zip(joint_indices, sliders):
                 target_pos = p.readUserDebugParameter(slider)
+                joint_positions[idx] = target_pos
+                max_joint_i = max(max_joint_i, idx)
                 p.setJointMotorControl2(
                     bodyIndex=robot_server.dummy_robot,
                     jointIndex=idx,
@@ -102,6 +106,8 @@ def main(args):
                     targetPosition=target_pos,
                     force=500  # You may need to tune this value
                 )
+            joint_positions = joint_positions[:max_joint_i + 1]
+            print(f"Joint positions:\n{joint_positions}\n")
             p.stepSimulation()
             time.sleep(1/240)
             i += 1
