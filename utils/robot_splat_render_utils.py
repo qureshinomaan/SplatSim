@@ -257,17 +257,13 @@ def transform_shs(shs_feat, rotation_matrix):
 def get_segmented_indices(robot_uid, pc, robot_transformation, aabb, robot_name):
     # empty torch cache
     torch.cuda.empty_cache()
-    means3D = pc.get_xyz # 3D means shape (N, 3)
-    
     # Defining a cube in Gaussian space to segment out the robot
-    xyz = pc.get_xyz # shape (N, 3)
+    means3D = pc.get_xyz # 3D means shape (N, 3)
 
     Trans = torch.tensor(robot_transformation).to(device=means3D.device).float() # shape (4, 4)
-    
 
     R = Trans[:3, :3]
     translation = Trans[:3, 3]
-    
     
     points = copy.deepcopy(means3D)
     #transform the points to the new frame
@@ -277,12 +273,10 @@ def get_segmented_indices(robot_uid, pc, robot_transformation, aabb, robot_name)
 
     #load labels.npy
     labels = np.load('./labels_path/'+robot_name+'_labels.npy')
-    labels = torch.from_numpy(labels).to(device=xyz.device).long()
+    labels = torch.from_numpy(labels).to(device=means3D.device).long()
 
-    
     condition = (points[:, 0] > aabb[0][0]) & (points[:, 0] < aabb[1][0]) & (points[:, 1] > aabb[0][1]) & (points[:, 1] < aabb[1][1]) & (points[:, 2] > aabb[0][2]) & (points[:, 2] < aabb[1][2])
     condition = torch.where(condition)[0]
-    
     for i in range(p.getNumJoints(robot_uid)):
         segmented_points.append(condition[labels==i])
     

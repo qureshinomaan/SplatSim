@@ -271,6 +271,7 @@ class PybulletRobotServer:
         use_link_centers: bool = True,
         robot_name: str = "robot_iphone",
         render_camera_image: bool = True,
+        cam_i: int = 254,
         object_config_path: str = "./object_configs/objects.yaml",
     ):
         self.ready_to_serve = False
@@ -279,6 +280,7 @@ class PybulletRobotServer:
         self.robot_name = robot_name
         self.env_config_name = env_config_name
         self.render_camera_image = render_camera_image
+        self.cam_i = cam_i
         self._zmq_server = ZMQRobotServer(robot=self, host=host, port=port)
         self._zmq_server_thread = ZMQServerThread(self._zmq_server)
         self.pybullet_client = p
@@ -326,6 +328,14 @@ class PybulletRobotServer:
         ]
         # Remove the extra 0 for the world joint
         self.initial_joint_state = self.initial_joint_state[1:]
+        # + 1 joint for the world joint at the beginning which will be skipped
+        num_joints = self.pybullet_client.getNumJoints(self.dummy_robot)
+        if len(self.initial_joint_state) > num_joints:
+            print(
+                f"Warning: Provided initial joint positions ({len(self.initial_joint_state)}) exceed the number of joints ({num_joints}). Truncating to {num_joints} positions."
+            )
+            self.initial_joint_state = self.initial_joint_state[:num_joints]
+        # This is a no-op
         self.joint_signs = [1] * len(self.initial_joint_state)
 
         # self.initial_joint_state = [0, -np.pi / 2, np.pi / 2, -np.pi / 2, -np.pi / 2, 0]
@@ -484,14 +494,9 @@ class PybulletRobotServer:
             # time.sleep(1/240)
 
         # Set up gaussian splat models
+        # Placeholder object of type GaussianModel
         self.robot_gaussian = GaussianModel(3)
-        self.gaussians_backup = GaussianModel(3)
         # self.T_object_gaussian = GaussianModel(3)
-
-        # load the gaussian model for the robot
-        self.gaussians_backup.load_ply(
-            "/home/jennyw2/data/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply"
-        )
 
         self.object_gaussians = [
             GaussianModel(3) for _ in range(len(self.urdf_object_list))
@@ -507,6 +512,14 @@ class PybulletRobotServer:
         self.object_gaussians_backup = copy.deepcopy(self.object_gaussians)
 
         if self.render_camera_image:
+            source_path = self.object_config[self.robot_name]["source_path"]
+            if not os.path.exists(source_path):
+                raise FileNotFoundError(f"Source path not found: {source_path}")
+
+            model_path = self.object_config[self.robot_name]["model_path"]
+            if not os.path.exists(model_path):
+                raise FileNotFoundError(f"Model path not found: {model_path}")
+
             parser = ArgumentParser(description="Testing script parameters")
             self.pipeline = PipelineParams(parser)
             model = ModelParams(parser, sentinel=True)
@@ -514,8 +527,8 @@ class PybulletRobotServer:
                 Namespace(
                     sh_degree=3,
                     # TODO get these from the object config
-                    source_path="/home/jennyw2/data/test_data/robot_iphone",
-                    model_path="/home/jennyw2/data/output/robot_iphone",
+                    source_path=source_path,
+                    model_path=model_path,
                     images="images",
                     resolution=-1,
                     white_background=False,
@@ -523,24 +536,31 @@ class PybulletRobotServer:
                     eval=False,
                 )
             )
-            gaussians = GaussianModel(dataset.sh_degree)
+            self.gaussians_backup = GaussianModel(dataset.sh_degree)
+            # This loads the .ply file into self.gaussians_backup
             self.scene = Scene(
-                dataset, gaussians, load_iteration=-1, shuffle=False, num_cams=255
+                dataset,
+                self.gaussians_backup,
+                load_iteration=-1,
+                shuffle=False,
+                num_cams=self.cam_i + 2,
             )
 
             bg_color = [1, 1, 1]
             self.background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
 
-            # self.camera = self.setup_camera()
-            # self.camera2 = self.setup_camera2()
-            self.camera = self.setup_camera_from_dataset(use_train=True, cam_i=254)
-            self.camera2 = self.setup_camera_from_dataset(use_train=True, cam_i=4)
+            self.camera = self.setup_camera_from_dataset(
+                cam_i=self.cam_i, use_train=True
+            )
+            # TODO set up camera2 as the wrist camera
+            self.camera2 = self.setup_camera_from_dataset(cam_i=4, use_train=True)
         else:
             self.camera = None
             self.camera2 = None
             self.scene = None
             self.pipeline = None
             self.background = None
+            self.gaussians_backup = None
 
         # x = random.uniform(-0.4, 0.5)
         # y_low = 0.6 - np.sqrt(1 - (x-0.1)**2 / (0.5)**2) * 0.1
@@ -786,12 +806,10 @@ class PybulletRobotServer:
 
         return camera
 
-    def setup_camera_from_dataset(self, use_train=True, cam_i=3):
+    def setup_camera_from_dataset(self, cam_i, use_train=True):
         if use_train:
-            self.scene.getTrainCameras()
             camera = self.scene.getTrainCameras()[cam_i]
         else:
-            self.scene.getTestCameras()
             camera = self.scene.getTestCameras()[cam_i]
         return camera
 
@@ -863,7 +881,10 @@ class PybulletRobotServer:
         )
 
         # print the euler angles and the reconstructed quaternion
-        self.current_gripper_state = self.get_current_gripper_state() / 0.8
+        if self.use_gripper:
+            self.current_gripper_state = self.get_current_gripper_state() / 0.8
+        else:
+            self.current_gripper_state = 0.0
 
         # combine the position and euler angles and self.current_gripper_state to get the state
         state = np.concatenate(
@@ -1388,7 +1409,7 @@ class PybulletRobotServer:
         )
         # print joint angles
         joint_states = []
-        for i in range(1, 19):
+        for i in range(1, len(self.initial_joint_state)):
             joint_states.append(
                 self.pybullet_client.getJointState(self.dummy_robot, i)[0]
             )
@@ -1552,6 +1573,8 @@ class PybulletRobotServer:
         return result[4], result[5]
 
     def move_gripper(self, open_length, velocity=2):
+        if not self.use_gripper:
+            return
         # open_length = np.clip(open_length, *self.gripper_range)
         open_angle = 0.715 - math.asin(
             (open_length - 0.010) / 0.1143

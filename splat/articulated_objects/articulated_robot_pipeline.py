@@ -1,3 +1,6 @@
+import os
+from argparse import ArgumentParser, Namespace
+
 import pybullet as p
 import numpy as np
 import open3d as o3d
@@ -7,6 +10,10 @@ from sklearn.neighbors import KNeighborsClassifier
 import argparse
 import torch
 import yaml
+from scene import Scene
+
+from gaussian_splatting.arguments import ModelParams, Namespace
+from gaussian_splatting.gaussian_renderer import GaussianModel
 
 from cameras import get_overall_pcd
 
@@ -44,8 +51,44 @@ def create_window(app, title, geometry_list, x, y):
 def main(args):
 
     #load the transformation matrix (yaml file)
-    with open("../../object_configs/objects.yaml", "r") as file:
+    with open("./object_configs/objects.yaml", "r") as file:
         object_configs = yaml.safe_load(file)
+
+    parser = ArgumentParser(description="Testing script parameters")
+    model = ModelParams(parser, sentinel=True)
+    source_path = object_configs[args.robot_name]["source_path"]
+    if not os.path.exists(source_path):
+        raise FileNotFoundError(f"Source path not found: {source_path}")
+    model_path = object_configs[args.robot_name]["model_path"]
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model path not found: {model_path}")
+            
+    dataset = model.extract(
+        Namespace(
+            sh_degree=3,
+            # TODO get these from the object config
+            source_path=source_path,
+            model_path=model_path,
+            images="images",
+            resolution=-1,
+            white_background=False,
+            data_device="cuda",
+            eval=False,
+        )
+    )
+    gaussians = GaussianModel(dataset.sh_degree)
+    # This loads the .ply file into self.gaussians_backup
+    # Use the minimum number of cameras. This is just for startup
+    scene = Scene(
+        dataset, gaussians, load_iteration=-1, shuffle=False, num_cams=1
+    )
+    # Extract the point cloud from the loaded gaussian splat
+    robot_xyz = gaussians.get_xyz.cpu().detach().numpy()
+    pcd_splat = o3d.geometry.PointCloud()
+    pcd_splat.points = o3d.utility.Vector3dVector(robot_xyz)
+
+    robot_path = object_configs[args.robot_name]["urdf_path"][0]
+    initial_joint_positions = object_configs[args.robot_name]['joint_states'][0]
 
     #connect to pybullet
     physicsClient = p.connect(p.GUI)
@@ -53,12 +96,11 @@ def main(args):
     p.setRealTimeSimulation(1)
 
     #load the robot
-    robot_path = args.robot
     base_position = object_configs[args.robot_name]["base_position"][0]
     robot_id = p.loadURDF(robot_path, useFixedBase=True, basePosition=base_position)
 
     #get the joint states from args
-    joint_states = args.joint_states
+    joint_states = initial_joint_positions
 
     #set the joint states
     num_joints = p.getNumJoints(robot_id)
@@ -130,9 +172,6 @@ def main(args):
     #visualize the knn predictions
     o3d.visualization.draw_geometries([pcd])
 
-    #load the splat pcd
-    pcd_splat = o3d.io.read_point_cloud(args.splat_path)
-
     #get the transformation matrix for the glasses
     #check if the robot_name is in the object_configs
     if args.robot_name not in object_configs:
@@ -151,10 +190,19 @@ def main(args):
 
     #filter the points based on the aabb
     #get aabb of the robot from array X which is basically the pointcloud of the robot
-    # TODO undo the offset
-    # aabb = ((np.min(X[:, 0]), np.min(X[:, 1]), np.min(X[:, 2])), (np.max(X[:, 0]) + 0.2, np.max(X[:, 1]), np.max(X[:, 2])))
-    # aabb = ((np.min(X[:, 0]), np.min(X[:, 1]), np.min(X[:, 2]) + 0.05), (np.max(X[:, 0]) + 0.2, np.max(X[:, 1]), np.max(X[:, 2])))
-    aabb = ((np.min(X[:, 0]), np.min(X[:, 1]), np.min(X[:, 2])), (np.max(X[:, 0]), np.max(X[:, 1]), np.max(X[:, 2])))
+    urdf_bbox_adjustment = object_configs[args.robot_name]["aabb"]["urdf_bbox_adjustment"]
+    aabb = (
+        (
+            np.min(X[:, 0]) + urdf_bbox_adjustment[0][0], # x min
+            np.min(X[:, 1]) + urdf_bbox_adjustment[1][0], # y min
+            np.min(X[:, 2]) + urdf_bbox_adjustment[2][0], # z min
+        ),
+        (
+            np.max(X[:, 0]) + urdf_bbox_adjustment[0][1], # x max
+            np.max(X[:, 1]) + urdf_bbox_adjustment[1][1], # y max
+            np.max(X[:, 2]) + urdf_bbox_adjustment[2][1], # z max
+        )
+    )
 
 
     aabb_list = [[float(val) for val in point] for point in aabb]
@@ -164,7 +212,7 @@ def main(args):
     # Update the object_configs
     object_configs[args.robot_name]["aabb"]['bounding_box'] = aabb_list
     #properly save the object_configs
-    with open("../../object_configs/objects.yaml", "w") as file:
+    with open("./object_configs/objects.yaml", "w") as file:
         yaml.dump(
             object_configs,
             file,
@@ -186,7 +234,6 @@ def main(args):
 
     #infer the labels
     splat_labels = knn.predict(splat_points)
-
 
     #assign colors and visualize
 
@@ -210,8 +257,11 @@ def main(args):
     gui.Application.instance.run()
 
     #save labels
-    print("Saving labels to numpy file...")
-    np.save(args.robot_name + '_labels.npy', splat_labels)
+    labels_fn = f"labels_path/{args.robot_name}_labels.npy"
+    print(f"Saving labels to numpy file {labels_fn}...")
+    if not os.path.exists("labels_path"):
+        os.makedirs("labels_path", exist_ok=True)
+    np.save(labels_fn, splat_labels)
 
     # #run the simulation
     # print("Running simulation...")
@@ -225,16 +275,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     #add arguments with default values
-    parser.add_argument('--robot', type=str, default='../../pybullet-playground_2/urdf/sisbot.urdf')
-    parser.add_argument('--joint_states', nargs='+', type=float, default=[0, 0.0, -1.5707963267948966, 1.5707963267948966, -1.5707963267948966, -1.5707963267948966, 0.0, 0.0, 0.0, 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548, 0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127])
-    parser.add_argument('--splat_path', type=str, default='/home/jennyw2/data/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply')
-    parser.add_argument('--robot_name', type=str, default='robot_iphone')
+    # parser.add_argument('--robot', type=str, default='../../pybullet-playground_2/urdf/sisbot.urdf')
+    # parser.add_argument('--joint_states', nargs='+', type=float, default=[0, 0.0, -1.5707963267948966, 1.5707963267948966, -1.5707963267948966, -1.5707963267948966, 0.0, 0.0, 0.0, 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548, 0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127])
+    # parser.add_argument('--splat_path', type=str, default='/home/jennyw2/data/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply')
+    # parser.add_argument('--robot_name', type=str, default='robot_iphone')
 
-    # 0, 0, -np.pi/2, np.pi/2, 0, np.pi/2, 0
-    # parser.add_argument('--robot', type=str, default='../../pybullet-playground_2/urdf/pybullet_ur5_gripper/robots/urdf/ur5e.urdf')
-    # parser.add_argument('--joint_states', nargs='+', type=float, default=[0, 0, -1.5707963267948966, 1.5707963267948966, 0, 1.5707963267948966, 0, 0.0, 0.0, 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548, 0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127])
-    # parser.add_argument('--splat_path', type=str, default='/home/jennyw2/code/gaussian-splatting-repo/gaussian_splatting/output/robot_jenny/point_cloud/iteration_30000/point_cloud.ply')
-    # parser.add_argument('--robot_name', type=str, default='robot_jenny')
+    parser.add_argument('--robot_name', type=str, default='robot_jenny')
 
     #parse the arguments
     args = parser.parse_args()
