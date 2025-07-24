@@ -501,15 +501,14 @@ class PybulletRobotServer:
         self.object_gaussians = [
             GaussianModel(3) for _ in range(len(self.urdf_object_list))
         ]
-        for _ in range(len(self.urdf_object_list)):
-            self.object_gaussians[_].load_ply(
+        for i in range(len(self.urdf_object_list)):
+            self.object_gaussians[i].load_ply(
                 "/home/jennyw2/data/output/{}/point_cloud/iteration_7000/point_cloud.ply".format(
-                    self.splat_object_name_list[_]
+                    self.splat_object_name_list[i]
                 )
             )
 
         # t_gaussians_backup = copy.deepcopy(t_gaussians)
-        self.object_gaussians_backup = copy.deepcopy(self.object_gaussians)
 
         if self.render_camera_image:
             source_path = self.object_config[self.robot_name]["source_path"]
@@ -693,9 +692,6 @@ class PybulletRobotServer:
         features_dc_obj_list = []
         features_rest_obj_list = []
         for i in range(len(self.urdf_object_list)):
-            robot_transformation = self.object_config[self.splat_object_name_list[i]][
-                "transformation"
-            ]["matrix"]
             (
                 xyz_obj,
                 rot_obj,
@@ -704,7 +700,7 @@ class PybulletRobotServer:
                 features_dc_obj,
                 features_rest_obj,
             ) = transform_object(
-                self.object_gaussians_backup[i],
+                self.object_gaussians[i],
                 object_config=self.object_config[self.splat_object_name_list[i]],
                 pos=cur_object_position_list[i],
                 quat=cur_object_rotation_list[i],
@@ -745,8 +741,6 @@ class PybulletRobotServer:
             )["render"]
 
         # t_gaussians = copy.deepcopy(t_gaussians_backup)
-        # TODO is this necessary?
-        self.object_gaussians = copy.deepcopy(self.object_gaussians_backup)
 
         # convert into numpy
         rendering = rendering.detach().cpu().numpy()
