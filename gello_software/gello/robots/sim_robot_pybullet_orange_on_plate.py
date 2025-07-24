@@ -376,6 +376,7 @@ class PybulletRobotServer:
         self.use_fixed_base = [False, True]
         global_scaling_list = [1, 1]
         self.urdf_object_list = []
+        self.urdf_object_mass_list = []
         for object_name in range(len(self.object_name_list)):
             if self.object_name_list[object_name] in models_lib.model_name_list:
                 object_loaded = self.pybullet_client.loadURDF(
@@ -399,6 +400,9 @@ class PybulletRobotServer:
                     globalScaling=1,
                     useFixedBase=self.use_fixed_base[object_name],
                 )
+                self.urdf_object_list.append(object_loaded)
+            mass = self.pybullet_client.getDynamicsInfo(object_loaded, -1)[0]
+            self.urdf_object_mass_list.append(mass)
 
         # reset the box position
         self.pybullet_client.resetBasePositionAndOrientation(
@@ -501,12 +505,9 @@ class PybulletRobotServer:
         self.object_gaussians = [
             GaussianModel(3) for _ in range(len(self.urdf_object_list))
         ]
-        for i in range(len(self.urdf_object_list)):
-            self.object_gaussians[i].load_ply(
-                "/home/jennyw2/data/output/{}/point_cloud/iteration_7000/point_cloud.ply".format(
-                    self.splat_object_name_list[i]
-                )
-            )
+        for i, splat_name in enumerate(self.splat_object_name_list):
+            ply_path = self.object_config[splat_name]["ply_path"]
+            self.object_gaussians[i].load_ply(ply_path)
 
         # t_gaussians_backup = copy.deepcopy(t_gaussians)
 
@@ -601,7 +602,11 @@ class PybulletRobotServer:
             self.serve_mode = serve_mode
 
     def set_object_pose(
-        self, object_name: str, position: np.ndarray, orientation: np.ndarray
+        self,
+        object_name: str,
+        position: np.ndarray,
+        orientation: np.ndarray,
+        use_gravity: bool = True,
     ) -> None:
         """Set the pose of an object in the simulation."""
         if object_name not in self.splat_object_name_list:
@@ -612,6 +617,18 @@ class PybulletRobotServer:
         self.pybullet_client.resetBasePositionAndOrientation(
             self.urdf_object_list[object_id], position, orientation
         )
+
+        if not use_gravity:
+            # Make the object static so that it doesn't move
+            self.pybullet_client.changeDynamics(
+                self.urdf_object_list[object_id], -1, mass=0
+            )
+        else:
+            self.pybullet_client.changeDynamics(
+                self.urdf_object_list[object_id],
+                -1,
+                mass=self.urdf_object_mass_list[object_id],
+            )
 
     def command_joint_state(self, joint_state: np.ndarray) -> None:
         assert len(joint_state) == self.num_dofs(), (
@@ -679,7 +696,6 @@ class PybulletRobotServer:
                 torch.from_numpy(cur_object_position).to(device="cuda").float()
             )
             cur_object_rotation = np.array(data[object_name + "_orientation"])
-            cur_object_rotation = np.roll(cur_object_rotation, 1)
             cur_object_rotation_list.append(
                 torch.from_numpy(cur_object_rotation).to(device="cuda").float()
             )
@@ -761,95 +777,11 @@ class PybulletRobotServer:
         # save the image
         return rendering
 
-    def setup_camera2(self):
-        uid = 0
-        colmap_id = 1
-        R = (
-            torch.from_numpy(
-                np.array(
-                    [
-                        [-0.98784567, 0.00125165, 0.15543282],
-                        [0.1153457, 0.67620402, 0.72762868],
-                        [-0.10419356, 0.73671335, -0.66812959],
-                    ]
-                )
-            )
-            .float()
-            .numpy()
-        )
-
-        T = torch.Tensor([1.04674738, -0.96049824, 2.03845016]).float().numpy()
-
-        # T = torch.Tensor([ 0.09347542+0.5, -0.74648806+0.6,  5.57444971+0.2] ).float()
-
-        FoVx = 1.375955594372348
-        FoVy = 1.1025297299614814
-
-        gt_mask_alpha = None
-
-        image_width = 640
-        image_height = 480
-        image_name = "test"
-        image = torch.zeros((3, image_height, image_width)).float()
-
-        # order is  colmap_id, R, T, FoVx, FoVy, image, gt_alpha_mask, image_name, uid,
-
-        camera = Camera(
-            colmap_id, R, T, FoVx, FoVy, image, gt_mask_alpha, image_name, uid
-        )
-
-        return camera
-
     def setup_camera_from_dataset(self, cam_i, use_train=True):
         if use_train:
             camera = self.scene.getTrainCameras()[cam_i]
         else:
             camera = self.scene.getTestCameras()[cam_i]
-        return camera
-
-    def setup_camera(self):
-
-        uid = 0
-        colmap_id = 1
-        R = (
-            torch.from_numpy(
-                np.array(
-                    [
-                        [1.27679278e-01, -4.36057591e-01, 8.90815233e-01],
-                        [6.15525303e-02, 8.99918716e-01, 4.31691546e-01],
-                        [-9.89903676e-01, -2.86133428e-04, 1.41741420e-01],
-                    ]
-                )
-            )
-            .float()
-            .numpy()
-        )
-
-        T = torch.Tensor([-1.88933526, -0.6446558, 2.98276143]).float().numpy()
-
-        # T = torch.Tensor([ 0.09347542+0.5, -0.74648806+0.6,  5.57444971+0.2] ).float()
-
-        FoVx = 1.375955594372348
-        FoVy = 1.1025297299614814
-
-        gt_mask_alpha = None
-
-        image_width = 640 * 2
-        image_height = 480 * 2
-        image_name = "test"
-        image = torch.zeros((3, image_height, image_width)).float()
-
-        # order is  colmap_id, R, T, FoVx, FoVy, image, gt_alpha_mask, image_name, uid,
-
-        # self, resolution, colmap_id, R, T, FoVx, FoVy, depth_params, image, invdepthmap,
-        #                  image_name, uid,
-        #                  trans=np.array([0.0, 0.0, 0.0]), scale=1.0, data_device = "cuda",
-        #                  train_test_exp = False, is_test_dataset = False, is_test_view = False
-        #                  ):
-        camera = Camera(
-            colmap_id, R, T, FoVx, FoVy, image, gt_mask_alpha, image_name, uid
-        )
-
         return camera
 
     def get_observations(self, generate_wrist_rgb=False) -> Dict[str, np.ndarray]:
@@ -899,7 +831,9 @@ class PybulletRobotServer:
             "action": action,
         }
 
-        observations["gripper_position"] = [self.current_gripper_state]
+        # TODO if this name change from gripper_position doesn't work downstream, this is prob why
+        # observations["gripper_position"] = [self.current_gripper_state]
+        observations["gripper"] = [self.current_gripper_state]
 
         for i in range(len(self.urdf_object_list)):
             (
@@ -919,9 +853,6 @@ class PybulletRobotServer:
                 image2 = self.get_image_observation(data=observations, camera="camera2")
             else:
                 image2 = None
-
-            # cv2.imshow('camera1', cv2.cvtColor(cv2.resize(image,(1200, 900) ), cv2.COLOR_BGR2RGB))
-            # cv2.waitKey(1)
 
             observations["base_rgb"] = image
             observations["wrist_rgb"] = image2
@@ -1331,7 +1262,9 @@ class PybulletRobotServer:
         self.trajectory_length = 0
 
         # make path+trajectory_count folder
-        os.makedirs(self.path + str(self.trajectory_count).zfill(3), exist_ok=True)
+        trajectory_folder = self.path + str(self.trajectory_count).zfill(3)
+        print("Generating trajectory in folder:", trajectory_folder)
+        os.makedirs(trajectory_folder, exist_ok=True)
 
         all_paths = self.plan_approach_grasp_move_drop_plan(initial_joint_positions)
 

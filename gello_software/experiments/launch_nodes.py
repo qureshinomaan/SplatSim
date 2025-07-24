@@ -68,15 +68,6 @@ def launch_robot_server(args: Args):
         )
         server.serve()
 
-    elif args.robot == "sim_ur_pybullet_orange_interactive-robot_jenny":
-        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
-
-        server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           env_config_name="orange_on_plate", robot_name="robot_jenny", use_gripper=False, cam_i=3,
-        )
-        server.serve()
-
     elif args.robot == "sim_ur_pybullet_orange":
         from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 
@@ -95,6 +86,15 @@ def launch_robot_server(args: Args):
         )
         server.serve()
 
+    elif args.robot == "sim_ur_pybullet_orange_interactive-robot_jenny":
+        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+
+        server = PybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           env_config_name="orange_on_plate", robot_name="robot_jenny", use_gripper=False, cam_i=3,
+        )
+        server.serve()
+
     elif args.robot == "sim_ur_pybullet_apple":
         from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 
@@ -110,6 +110,15 @@ def launch_robot_server(args: Args):
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
            env_config_name="apple_on_plate", robot_name="robot_iphone",
+        )
+        server.serve()
+
+    elif args.robot == "sim_ur_pybullet_apple_interactive-robot_jenny":
+        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+
+        server = PybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           env_config_name="apple_on_plate", robot_name="robot_jenny", use_gripper=False, cam_i=3
         )
         server.serve()
 

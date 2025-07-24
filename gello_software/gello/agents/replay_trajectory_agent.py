@@ -63,8 +63,9 @@ class ReplayTrajectoryAgent(Agent):
         for object_name in object_list:
             cur_object_position = np.array(data[object_name + '_position'])
             cur_object_rotation = np.array(data[object_name + '_orientation'])
-            cur_object_rotation = np.roll(cur_object_rotation, 1)
-            self.env._robot.set_object_pose(object_name, cur_object_position, cur_object_rotation)
+            # cur_object_rotation = np.roll(cur_object_rotation, 1)
+            # Disable gravity for objects when replaying a trajectory so that there's no jittering
+            self.env._robot.set_object_pose(object_name, cur_object_position, cur_object_rotation, use_gravity=False)
 
         return cur_joint
 

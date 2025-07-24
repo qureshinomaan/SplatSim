@@ -508,7 +508,7 @@ class PybulletRobotServer:
                 cur_object_position = np.array(data[object_name + '_position'])
                 cur_object_position_list.append(torch.from_numpy(cur_object_position).to(device='cuda').float())
                 cur_object_rotation = np.array(data[object_name + '_orientation'])
-                cur_object_rotation = np.roll(cur_object_rotation, 1)
+                # cur_object_rotation = np.roll(cur_object_rotation, 1)
                 cur_object_rotation_list.append(torch.from_numpy(cur_object_rotation).to(device='cuda').float())
 
             

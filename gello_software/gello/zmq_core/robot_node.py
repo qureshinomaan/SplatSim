@@ -113,7 +113,7 @@ class ZMQClientRobot(Robot):
         result = pickle.loads(self._socket.recv())
         return result
     
-    def set_object_pose(self, object_name: str, position: np.ndarray, orientation: np.ndarray) -> None:
+    def set_object_pose(self, object_name: str, position: np.ndarray, orientation: np.ndarray, use_gravity: bool = True) -> None:
         """Set the pose of an object in the robot's environment.
 
         Args:
@@ -127,6 +127,7 @@ class ZMQClientRobot(Robot):
                 "object_name": object_name,
                 "position": position.tolist(),
                 "orientation": orientation.tolist(),
+                "use_gravity": use_gravity,
             },
         }
         send_message = pickle.dumps(request)
