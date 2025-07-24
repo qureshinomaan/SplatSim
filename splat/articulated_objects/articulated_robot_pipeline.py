@@ -54,6 +54,11 @@ def main(args):
     with open("./object_configs/objects.yaml", "r") as file:
         object_configs = yaml.safe_load(file)
 
+    if not os.path.exists("labels_path"):
+        os.makedirs("labels_path", exist_ok=True)
+    if not os.path.exists("pcds_path"):
+        os.makedirs("pcds_path", exist_ok=True)
+
     parser = ArgumentParser(description="Testing script parameters")
     model = ModelParams(parser, sentinel=True)
     source_path = object_configs[args.robot_name]["source_path"]
@@ -167,7 +172,7 @@ def main(args):
 
     pcd.colors = o3d.utility.Vector3dVector(pcd_colors)
     #save the pcd
-    o3d.io.write_point_cloud(args.robot_name + '_pcd.ply', pcd)
+    o3d.io.write_point_cloud("pcds_path/" + args.robot_name + '_pcd.ply', pcd)
 
     #visualize the knn predictions
     o3d.visualization.draw_geometries([pcd])
@@ -259,8 +264,6 @@ def main(args):
     #save labels
     labels_fn = f"labels_path/{args.robot_name}_labels.npy"
     print(f"Saving labels to numpy file {labels_fn}...")
-    if not os.path.exists("labels_path"):
-        os.makedirs("labels_path", exist_ok=True)
     np.save(labels_fn, splat_labels)
 
     # #run the simulation
