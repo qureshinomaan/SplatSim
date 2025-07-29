@@ -176,6 +176,10 @@ def main(args):
             from gello.agents.text_interface_agent import TextInterfaceAgent
             agent = TextInterfaceAgent()
             do_startup = False # So that it doesn't skip commands at first
+        elif args.agent == "slider_interface":
+            from gello.agents.slider_interface_agent import SliderInterfaceAgent
+            agent = SliderInterfaceAgent()
+            do_startup = False
         elif args.agent == "replay_trajectory":
             from gello.agents.replay_trajectory_agent import ReplayTrajectoryAgent
             traj_folder = "/home/jennyw2/data/bc_data/gello/"
@@ -231,7 +235,8 @@ def main(args):
     ), f"agent output dim = {len(start_pos)}, but env dim = {len(joints)}"
 
     max_delta = 0.05
-    for _ in range(25):
+    num_startup_iterations = 25 if do_startup else 2
+    for _ in range(num_startup_iterations):
         obs = env.get_obs()
         if do_startup:
             command_joints = agent.act(obs)

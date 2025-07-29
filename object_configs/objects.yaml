@@ -23,6 +23,7 @@ robot_jenny:
     0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127]
   source_path: /home/jennyw2/data/to_send/robot_jenny
   model_path: /home/jennyw2/code/gaussian-splatting-repo/gaussian_splatting/output/robot_jenny
+  wrist_camera_link_name: wrist_camera_link
 robot_iphone:
   transformation:
     matrix:
