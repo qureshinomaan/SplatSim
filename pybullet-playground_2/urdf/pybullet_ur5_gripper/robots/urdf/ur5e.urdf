@@ -350,8 +350,6 @@
   </joint>
 
 
-
-
   <link name="world"/>
   <joint name="world_joint" type="fixed">
     <parent link="world"/>
@@ -359,26 +357,68 @@
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
   </joint>
 
+
+
+  <!-- Virtual wrist camera -->
+  <link name="wrist_camera_link"/>
+  <joint name="wrist_camera_vis_joint" type="fixed">
+    <parent link="baseLink"/>
+    <child link="wrist_camera_link"/>
+    <origin xyz="0 -0.1 0.05" rpy="0 0 0"/>
+  </joint>
+
   <!-- make a virtual link to define a virtual camera -->
-  <link name="wrist_camera_link">
-    <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+  <link name="wrist_camera_vis_x_link">
+  <!-- X axis (Red) -->
+  <visual>
+    <origin xyz="0.05 0 0" rpy="0 -1.57 0"/>
     <geometry>
-      <sphere radius="0.03"/>
+      <cylinder radius="0.005" length="0.1"/>
     </geometry>
-    <material name="blue">
+    <material name="red_color">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  </link>
+  <joint name="wrist_camera_vis_x_joint" type="fixed">
+    <parent link="wrist_camera_link"/>
+    <child link="wrist_camera_vis_x_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="wrist_camera_vis_y_link">
+  <!-- Y axis (Green) -->
+  <visual>
+    <origin xyz="0 0.05 0" rpy="-1.57 0 0"/> <!-- Rotate cylinder to point along Y -->
+    <geometry>
+      <cylinder radius="0.005" length="0.1"/>
+    </geometry>
+    <material name="green_color">
+      <color rgba="0 1 0 1"/>
+    </material>
+  </visual>
+  </link>
+  <joint name="wrist_camera_vis_y_joint" type="fixed">
+    <parent link="wrist_camera_link"/>
+    <child link="wrist_camera_vis_y_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="wrist_camera_vis_z_link">
+  <!-- Z axis (Blue) -->
+  <visual>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/> <!-- Rotate cylinder to point along Z -->
+    <geometry>
+      <cylinder radius="0.005" length="0.1"/>
+    </geometry>
+    <material name="blue_color">
       <color rgba="0 0 1 1"/>
     </material>
   </visual>
   </link>
-  <joint name="wrist_camera_joint" type="fixed">
-    <!-- <parent link="forearm_link" /> -->
-    <parent link="baseLink"/>
-    <child link="wrist_camera_link"/>
-    <!-- Adjust xyz and rpy to set the camera's position and orientation relative to baseLink -->
-    <!-- <origin xyz="0 -0.2 0" rpy="0 0 0"/> -->
-    <origin xyz="0 -0.05 0" rpy="0 0 0"/>
+  <joint name="wrist_camera_vis_z_joint" type="fixed">
+    <parent link="wrist_camera_link"/>
+    <child link="wrist_camera_vis_z_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
-
-  
 </robot>

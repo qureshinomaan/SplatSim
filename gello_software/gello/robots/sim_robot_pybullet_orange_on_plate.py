@@ -565,7 +565,9 @@ class PybulletRobotServer:
         if "wrist_rgb" in self.camera_names:
             # Get the index of the wrist_camera_link
             if "wrist_camera_link_name" in self.object_config[self.robot_name]:
-                wrist_camera_link_name = self.object_config[self.robot_name]["wrist_camera_link_name"]
+                wrist_camera_link_name = self.object_config[self.robot_name][
+                    "wrist_camera_link_name"
+                ]
                 num_joints = p.getNumJoints(self.dummy_robot)
                 for i in range(num_joints):
                     info = p.getJointInfo(self.dummy_robot, i)
@@ -573,10 +575,13 @@ class PybulletRobotServer:
                         self.wrist_camera_link_index = i
                         break
                 if self.wrist_camera_link_index is None:
-                    raise ValueError(f"Cannot find wrist camera link name {wrist_camera_link_name}")
+                    raise ValueError(
+                        f"Cannot find wrist camera link name {wrist_camera_link_name}"
+                    )
             else:
-                raise ValueError(f"wrist_camera_link_name attribute not defined in object config of robot {self.robot_name}, yet wrist camera was requested")
-
+                raise ValueError(
+                    f"wrist_camera_link_name attribute not defined in object config of robot {self.robot_name}, yet wrist camera was requested"
+                )
 
         # x = random.uniform(-0.4, 0.5)
         # y_low = 0.6 - np.sqrt(1 - (x-0.1)**2 / (0.5)**2) * 0.1
@@ -676,77 +681,33 @@ class PybulletRobotServer:
         if self.wrist_camera_link_index is None:
             print("WARNING: No wrist camera index found")
             return None
-        
+
         uid = 0
         colmap_id = 1
 
         # Get the pose of the wrist_camera_link
-        link_state = p.getLinkState(self.dummy_robot, self.wrist_camera_link_index, computeForwardKinematics=True)
+        link_state = p.getLinkState(
+            self.dummy_robot,
+            self.wrist_camera_link_index,
+            computeForwardKinematics=True,
+        )
 
-        robot_transformation = np.array(self.object_config[self.robot_name]["transformation"][
-            "matrix"
-        ])
-        scale_robot = np.pow(np.linalg.det(robot_transformation[:3, :3]), 1/3)
-        print("scale", scale_robot)
-        # robot_transformation[:3, :3] = robot_transformation[:3, :3] / scale_robot
+        robot_transformation = np.array(
+            self.object_config[self.robot_name]["transformation"]["matrix"]
+        )
         robot_transformation_inv = np.linalg.inv(robot_transformation)
 
         T = np.array(link_state[0]).astype(np.float32)  # xyz position in world frame
         quat = link_state[1]
-        # R = o3.quaternion_to_matrix(torch.tensor(quat)).numpy().astype(np.float32)
-        # import pdb; pdb.set_trace()
         R = np.array(p.getMatrixFromQuaternion(quat)).reshape(3, 3).astype(np.float32)
         Trans_cam_world = np.eye(4)
         Trans_cam_world[:3, :3] = R
         Trans_cam_world[:3, 3] = T
-        # TODO is this necam = np.eye(4)
-        # T_link_to_cam[:3, :3] = np.array([
-        #     [ 0,  0, 1],   # X_link → Z_cam
-        #     [ 1,  0, 0],   # Y_link → X_cam
-        #     [ 0,  1, 0]    # Z_link → Y_cam
-        # ])cessary?
-        # T_link_to_
 
+        robot_transformation[:3, 3] = robot_transformation[:3, 3]
         Trans_cam_splat = np.matmul(robot_transformation_inv, Trans_cam_world)
 
-        # Trans_cam_splat = Trans_cam_world
-
-        print("wrist joint T splat", Trans_cam_splat[:3, 3])
         self.temp_cam_splat_point = torch.from_numpy(Trans_cam_splat[:3, 3])
-
-        # Trans_cam_world is a 4x4 transformation matrix
-        position = T
-
-        # Find the plate's object ID
-        plate_index = self.splat_object_name_list.index("plate")
-        plate_id = self.urdf_object_list[plate_index]
-
-        # Move the plate
-
-        # self.pybullet_client.changeDynamics(
-        #         self.urdf_object_list[plate_index],
-        #         -1,
-        #         mass=self.urdf_object_mass_list[plate_index],
-        #     )
-        
-        # self.pybullet_client.resetBasePositionAndOrientation(plate_id, position, quat)
-
-
-
-
-        # print("trans cam world from joint\n", Trans_cam_world)
-        # print("trans cam splat from joints\n", Trans_cam_splat)
-
-#         Trans_cam_splat = np.array(
-#             [[ 0.9999324604, -0.0029980394, -0.0112288236,  0.5662411215],
-#  [ 0.0030275055,  0.9999920161,  0.0026080681, -0.2850665714],
-#  [ 0.0112209148, -0.0026418873,  0.9999335535, -2.4186067394],
-#  [ 0.0,           0.0,           0.0,           1.0           ]]
-#         )
-#         Trans_cam_splat[:3, :3] = Trans_cam_splat[:3, :3] / scale_robot
-
-        T = Trans_cam_splat[:3, 3]
-        R = Trans_cam_splat[:3, :3]
 
         FoVx = 1.375955594372348
         FoVy = 1.1025297299614814
@@ -754,20 +715,44 @@ class PybulletRobotServer:
         gt_mask_alpha = None
 
         image_width = 640
-        image_height = 480  
-        image_name = 'wrist_rgb'
-        # 0 -2 1.5 -1.5 -1.5 0 1
+        image_height = 480
+        image_name = "wrist_rgb"
         image = torch.zeros((3, image_height, image_width)).float()
 
-        # scale_cam = np.pow(np.linalg.det(R), 1/3)
-        # R = R / scale_cam
-        # T = T / scale_cam
+        # Original camera-to-world transform
+        R_cw = Trans_cam_splat[:3, :3]
+        T_cw = Trans_cam_splat[:3, 3]
+        scale = np.pow(np.linalg.det(R_cw[:3, :3]), 1 / 3)
+        R_cw = R_cw / scale
+        T_cw = T_cw / scale
+        Trans_cam_splat_wo_scale = np.eye(4)
+        Trans_cam_splat_wo_scale[:3, :3] = R_cw
+        Trans_cam_splat_wo_scale[:3, 3] = T_cw
 
-        camera = Camera(colmap_id, R, T, FoVx, FoVy, image, gt_mask_alpha, image_name, uid)
+        # # Convert to world-to-camera
+        Rt_wc = np.linalg.inv(Trans_cam_splat_wo_scale)
+        # R_wc = Rt_wc[:3, :3]
+        T_wc = Rt_wc[:3, 3]
+
+        # I really don't understand why this combination of rotation and translation matrices fixes calibration...
+        camera = Camera(
+            colmap_id,
+            R_cw,
+            T_wc,
+            FoVx,
+            FoVy,
+            image,
+            gt_mask_alpha,
+            image_name,
+            uid,
+            scale=scale,
+        )
 
         return camera
 
-    def get_image_observation(self, data, camera_name="base_rgb") -> Dict[str, np.ndarray]:
+    def get_image_observation(
+        self, data, camera_name="base_rgb"
+    ) -> Dict[str, np.ndarray]:
         # TODO to save compute, you only need to create the splat once, then it can be rendered w/ different cameras
         if camera_name == "base_rgb":
             camera = self.base_camera
@@ -777,7 +762,7 @@ class PybulletRobotServer:
                 return None
         else:
             raise ValueError(f"Unknown camera name {camera_name}")
-        
+
         # Gets transformations for all links of the robot based on the current simulation
         transformations_list = get_transfomration_list(
             self.dummy_robot, self.initial_link_states
@@ -852,24 +837,54 @@ class PybulletRobotServer:
         # Combine splats of robot and of objects
         with torch.no_grad():
             # gaussians.active_sh_degree = 0
-            self.robot_gaussian._xyz = torch.cat([xyz] + xyz_obj_list + [self.temp_cam_splat_point.unsqueeze(dim=0).to(xyz.device).float()], dim=0)
-            self.robot_gaussian._rotation = torch.cat([rot] + rot_obj_list + [rot[0].unsqueeze(dim=0)], dim=0)
+            self.robot_gaussian._xyz = torch.cat(
+                [xyz]
+                + xyz_obj_list
+                + [
+                    self.temp_cam_splat_point.unsqueeze(dim=0).to(xyz.device).float(),
+                ],
+                dim=0,
+            )
+            self.robot_gaussian._rotation = torch.cat(
+                [rot] + rot_obj_list + [torch.tile(rot[0].unsqueeze(dim=0), (1, 1))],
+                dim=0,
+            )
             self.robot_gaussian._opacity = torch.cat(
-                [opacity] + opacity_obj_list + [torch.tensor([[16]]).to(xyz.device).float()], dim=0
+                [opacity]
+                + opacity_obj_list
+                + [torch.tensor([[1]] * 1).to(xyz.device).float()],
+                dim=0,
             )
             self.robot_gaussian._features_rest = torch.cat(
-                [shs_featrest] + features_rest_obj_list + [shs_featrest[0].unsqueeze(dim=0)], dim=0
+                [shs_featrest]
+                + features_rest_obj_list
+                + [torch.tile(shs_featrest[0].unsqueeze(dim=0), (1, 1, 1))],
+                dim=0,
             )
             self.robot_gaussian._features_dc = torch.cat(
-                [shs_dc] + features_dc_obj_list + [torch.tensor([[[1, 0, 0]]]).to(xyz.device).float()], dim=0
+                [shs_dc]
+                + features_dc_obj_list
+                + [
+                    torch.tensor(
+                        [
+                            [[1, 1, 0]],
+                        ]
+                    )
+                    .to(xyz.device)
+                    .float()
+                ],
+                dim=0,
             )
             self.robot_gaussian._scaling = torch.cat(
-                [self.gaussians_backup._scaling] + scales_obj_list + [torch.tensor([[0.05, 0.05, 0.05]]).to(xyz.device).float()], dim=0
+                [self.gaussians_backup._scaling]
+                + scales_obj_list
+                + [torch.tensor([[0.0005, 0.0005, 0.0005]] * 1).to(xyz.device).float()],
+                dim=0,
             )
 
-        rendering = render(
-            camera, self.robot_gaussian, self.pipeline, self.background
-        )["render"]
+        rendering = render(camera, self.robot_gaussian, self.pipeline, self.background)[
+            "render"
+        ]
 
         # t_gaussians = copy.deepcopy(t_gaussians_backup)
 
@@ -885,7 +900,8 @@ class PybulletRobotServer:
         # show the image
         # resize the image to 640x480
         cv2.imshow(
-            camera_name, cv2.cvtColor(cv2.resize(rendering, (640, 480)), cv2.COLOR_BGR2RGB)
+            camera_name,
+            cv2.cvtColor(cv2.resize(rendering, (640, 480)), cv2.COLOR_BGR2RGB),
         )
         cv2.waitKey(1)
 
@@ -1437,12 +1453,12 @@ class PybulletRobotServer:
                 self.dummy_robot,
                 i,
                 p.VELOCITY_CONTROL,
-                targetPosition=self.initial_joint_state[i - 1] * self.joint_signs[i - 1],
+                targetPosition=self.initial_joint_state[i - 1]
+                * self.joint_signs[i - 1],
                 force=250,
                 maxVelocity=0.2,
             )
         self.close_gripper()
-
 
         # get initial ee position and orientation
         self.initial_ee_pos, self.initial_ee_quat = (
