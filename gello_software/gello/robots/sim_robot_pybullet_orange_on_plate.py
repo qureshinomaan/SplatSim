@@ -275,7 +275,6 @@ class PybulletRobotServer:
         cam_i: int = 254,
         object_config_path: str = "./object_configs/objects.yaml",
     ):
-        self.temp_cam_splat_point = torch.tensor([0, 0, 0])
         self.ready_to_serve = False
         self.serve_mode = serve_mode
         self.use_link_centers = use_link_centers
@@ -707,8 +706,6 @@ class PybulletRobotServer:
         robot_transformation[:3, 3] = robot_transformation[:3, 3]
         Trans_cam_splat = np.matmul(robot_transformation_inv, Trans_cam_world)
 
-        self.temp_cam_splat_point = torch.from_numpy(Trans_cam_splat[:3, 3])
-
         FoVx = 1.375955594372348
         FoVy = 1.1025297299614814
 
@@ -838,47 +835,27 @@ class PybulletRobotServer:
         with torch.no_grad():
             # gaussians.active_sh_degree = 0
             self.robot_gaussian._xyz = torch.cat(
-                [xyz]
-                + xyz_obj_list
-                + [
-                    self.temp_cam_splat_point.unsqueeze(dim=0).to(xyz.device).float(),
-                ],
+                [xyz] + xyz_obj_list,
                 dim=0,
             )
             self.robot_gaussian._rotation = torch.cat(
-                [rot] + rot_obj_list + [torch.tile(rot[0].unsqueeze(dim=0), (1, 1))],
+                [rot] + rot_obj_list,
                 dim=0,
             )
             self.robot_gaussian._opacity = torch.cat(
-                [opacity]
-                + opacity_obj_list
-                + [torch.tensor([[1]] * 1).to(xyz.device).float()],
+                [opacity] + opacity_obj_list,
                 dim=0,
             )
             self.robot_gaussian._features_rest = torch.cat(
-                [shs_featrest]
-                + features_rest_obj_list
-                + [torch.tile(shs_featrest[0].unsqueeze(dim=0), (1, 1, 1))],
+                [shs_featrest] + features_rest_obj_list,
                 dim=0,
             )
             self.robot_gaussian._features_dc = torch.cat(
-                [shs_dc]
-                + features_dc_obj_list
-                + [
-                    torch.tensor(
-                        [
-                            [[1, 1, 0]],
-                        ]
-                    )
-                    .to(xyz.device)
-                    .float()
-                ],
+                [shs_dc] + features_dc_obj_list,
                 dim=0,
             )
             self.robot_gaussian._scaling = torch.cat(
-                [self.gaussians_backup._scaling]
-                + scales_obj_list
-                + [torch.tensor([[0.0005, 0.0005, 0.0005]] * 1).to(xyz.device).float()],
+                [self.gaussians_backup._scaling] + scales_obj_list,
                 dim=0,
             )
 
