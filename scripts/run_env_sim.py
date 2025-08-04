@@ -12,11 +12,11 @@ import termcolor
 import cv2
 
 
-from gello.agents.agent import BimanualAgent, DummyAgent
-from gello.agents.gello_agent import GelloAgent
+from splatsim.agents.agent import BimanualAgent, DummyAgent
+from splatsim.agents.gello_agent import GelloAgent
 from gello.data_utils.format_obs import save_frame
 from gello.env import RobotEnv
-from gello.robots.robot import PrintRobot
+from splatsim.robots.robot import PrintRobot
 from gello.zmq_core.robot_node import ZMQClientRobot
 from gello.zmq_core.camera_node import ZMQClientCamera
 
@@ -69,7 +69,7 @@ def main(args):
             right_agent = GelloAgent(port=right)
             agent = BimanualAgent(left_agent, right_agent)
         elif args.agent == "quest":
-            from gello.agents.quest_agent import SingleArmQuestAgent
+            from splatsim.agents.quest_agent import SingleArmQuestAgent
 
             left_agent = SingleArmQuestAgent(robot_type=args.robot_type, which_hand="l")
             right_agent = SingleArmQuestAgent(
@@ -78,7 +78,7 @@ def main(args):
             agent = BimanualAgent(left_agent, right_agent)
             # raise NotImplementedError
         elif args.agent == "spacemouse":
-            from gello.agents.spacemouse_agent import SpacemouseAgent
+            from splatsim.agents.spacemouse_agent import SpacemouseAgent
 
             left_path = "/dev/hidraw0"
             right_path = "/dev/hidraw1"
@@ -144,12 +144,12 @@ def main(args):
                     time.sleep(0.001)
             do_startup = True
         elif args.agent == "quest":
-            from gello.agents.quest_agent import SingleArmQuestAgent
+            from splatsim.agents.quest_agent import SingleArmQuestAgent
 
             agent = SingleArmQuestAgent(robot_type=args.robot_type, which_hand="l")
             do_startup = True
         elif args.agent == "spacemouse":
-            from gello.agents.spacemouse_agent import SpacemouseAgent
+            from splatsim.agents.spacemouse_agent import SpacemouseAgent
 
             agent = SpacemouseAgent(robot_type=args.robot_type, verbose=args.verbose)
             do_startup = True
@@ -157,31 +157,31 @@ def main(args):
             agent = DummyAgent(num_dofs=robot_client.num_dofs())
             do_startup = True
         elif args.agent == "policy":
-            from gello.agents.policy_agent import DiffusionAgent
+            from splatsim.agents.policy_agent import DiffusionAgent
             agent = DiffusionAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
             do_startup = True
         elif args.agent == "policy6DOF":
-            from gello.agents.policy_agent_6DOF import DiffusionAgent
+            from splatsim.agents.policy_agent_6DOF import DiffusionAgent
             agent = DiffusionAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
             do_startup = True
         elif args.agent == "servoing":
-            from gello.agents.servoing_agent import ServoingAgent
+            from splatsim.agents.servoing_agent import ServoingAgent
             agent = ServoingAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
             do_startup = True
         elif args.agent == "interface":
-            from gello.agents.interface_agent import InterfaceAgent
+            from splatsim.agents.interface_agent import InterfaceAgent
             agent = InterfaceAgent()
             do_startup = True
         elif args.agent == "text_interface":
-            from gello.agents.text_interface_agent import TextInterfaceAgent
+            from splatsim.agents.text_interface_agent import TextInterfaceAgent
             agent = TextInterfaceAgent()
             do_startup = False # So that it doesn't skip commands at first
         elif args.agent == "slider_interface":
-            from gello.agents.slider_interface_agent import SliderInterfaceAgent
+            from splatsim.agents.slider_interface_agent import SliderInterfaceAgent
             agent = SliderInterfaceAgent()
             do_startup = False
         elif args.agent == "replay_trajectory":
-            from gello.agents.replay_trajectory_agent import ReplayTrajectoryAgent
+            from splatsim.agents.replay_trajectory_agent import ReplayTrajectoryAgent
             traj_folder = "/home/jennyw2/data/bc_data/gello/"
             agent = ReplayTrajectoryAgent(traj_folder=traj_folder, env=env)
             do_startup = True # So that it doesn't skip the first part of the first recording

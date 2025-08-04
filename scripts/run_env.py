@@ -8,11 +8,11 @@ from typing import Optional, Tuple
 import numpy as np
 import tyro
 
-from gello.agents.agent import BimanualAgent, DummyAgent
-from gello.agents.gello_agent import GelloAgent
+from splatsim.agents.agent import BimanualAgent, DummyAgent
+from splatsim.agents.gello_agent import GelloAgent
 from gello.data_utils.format_obs import save_frame
 from gello.env import RobotEnv
-from gello.robots.robot import PrintRobot
+from splatsim.robots.robot import PrintRobot
 from gello.zmq_core.robot_node import ZMQClientRobot
 from gello.zmq_core.camera_node import ZMQClientCamera
 
@@ -67,7 +67,7 @@ def main(args):
             right_agent = GelloAgent(port=right)
             agent = BimanualAgent(left_agent, right_agent)
         elif args.agent == "quest":
-            from gello.agents.quest_agent import SingleArmQuestAgent
+            from splatsim.agents.quest_agent import SingleArmQuestAgent
 
             left_agent = SingleArmQuestAgent(robot_type=args.robot_type, which_hand="l")
             right_agent = SingleArmQuestAgent(
@@ -76,7 +76,7 @@ def main(args):
             agent = BimanualAgent(left_agent, right_agent)
             # raise NotImplementedError
         elif args.agent == "spacemouse":
-            from gello.agents.spacemouse_agent import SpacemouseAgent
+            from splatsim.agents.spacemouse_agent import SpacemouseAgent
 
             left_path = "/dev/hidraw0"
             right_path = "/dev/hidraw1"
@@ -141,20 +141,20 @@ def main(args):
                     env.step(jnt)
                     time.sleep(0.001)
         elif args.agent == "quest":
-            from gello.agents.quest_agent import SingleArmQuestAgent
+            from splatsim.agents.quest_agent import SingleArmQuestAgent
 
             agent = SingleArmQuestAgent(robot_type=args.robot_type, which_hand="l")
         elif args.agent == "spacemouse":
-            from gello.agents.spacemouse_agent import SpacemouseAgent
+            from splatsim.agents.spacemouse_agent import SpacemouseAgent
 
             agent = SpacemouseAgent(robot_type=args.robot_type, verbose=args.verbose)
         elif args.agent == "dummy" or args.agent == "none":
             agent = DummyAgent(num_dofs=robot_client.num_dofs())
         elif args.agent == "policy":
-            from gello.agents.policy_agent import DiffusionAgent
+            from splatsim.agents.policy_agent import DiffusionAgent
             agent = DiffusionAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
         elif args.agent == "policy6DOF":
-            from gello.agents.policy_agent_6DOF import DiffusionAgent
+            from splatsim.agents.policy_agent_6DOF import DiffusionAgent
             agent = DiffusionAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
         else:
             raise ValueError("Invalid agent name")

@@ -9,7 +9,7 @@ import numpy as np
 import zmq
 from dm_control import mjcf
 
-from gello.robots.robot import Robot
+from splatsim.robots.robot import Robot
 
 assert mujoco.viewer is mujoco.viewer
 import pybullet as p

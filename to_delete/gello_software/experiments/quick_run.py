@@ -9,9 +9,9 @@ from typing import Optional
 import numpy as np
 import tyro
 
-from gello.agents.agent import DummyAgent
-from gello.agents.gello_agent import GelloAgent
-from gello.agents.spacemouse_agent import SpacemouseAgent
+from splatsim.agents.agent import DummyAgent
+from splatsim.agents.gello_agent import GelloAgent
+from splatsim.agents.spacemouse_agent import SpacemouseAgent
 from gello.env import RobotEnv
 from gello.zmq_core.robot_node import ZMQClientRobot, ZMQServerRobot
 
@@ -38,14 +38,14 @@ def launch_robot_server(port: int, args: Args):
         )
         xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "ur5e.xml"
         gripper_xml = MENAGERIE_ROOT / "robotiq_2f85" / "2f85.xml"
-        from gello.robots.sim_robot import MujocoRobotServer
+        from splatsim.robots.sim_robot import MujocoRobotServer
 
         server = MujocoRobotServer(
             xml_path=xml, gripper_xml_path=gripper_xml, port=port, host=args.hostname
         )
         server.serve()
     elif args.robot == "sim_panda":
-        from gello.robots.sim_robot import MujocoRobotServer
+        from splatsim.robots.sim_robot import MujocoRobotServer
 
         MENAGERIE_ROOT: Path = (
             Path(__file__).parent.parent / "third_party" / "mujoco_menagerie"
@@ -59,11 +59,11 @@ def launch_robot_server(port: int, args: Args):
 
     else:
         if args.robot == "xarm":
-            from gello.robots.xarm_robot import XArmRobot
+            from splatsim.robots.xarm_robot import XArmRobot
 
             robot = XArmRobot()
         elif args.robot == "ur5":
-            from gello.robots.ur import URRobot
+            from splatsim.robots.ur import URRobot
 
             robot = URRobot(robot_ip=args.robot_ip)
         else:
@@ -119,7 +119,7 @@ def main(args: Args):
                 time.sleep(0.001)
 
     elif args.agent == "quest":
-        from gello.agents.quest_agent import SingleArmQuestAgent
+        from splatsim.agents.quest_agent import SingleArmQuestAgent
 
         agent = SingleArmQuestAgent(robot_type=args.robot, which_hand="l")
     elif args.agent == "spacemouse":

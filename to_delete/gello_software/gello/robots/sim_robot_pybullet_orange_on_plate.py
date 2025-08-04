@@ -19,7 +19,7 @@ import mujoco
 import mujoco.viewer
 import zmq
 from dm_control import mjcf
-from gello.robots.robot import Robot
+from splatsim.robots.robot import Robot
 from e3nn import o3
 
 import cv2

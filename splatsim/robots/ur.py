@@ -2,7 +2,7 @@ from typing import Dict
 
 import numpy as np
 
-from gello.robots.robot import Robot
+from splatsim.robots.robot import Robot
 
 
 class URRobot(Robot):
@@ -23,8 +23,8 @@ class URRobot(Robot):
 
         self.r_inter = rtde_receive.RTDEReceiveInterface(robot_ip)
         if not no_gripper:
-            from gello.robots.robotiq_gripper import RobotiqGripper
-            from gello.robots.custom_gripper import CustomGripper
+            from splatsim.robots.robotiq_gripper import RobotiqGripper
+            from splatsim.robots.custom_gripper import CustomGripper
 
             self.gripper = RobotiqGripper()
             # self.gripper = CustomGripper()

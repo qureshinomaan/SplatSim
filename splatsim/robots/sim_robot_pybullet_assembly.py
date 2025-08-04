@@ -9,7 +9,7 @@ import numpy as np
 import zmq
 from dm_control import mjcf
 
-from gello.robots.robot import Robot
+from splatsim.robots.robot import Robot
 
 assert mujoco.viewer is mujoco.viewer
 import pybullet as p
@@ -173,41 +173,47 @@ class PybulletRobotServer:
 
 
         models_lib = md.model_lib()
-        self.object_name_list = ['plastic_apple', 'plastic_banana', 'plastic_strawberry', 'clear_box_1']
-        self.splat_object_name_list = ['plastic_apple', 'plastic_banana', 'plastic_strawberry', 'orange_bin']
-        self.randomize_object_positions = [True, True, True, False]
-        self.randomize_object_rotations = [False, True, False, True]
-        self.rotation_values = [[0, 0], [-np.pi/2, np.pi/2], [0, 0], [-np.pi/6, np.pi/6]]
-        self.use_fixed_base = [False, False, False, True]
-        global_scaling_list = [1, 1, 1, 0.8]
+        self.object_name_list = ['greenblock', 'redblock']
+        self.splat_object_name_list = ['greenblock', 'redblock']
+        self.randomize_object_positions = [True, False]
+        self.randomize_object_rotations = [False, True]
+        self.rotation_values = [[0, 0],  [-np.pi/6, np.pi/6]]
+        self.use_fixed_base = [False,  True]
+        global_scaling_list = [1, 1]
         self.urdf_object_list = []
         for object_name in range(len(self.object_name_list)):
             if self.object_name_list[object_name] in models_lib.model_name_list:
                 object_loaded = self.pybullet_client.loadURDF(models_lib[self.object_name_list[object_name]], [x, y, 0.0], quat, globalScaling=global_scaling_list[object_name], useFixedBase=self.use_fixed_base[object_name])
                 self.urdf_object_list.append(object_loaded)
             else:
+
                 object_path = '/home/nomaan/Desktop/corl24/virtual_objects/' + self.object_name_list[object_name] + '/object.urdf'
                 object_loaded = self.pybullet_client.loadURDF(object_path, [x, y, 0.0], quat, globalScaling=1, useFixedBase=self.use_fixed_base[object_name])
-
+                self.urdf_object_list.append(object_loaded)
 
         #reset the box position
         self.pybullet_client.resetBasePositionAndOrientation(self.urdf_object_list[-1], [0.3, -0.5, 0.07], p.getQuaternionFromEuler([0, 0, np.pi/2]))
 
         #set the grasp pose for the apple and banana        
 
+        self.orange_grasp_pose = np.array([[ 0.02869176, -0.1490479,   0.98841363,  0.01647557],
+                                    [-0.9995383 , -0.01416883,  0.0268781,   0.00119144],
+                                    [ 0.00999854, -0.98872846, -0.14938562,  0.24006281],
+                                    [ 0. ,         0. ,         0.,          1.        ]])
 
 
 
-        self.banana_grasp_pose_1 = np.array([[ 0.07945943, -0.34053419,  0.93686854,  0.07396203],
-                                            [-0.97180396,  0.18284197,  0.14888207, -0.07456429],
-                                            [-0.22199832, -0.92228265, -0.31640396,  0.21805952],
-                                            [ 0.,          0. ,         0. ,         1.  ,      ]])
+
+
+        self.banana_grasp_pose_1 = np.array([[-0.13784676, -0.14873802,  0.97922177,  0.01055928],
+                                            [-0.98239786,  0.14637033, -0.11606107, -0.06527538],
+                                            [-0.12606632, -0.97798401, -0.16629659,  0.23013977],
+                                            [ 0.,          0.,          0.,          1.        ]])
         
-        self.banana_grasp_pose_2 = np.array([[ 0.12254203,  0.30203591, -0.94538763, -0.06145023],
-                                            [-0.85030772,  0.52319706,  0.05693524, -0.15585506],
-                                            [ 0.51182051,  0.79689343 , 0.32093709 ,-0.19004228],
-                                            [ 0.,          0.,          0. ,         1.        ]]
-                                            )
+        self.banana_grasp_pose_2 = np.array([[ 0.12773567,  0.02665088, -0.99145011,  0.00692899],
+                                            [-0.87105321,  0.481048,   -0.09929316, -0.14203231],
+                                            [ 0.47428884,  0.87628908,  0.08466133, -0.20627994],
+                                            [ 0.,          0.,          0.,          1.        ]])
 
         
 
@@ -216,15 +222,20 @@ class PybulletRobotServer:
                                 [ 0.07927635, -0.99635553, -0.03147883,  0.27105228],
                                 [ 0. ,         0. ,         0.,          1.        ]])
         
-        self.strawberry_grasp_pose = np.array([[-0.16526639,  0.15893885,  0.97335783, -0.03990067],
-                                            [-0.96079331, -0.24872763, -0.12251852,  0.07164834],
-                                            [ 0.22262803, -0.95544388,  0.1938137,   0.24337544],
-                                            [ 0.,          0.,          0.,          1.        ]])
+        # self.strawberry_grasp_pose = np.array([[-0.19612399,  0.06661985,  0.97831344 ,-0.03194745],
+        #                                 [-0.90997152, -0.38409934, -0.15626751,  0.10821076],
+        #                                 [ 0.36535902, -0.92088517,  0.13595326,  0.23474673],
+        #                                 [ 0.,          0. ,         0. ,         1.        ]])
+
+        self.strawberry_grasp_pose = np.array([[ 6.03600159e-04, 4.74883933e-01,  8.80048229e-01, -1.17034260e-01],
+                                [-7.31850150e-01, -5.99512796e-01,  3.24005810e-01,  1.57542460e-01],
+                                [ 6.81465328e-01, -6.44258999e-01,  3.47182012e-01,  1.72402069e-01],
+                                [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]])
         
-        self.grasp_poses = [self.apple_grasp_pose, self.banana_grasp_pose_1, self.strawberry_grasp_pose]
+        self.grasp_poses = [self.orange_grasp_pose,]
         
         #set the drop location for the apple and banana
-        self.drop_ee_pos = [0.3, -0.5, 0.5]
+        self.drop_ee_pos = [0.3, -0.5, 0.2375]
         self.drop_ee_euler = [-np.pi/2, 0, -np.pi/2]
         self.drop_ee_quat = self.pybullet_client.getQuaternionFromEuler(self.drop_ee_euler)
 
@@ -252,10 +263,12 @@ class PybulletRobotServer:
 
         #change the friction of the object
         for T_object in self.urdf_object_list:  
-            self.pybullet_client.changeDynamics(T_object, -1, lateralFriction=10)
+            # self.pybullet_client.changeDynamics(T_object, -1, lateralFriction=16.5)
+            # self.pybullet_client.changeDynamics(T_object, -1, rollingFriction=-10)
+
             #rolling friction
-            self.pybullet_client.changeDynamics(T_object, -1, rollingFriction=0)
-            #disable the gravity
+            # self.pybullet_client.changeDynamics(T_object, -1, rollingFriction=0)
+            inertia = p.getDynamicsInfo(T_object, -1)[2]
 
         #add gravity
         self.pybullet_client.setGravity(0, 0, -9.81)
@@ -271,8 +284,11 @@ class PybulletRobotServer:
         self.wall = self.pybullet_client.loadURDF("plane.urdf", [-0.4, 0, 0.0], quat)
 
         ##add a spher at 0.4, 0.5 0.01 without urdf 
-        self.sphere = self.pybullet_client.createVisualShape(shapeType=p.GEOM_SPHERE, radius=0.05, rgbaColor=[1, 0, 0, 1], specularColor=[0.4, .4, 0], visualFramePosition=[0.4, 0.6, 0.01])
-        self.sphere_id = self.pybullet_client.createMultiBody(baseMass=0, baseVisualShapeIndex=self.sphere)
+        # self.sphere = self.pybullet_client.createVisualShape(shapeType=p.GEOM_SPHERE, radius=0.05, rgbaColor=[1, 0, 0, 1], specularColor=[0.4, .4, 0], visualFramePosition=[0.4, 0.6, 0.01])
+        # self.sphere_id = self.pybullet_client.createMultiBody(baseMass=0, baseVisualShapeIndex=self.sphere)
+
+        
+
 
         ## add stage 
         self.stage = 0 
@@ -298,7 +314,7 @@ class PybulletRobotServer:
         #step simulation
         for i in range(100):
             self.pybullet_client.stepSimulation()
-            time.sleep(1/240)
+            # time.sleep(1/240)
 
         
 
@@ -408,49 +424,69 @@ class PybulletRobotServer:
 
         while True:
             # self.get_camera_image_from_end_effector()
-            for object_id in range(len(self.urdf_object_list)):
-                if self.randomize_object_positions[object_id]:
-                    #randomly reset the object position and orientation
-                    x = random.uniform(0.1, 0.8)
-                    y = random.uniform(-0.2, 0.6)
-                    # random euler angles for the orientation of the object
-                    euler_z =  random.uniform(self.rotation_values[object_id][0], self.rotation_values[object_id][1])
-                    # random quaternion for the orientation of the object
-                    #get object name from the object id
-                    object_name = self.object_name_list[object_id]
-                    if object_name == 'plastic_banana':
-                        flip = random.choice([0, 1])
-                        if flip == 1:
-                            self.grasp_poses[object_id] = self.banana_grasp_pose_2
-                            quat = self.pybullet_client.getQuaternionFromEuler([0, np.pi, euler_z])
-                            self.pybullet_client.resetBasePositionAndOrientation(self.urdf_object_list[object_id], [x, y, 0], quat)
+            collison_between_objects = True
+            while collison_between_objects:
+                collison_between_objects = False
+                for object_id in range(len(self.urdf_object_list)):
+                    if self.randomize_object_positions[object_id]:
+                        #randomly reset the object position and orientation
+                        x = random.uniform(0.2, 0.6)
+                        y = random.uniform(-0.5, 0.5)
+                        # random euler angles for the orientation of the object
+                        euler_z =  random.uniform(self.rotation_values[object_id][0], self.rotation_values[object_id][1])
+                        # random quaternion for the orientation of the object
+                        #get object name from the object id
+                        object_name = self.object_name_list[object_id]
+                        if object_name == 'plastic_banana':
+                            flip = random.choice([0, 1])
+                            if flip == 1:
+                                self.grasp_poses[object_id] = self.banana_grasp_pose_2
+                                quat = self.pybullet_client.getQuaternionFromEuler([0, np.pi, euler_z])
+                                self.pybullet_client.resetBasePositionAndOrientation(self.urdf_object_list[object_id], [x, y, 0], quat)
 
-                        else :
-                            self.grasp_poses[object_id] = self.banana_grasp_pose_1
+                            else :
+                                self.grasp_poses[object_id] = self.banana_grasp_pose_1
+                                quat = self.pybullet_client.getQuaternionFromEuler([0, 0, euler_z])
+                                self.pybullet_client.resetBasePositionAndOrientation(self.urdf_object_list[object_id], [x, y, 0], quat)
+
+                        else : 
                             quat = self.pybullet_client.getQuaternionFromEuler([0, 0, euler_z])
                             self.pybullet_client.resetBasePositionAndOrientation(self.urdf_object_list[object_id], [x, y, 0], quat)
 
-                    else : 
-                        quat = self.pybullet_client.getQuaternionFromEuler([0, 0, euler_z])
-                        self.pybullet_client.resetBasePositionAndOrientation(self.urdf_object_list[object_id], [x, y, 0], quat)
+                for object_id in range(len(self.urdf_object_list)):
+                    for object_id_2 in range(len(self.urdf_object_list)):
+                        if object_id != object_id_2:
+                            collison_between_objects_1 = pairwise_collision(self.urdf_object_list[object_id], self.urdf_object_list[object_id_2])
+                            if collison_between_objects_1:
+                                collison_between_objects = True
+                                break
+
 
             
-            #randomize bin and drop location
+            #randomize plate and drop location
             # [0.3, -0.5, 0.07]
-            x = random.uniform(0.3, 0.6)
-            y = -0.5 + random.uniform(-0.1, 0.1)
-            z = 0.07
+            while True:
+                x = random.uniform(0.2, 0.65)
+                y =  random.uniform(-0.4, 0.4)
+                z = 0.
 
-            # euler_z =  np.pi/2 + random.uniform(-np.pi/12, np.pi/12)
-            quat = self.pybullet_client.getQuaternionFromEuler([0, 0, np.pi/2])
+                #get obj[0] position 
+                object_pos, object_quat = self.pybullet_client.getBasePositionAndOrientation(self.urdf_object_list[0])
+                
 
-            self.pybullet_client.resetBasePositionAndOrientation(self.urdf_object_list[-1], [x, y, z], quat)
-            
-            self.drop_ee_pos = [x, y, 0.5]    
+                euler_z =  0
+                quat = self.pybullet_client.getQuaternionFromEuler([0, 0, euler_z])
 
-            #calculate the drop ee joint
-            self.drop_ee_joint = self.pybullet_client.calculateInverseKinematics(self.dummy_robot, 6, self.drop_ee_pos, self.drop_ee_quat, maxNumIterations=100000,)
+                self.pybullet_client.resetBasePositionAndOrientation(self.urdf_object_list[-1], [x, y, z], quat)
+                
+                self.drop_ee_pos = [x-0.0175, y, 0.285]    
 
+                #calculate the drop ee joint
+                self.drop_ee_joint = self.pybullet_client.calculateInverseKinematics(self.dummy_robot, 6, self.drop_ee_pos, self.drop_ee_quat, maxNumIterations=100000,)
+
+                #check the distance between the object and the drop location
+                if np.linalg.norm(np.array(object_pos)[:2] - np.array([x, y])) > 0.05:
+                    break
 
             
             for i in range(10000):
@@ -464,18 +500,32 @@ class PybulletRobotServer:
             self.pybullet_client.stepSimulation()
 
             #make path+trajectory_count folder
-            os.makedirs(self.path + str(self.trajectory_count), exist_ok=True)
+            os.makedirs(self.path + str(self.trajectory_count).zfill(3), exist_ok=True)
             self.trajectory_length = 0
 
             #generating random initial joint state using random end effector position and orientation
             # random end effector position
-            random_ee_pos = np.array([random.uniform(0.2, 0.7), random.uniform(-0.4, 0.4), random.uniform(0.2, 0.6)])
+            if random.uniform(0, 1) > 0.2:
+                random_ee_pos = np.array([random.uniform(0.2, 0.5), random.uniform(-0.6, 0.6), random.uniform(0.25, 0.65)])
+            else:
+                #get object position
+                object_pos, object_quat = self.pybullet_client.getBasePositionAndOrientation(self.urdf_object_list[0])
+                random_x = random.uniform(-0.1, 0.1)
+                random_y = random.uniform(-0.1, 0.1)
+                random_x = 0.05 * random_x / np.abs(random_x) + random_x
+                random_y = 0.05 * random_y / np.abs(random_y) + random_y
+                random_ee_pos = np.array([object_pos[0] + random_x, object_pos[1] + random_y, object_pos[2] + random.uniform(0.25, 0.3)])
+            # random_ee_pos = np.array([random.uniform(0.2, 0.5), random.uniform(-0.6, 0.6), random.uniform(0.2, 0.65)])
             random_ee_quat = self.initial_ee_quat
 
+            #get the euler angles from the quaternion
+            #get quaternion from euler angles
+            random_ee_quat = self.initial_ee_quat
             #joint angles using inverse kinematics
             initial_joint_positions = self.pybullet_client.calculateInverseKinematics(self.dummy_robot, 6, random_ee_pos, random_ee_quat, maxNumIterations=100000, residualThreshold=1e-10)
 
             #reset the joint positions to the initial joint positions
+            
             for i in range(1, 7):
                 self.pybullet_client.resetJointState(self.dummy_robot, i, initial_joint_positions[i-1])
 
@@ -483,8 +533,15 @@ class PybulletRobotServer:
 
 
             all_paths = []
+                
 
-            for object in range(len(self.urdf_object_list)-1):
+            skip_recording_first = 0
+
+            object_order = [0]
+
+            # skip_recording_first = 1
+
+            for object in object_order:
 
                 #get object position
                 object_pos, object_quat = self.pybullet_client.getBasePositionAndOrientation(self.urdf_object_list[object])
@@ -499,6 +556,8 @@ class PybulletRobotServer:
 
                 #get pregrasp to grasp path
                 pre_grasp2grasp_path, pregrasp_transformation = self.pre_grasp_to_grasp(ee_transformation)
+                if pre_grasp2grasp_path is None:
+                    break
 
                 #get the joint positions using the inverse kinematics
                 ee_pos = pregrasp_transformation[:3, 3]
@@ -525,10 +584,12 @@ class PybulletRobotServer:
                 else : 
                     break
 
-                path = path + pre_grasp2grasp_path
+                path = path 
 
                 if path is not None:
                     all_paths.append(path)
+
+                all_paths.append(pre_grasp2grasp_path)
 
                 all_paths.append(pre_grasp2grasp_path[::-1])
 
@@ -540,7 +601,7 @@ class PybulletRobotServer:
 
                 #now plan the path from pre_grasp to intermediate position
                 ee_pos = self.pybullet_client.getLinkState(self.dummy_robot, 6)[0]
-                intermediate_ee_pos = [0.3, ee_pos[1], 0.6]
+                intermediate_ee_pos = [ee_pos[0], ee_pos[1], 0.4]
                 intermediate_ee_quat = self.initial_ee_quat
                 intermediate_joint_positions = self.pybullet_client.calculateInverseKinematics(self.dummy_robot, 6, intermediate_ee_pos, intermediate_ee_quat, maxNumIterations=100000, residualThreshold=1e-10)
 
@@ -567,62 +628,97 @@ class PybulletRobotServer:
 
                     all_paths.append(path)
 
+                    if skip_recording_first:
+                        for i in range(1, 7):
+                            self.pybullet_client.resetJointState(self.dummy_robot, i, initial_joint_positions[i-1])
+
 
             for i in range(100):
                 self.pybullet_client.stepSimulation()
                 # time.sleep(1/240)
-                self.move_gripper(0.084)
+                self.move_gripper(0.0)
                 for k in range(1, 7):
                     self.pybullet_client.resetJointState(self.dummy_robot, k, initial_joint_positions[k-1]*joint_signs[k-1])
 
-            if len(all_paths) !=12:
+            if len(all_paths) !=5:
                 #delete the trajectory folder
                 import shutil
-                shutil.rmtree(self.path + str(self.trajectory_count))
+                shutil.rmtree(self.path + str(self.trajectory_count).zfill(3))
                 continue
 
-            for k in range(3):
+            for k in range(1):
+
                 #go to first object
-                self.follow_trajectory(all_paths[4*k + 0], 0)
+                self.follow_trajectory(all_paths[4*k + 0], 0, gripper_velocity=0.2, skip_recording_first=1, threshold=0.001)
+
+                self.follow_trajectory(all_paths[4*k + 1], 0, skip_recording_first=1, threshold=0.001)
+
 
                 #grasp the first object
-                for i in range(20):
-                    self.move_gripper(0.084)
+                for i in range(320):
+                    for _ in range(10):
+                        self.move_gripper(0.085)
                     self.pybullet_client.stepSimulation()
 
                     self.current_gripper_action = 1
                     observations = self.get_observations()
                     #save the observations in the correct format zfill(5)
-                    if i%5 == 0:
-                        self.trajectory_length += 1
-                        with open(self.path + str(self.trajectory_count) + '/' + str(self.trajectory_length).zfill(5) + '.pkl', 'wb') as f:
-                            pickle.dump(observations, f)
+
+                    #set the joint positions to the all_paths[4*k + 1][-1]
+                    for j in range(1, 7):
+                        self.pybullet_client.setJointMotorControl2(self.dummy_robot, j, p.POSITION_CONTROL, targetPosition=all_paths[4*k + 1][-1][j-1], force=250)
+                    # if i%40 == 0 and not 1:
+                    #     self.trajectory_length += 1
+                    #     with open(self.path + str(self.trajectory_count).zfill(3) + '/' + str(self.trajectory_length).zfill(5) + '.pkl', 'wb') as f:
+                    #         pickle.dump(observations, f)
 
                 # go to pregrasp
-                self.follow_trajectory(all_paths[4*k + 1], 1)
+                self.follow_trajectory(all_paths[4*k + 2], 1, skip_recording_first=1)
 
                 # go to intermediate
-                self.follow_trajectory(all_paths[4*k + 2], 1)
+                self.follow_trajectory(all_paths[4*k + 3], 1, skip_recording_first=skip_recording_first)
 
                 # go to drop location
-                self.follow_trajectory(all_paths[4*k + 3], 1)
+                self.follow_trajectory(all_paths[4*k + 4], 1, skip_recording_first=skip_recording_first)
+
+                # go to drop location
+                self.follow_trajectory([all_paths[4*k + 4][-1]], 1, skip_recording_first=skip_recording_first, threshold=0.0001)
+                self.follow_trajectory([all_paths[4*k + 4][-1]], 1, skip_recording_first=skip_recording_first, threshold=0.0001)
+                self.follow_trajectory([all_paths[4*k + 4][-1]], 1, skip_recording_first=skip_recording_first, threshold=0.0001)
+
 
                 #drop the object
-                for i in range(20):
+                for i in range(160):
                     self.move_gripper(0)
                     self.pybullet_client.stepSimulation()
 
                     self.current_gripper_action = 0
                     observations = self.get_observations()
                     #save the observations
-                    if i%5 == 0:
+                    if i%20 == 0 and not skip_recording_first:
                         self.trajectory_length += 1
-                        with open(self.path + str(self.trajectory_count) + '/' + str(self.trajectory_length).zfill(5) + '.pkl', 'wb') as f:
+                        with open(self.path + str(self.trajectory_count).zfill(3) + '/' + str(self.trajectory_length).zfill(5) + '.pkl', 'wb') as f:
                             pickle.dump(observations, f)
 
-            #go to the initial joint positions
-            path = [initial_joint_state]
-            self.follow_trajectory(path, 0, use_current_iters=False)
+
+                if skip_recording_first:
+                    for i in range(100):
+                        self.pybullet_client.stepSimulation()
+                        # time.sleep(1/240)
+                        self.move_gripper(0.0)
+                        for k in range(1, 7):
+                            self.pybullet_client.resetJointState(self.dummy_robot, k, initial_joint_positions[k-1]*joint_signs[k-1])
+                    
+
+                skip_recording_first = 0
+
+            #create a path from the drop location to the initial joint positions
+            path = [np.array(self.drop_ee_joint[:6]) *0.1*(10-i) + np.array(initial_joint_state[:6])*0.1*(i) for i in range(1, 11)]
+            
+            self.follow_trajectory(path, 0)
+
+            path = [initial_joint_state for _ in range(5)]
+            self.follow_trajectory(path, 0)
 
 
             #evaluate the success of the trajectory
@@ -632,19 +728,19 @@ class PybulletRobotServer:
                 object_pos, _ = self.pybullet_client.getBasePositionAndOrientation(self.urdf_object_list[i])
                 mse = (object_pos[0] - self.drop_ee_pos[0])**2 + (object_pos[1] - self.drop_ee_pos[1])**2
 
-                if mse > 0.03:
+                if mse > 0.002:
                     print('object not placed correctly')
                     correct_trajectory = False
                     
                     #delete the trajectory folder
                     import shutil
-                    shutil.rmtree(self.path + str(self.trajectory_count))
+                    shutil.rmtree(self.path + str(self.trajectory_count).zfill(3))
                     break
             
             if correct_trajectory:
                 self.trajectory_count += 1
 
-                if self.trajectory_count > 250:
+                if self.trajectory_count > 500:
                     exit()
                      
            
@@ -704,18 +800,18 @@ class PybulletRobotServer:
                                    jointAxis=[0, 1, 0],
                                    parentFramePosition=[0, 0, 0],
                                    childFramePosition=[0, 0, 0])
-            self.pybullet_client.changeConstraint(c, gearRatio=-multiplier, maxForce=100, erp=1)  # Note: the mysterious `erp` is of EXTREME importance
+            self.pybullet_client.changeConstraint(c, gearRatio=-multiplier, maxForce=50, erp=1)  # Note: the mysterious `erp` is of EXTREME importance
 
     def get_link_pose(self, body, link):
         result = self.pybullet_client.getLinkState(body, link)
         return result[4], result[5]
     
-    def move_gripper(self, open_length):
+    def move_gripper(self, open_length, velocity=2):
         # open_length = np.clip(open_length, *self.gripper_range)
         open_angle = 0.715 - math.asin((open_length - 0.010) / 0.1143)  # angle calculation
         # Control the mimic gripper joint(s)
         p.setJointMotorControl2(self.dummy_robot, self.mimic_parent_id, self.pybullet_client.POSITION_CONTROL, targetPosition=open_angle,
-                                force=self.joints[self.mimic_parent_id].maxForce, maxVelocity=self.joints[self.mimic_parent_id].maxVelocity)
+                                force=self.joints[self.mimic_parent_id].maxForce, maxVelocity=velocity)
 
 
     def get_current_gripper_state(self):
@@ -763,6 +859,22 @@ class PybulletRobotServer:
         #get approach vector
         approach_vector = ee_transformation[:3, :3][:, 1] / np.linalg.norm(ee_transformation[:3, :3][:, 1])
 
+        #check the angle of the approach vector with the -ve z axis
+        angle = np.arccos(np.dot(approach_vector, np.array([0, 0, -1])))
+        # if angle > 0.1 or angle < -0.1:
+        #     print('angle is greater than 0.1')
+        #     return None, None
+        
+        # #check the angle of the approach vector with the y axis
+        # angle = np.arccos(np.dot(approach_vector, np.array([0, 1, 0])))
+        # if np.abs(angle - np.pi/2) > 0.1:
+        #     print('angle is greater than 0.1')
+        #     return None, None
+        
+        #check the angle of the approach vector with the x axis
+        angle = np.arccos(np.dot(approach_vector, np.array([1, 0, 0])))
+        print(angle)
+
         #get the pre-grasp position
         pre_grasp_pos = ee_transformation[:3, 3] - 0.1 * approach_vector
 
@@ -773,7 +885,7 @@ class PybulletRobotServer:
 
         #get joint positions going from pre-grasp to grasp
         path = []
-        for i in range(11):
+        for i in range(12):
             ee_pos = pre_grasp_pos + 0.01 * i * approach_vector
             ee_quat = self.pybullet_client.getQuaternionFromEuler(rotation_matrix_to_euler_angles(ee_transformation[:3, :3]))
             joint_positions = self.pybullet_client.calculateInverseKinematics(self.dummy_robot, 6, ee_pos, ee_quat, maxNumIterations=100000, residualThreshold=1e-10)
@@ -782,7 +894,7 @@ class PybulletRobotServer:
         return path, pre_grasp_transformation
     
 
-    def follow_trajectory(self, path, gripper_pos, use_current_iters=True):
+    def follow_trajectory(self, path, gripper_pos, use_current_iters=True, gripper_velocity=2, skip_recording_first=0, threshold=1e-2):
         k = 0
         loop_iters = 0
         current_iters = 0 
@@ -799,27 +911,35 @@ class PybulletRobotServer:
             
             error = np.linalg.norm(np.array(joint_states) - path[k][:6])
 
-            self.move_gripper((1-gripper_pos)*0.084)
+            self.move_gripper((1-gripper_pos)*0.084, velocity=gripper_velocity)
 
-            if error < 1e-2:
+            if error < threshold:
                 k += 1
                 current_iters = 0
+
+                # if not skip_recording_first:
+                #     self.trajectory_length += 1
+                #     #get observations
+                #     observations = self.get_observations()
+                #     #save the observations with trajectory length as pickle file in format 0000x.pkl
+                #     with open(self.path + str(self.trajectory_count).zfill(3) + '/' + str(self.trajectory_length).zfill(5) + '.pkl', 'wb') as f:
+                #         pickle.dump(observations, f)
 
             current_iters += 1
 
             if use_current_iters:
-                if current_iters > 200:
+                if current_iters > 400:
                     k += 1
                     current_iters = 0
 
 
             self.current_gripper_action = gripper_pos
-            if loop_iters % 50 == 0:
+            if loop_iters % 50 == 0 and not skip_recording_first:
                 self.trajectory_length += 1
                 #get observations
                 observations = self.get_observations()
                 #save the observations with trajectory length as pickle file in format 0000x.pkl
-                with open(self.path + str(self.trajectory_count) + '/' + str(self.trajectory_length).zfill(5) + '.pkl', 'wb') as f:
+                with open(self.path + str(self.trajectory_count).zfill(3) + '/' + str(self.trajectory_length).zfill(5) + '.pkl', 'wb') as f:
                     pickle.dump(observations, f)
 
             
@@ -828,10 +948,18 @@ class PybulletRobotServer:
                 break
 
             # time.sleep(1/240)
-                
 
             self.pybullet_client.stepSimulation()
-            # time.sleep(1/240.)
 
             loop_iters += 1
+
+
+        if not skip_recording_first:
+
+            self.trajectory_length += 1
+            #get observations
+            observations = self.get_observations()
+            #save the observations with trajectory length as pickle file in format 0000x.pkl
+            with open(self.path + str(self.trajectory_count).zfill(3) + '/' + str(self.trajectory_length).zfill(5) + '.pkl', 'wb') as f:
+                pickle.dump(observations, f)
         

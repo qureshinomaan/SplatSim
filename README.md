@@ -10,11 +10,59 @@ This repository contains the code for the paper "SplatSim".
 
 ## Installation
 
+### Clone this repository
+```bash
+cd ~/code
+git clone TODO --recursive
+```
+
+### Create conda env
+
+```bash
+conda create -n splatsim python=3.12
+```
+
 ### Install pytorch
 
+
+Go to https://pytorch.org/get-started/locally/ to find the right commands for your system. For example, this repo worked with this configuration:
   - torch==2.7.1
   - torchaudio=2.7.1+cu128
   - torchvision=0.22.1+cu128
+
+```bash
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+```
+
+### Install ghalton
+
+This is a dependency of pybullet-planning which has a hard time installing on its own. Install from source:
+
+```bash
+cd ~/code
+git clone https://github.com/fmder/ghalton.git
+cd ghalton
+pip install .
+cd ~/code/SplatSim
+```
+
+### Install other dependencies
+
+Install requirements:
+```bash
+cd ~/code/SplatSim
+pip install -r requirements.txt
+```
+
+### Install this repo as a package
+
+```bash
+cd ~/code/SplatSim
+pip install .
+```
+
+
+
 
 ```bash
 conda env create -f environment.yml

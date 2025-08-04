@@ -1,7 +1,7 @@
 import numpy as np
 import pybullet as p
 import pybullet_data
-from gello.agents.agent import Agent
+from splatsim.agents.agent import Agent
 
 class SliderInterfaceAgent(Agent):
     def __init__(self):

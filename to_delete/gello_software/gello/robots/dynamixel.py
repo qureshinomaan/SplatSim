@@ -2,7 +2,7 @@ from typing import Dict, Optional, Sequence, Tuple
 
 import numpy as np
 
-from gello.robots.robot import Robot
+from splatsim.robots.robot import Robot
 
 
 class DynamixelRobot(Robot):

@@ -1,7 +1,7 @@
 import numpy as np
 import pybullet as p
 import pybullet_data
-from gello.agents.agent import Agent
+from splatsim.agents.agent import Agent
 import pickle
 import os
 from tqdm import tqdm

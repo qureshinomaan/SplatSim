@@ -6,7 +6,7 @@ from typing import Dict, Optional
 import numpy as np
 from pyquaternion import Quaternion
 
-from gello.robots.robot import Robot
+from splatsim.robots.robot import Robot
 
 
 def _aa_from_quat(quat: np.ndarray) -> np.ndarray:

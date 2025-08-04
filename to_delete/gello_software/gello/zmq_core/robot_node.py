@@ -5,7 +5,7 @@ from typing import Any, Dict
 import numpy as np
 import zmq
 
-from gello.robots.robot import Robot
+from splatsim.robots.robot import Robot
 
 DEFAULT_ROBOT_PORT = 6000
 

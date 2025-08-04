@@ -4,7 +4,7 @@ import numpy as np
 import tyro
 from dm_control import composer, viewer
 
-from gello.agents.gello_agent import DynamixelRobotConfig
+from splatsim.agents.gello_agent import DynamixelRobotConfig
 from gello.dm_control_tasks.arms.ur5e import UR5e
 from gello.dm_control_tasks.manipulation.arenas.floors import Floor
 from gello.dm_control_tasks.manipulation.tasks.block_play import BlockPlay

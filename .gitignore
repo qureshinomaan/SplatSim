@@ -28,3 +28,6 @@ outputs/*
 # vim
 *.swp
 MUJOCO_LOG.TXT
+
+# build
+build/*

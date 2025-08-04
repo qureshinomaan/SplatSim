@@ -7,7 +7,7 @@ import numpy as np
 from dm_control import mjcf
 from dm_control.utils.inverse_kinematics import qpos_from_site_pose
 
-from gello.agents.agent import Agent
+from splatsim.agents.agent import Agent
 from gello.dm_control_tasks.arms.ur5e import UR5e
 
 # mujoco has a slightly different coordinate system than UR control box

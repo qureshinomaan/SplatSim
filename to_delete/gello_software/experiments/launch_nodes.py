@@ -3,7 +3,7 @@ from pathlib import Path
 
 import tyro
 
-from gello.robots.robot import BimanualRobot, PrintRobot
+from splatsim.robots.robot import BimanualRobot, PrintRobot
 from gello.zmq_core.robot_node import ZMQServerRobot
 
 
@@ -25,7 +25,7 @@ def launch_robot_server(args: Args):
         xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "ur5e.xml"
         gripper_xml = MENAGERIE_ROOT / "robotiq_2f85" / "2f85.xml"
         # gripper_xml = None
-        from gello.robots.sim_robot import MujocoRobotServer
+        from splatsim.robots.sim_robot import MujocoRobotServer
 
         server = MujocoRobotServer(
             xml_path=xml, gripper_xml_path=gripper_xml, port=port, host=args.hostname
@@ -39,8 +39,8 @@ def launch_robot_server(args: Args):
         xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "ur5e.xml"
         gripper_xml = MENAGERIE_ROOT / "robotiq_2f85" / "2f85.xml"
         # gripper_xml = None
-        # from gello.robots.sim_robot_pybullet import PybulletRobotServer
-        from gello.robots.sim_robot_pybullet_push import PybulletRobotServer
+        # from splatsim.robots.sim_robot_pybullet import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_push import PybulletRobotServer
 
         server = PybulletRobotServer(
            port=port, host=args.hostname,
@@ -54,14 +54,14 @@ def launch_robot_server(args: Args):
         xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "ur5e.xml"
         gripper_xml = MENAGERIE_ROOT / "robotiq_2f85" / "2f85.xml"
         # gripper_xml = None
-        # from gello.robots.sim_robot_pybullet import PybulletRobotServer
-        # from gello.robots.sim_robot_pybullet_cup import PybulletRobotServer
-        # from gello.robots.sim_robot_pybullet_pick_planner import PybulletRobotServer
-        # from gello.robots.sim_robot_pybullet_pick_place_planner import PybulletRobotServer
-        # from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
-        # from gello.robots.sim_robot_pybullet_assembly import PybulletRobotServer
-        # from gello.robots.sim_robot_pybullet_articulated import PybulletRobotServer
-        from gello.robots.sim_robot_pybullet_deformable import PybulletRobotServer
+        # from splatsim.robots.sim_robot_pybullet import PybulletRobotServer
+        # from splatsim.robots.sim_robot_pybullet_cup import PybulletRobotServer
+        # from splatsim.robots.sim_robot_pybullet_pick_planner import PybulletRobotServer
+        # from splatsim.robots.sim_robot_pybullet_pick_place_planner import PybulletRobotServer
+        # from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        # from splatsim.robots.sim_robot_pybullet_assembly import PybulletRobotServer
+        # from splatsim.robots.sim_robot_pybullet_articulated import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_deformable import PybulletRobotServer
 
         server = PybulletRobotServer(
            port=port, host=args.hostname,
@@ -69,7 +69,7 @@ def launch_robot_server(args: Args):
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_orange":
-        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
@@ -78,7 +78,7 @@ def launch_robot_server(args: Args):
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_orange_interactive":
-        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
@@ -87,7 +87,7 @@ def launch_robot_server(args: Args):
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_orange_interactive-robot_jenny":
-        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
@@ -96,7 +96,7 @@ def launch_robot_server(args: Args):
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple":
-        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
@@ -105,7 +105,7 @@ def launch_robot_server(args: Args):
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple_interactive":
-        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
@@ -114,7 +114,7 @@ def launch_robot_server(args: Args):
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple_interactive-robot_jenny":
-        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
@@ -124,7 +124,7 @@ def launch_robot_server(args: Args):
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_banana":
-        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
            env_config_name="banana_on_plate", camera_names=[], robot_name="robot_iphone",
@@ -132,7 +132,7 @@ def launch_robot_server(args: Args):
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_banana_interactive":
-        from gello.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
@@ -147,17 +147,17 @@ def launch_robot_server(args: Args):
         xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "ur5e.xml"
         gripper_xml = MENAGERIE_ROOT / "robotiq_2f85" / "2f85.xml"
         # gripper_xml = None
-        # from gello.robots.sim_robot_pybullet import PybulletRobotServer
-        # from gello.robots.sim_robot_pybullet_splat_6DOF import PybulletRobotServer
-        # from gello.robots.sim_robot_pybullet_splat_servoing import PybulletRobotServer
-        from gello.robots.sim_robot_pybullet_splat_servoing_improved import GaussianRenderServer
+        # from splatsim.robots.sim_robot_pybullet import PybulletRobotServer
+        # from splatsim.robots.sim_robot_pybullet_splat_6DOF import PybulletRobotServer
+        # from splatsim.robots.sim_robot_pybullet_splat_servoing import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_splat_servoing_improved import GaussianRenderServer
         server = GaussianRenderServer(
            port=port, host=args.hostname, gaussian_path=args.gaussian_path
         )
         server.serve()
 
     elif args.robot == "sim_panda":
-        from gello.robots.sim_robot import MujocoRobotServer
+        from splatsim.robots.sim_robot import MujocoRobotServer
 
         MENAGERIE_ROOT: Path = (
             Path(__file__).parent.parent / "third_party" / "mujoco_menagerie"
@@ -169,7 +169,7 @@ def launch_robot_server(args: Args):
         )
         server.serve()
     elif args.robot == "sim_xarm":
-        from gello.robots.sim_robot import MujocoRobotServer
+        from splatsim.robots.sim_robot import MujocoRobotServer
 
         MENAGERIE_ROOT: Path = (
             Path(__file__).parent.parent / "third_party" / "mujoco_menagerie"
@@ -183,19 +183,19 @@ def launch_robot_server(args: Args):
 
     else:
         if args.robot == "xarm":
-            from gello.robots.xarm_robot import XArmRobot
+            from splatsim.robots.xarm_robot import XArmRobot
 
             robot = XArmRobot(ip=args.robot_ip)
         elif args.robot == "ur":
-            from gello.robots.ur import URRobot
+            from splatsim.robots.ur import URRobot
 
             robot = URRobot(robot_ip=args.robot_ip, no_gripper=False)
         elif args.robot == "panda":
-            from gello.robots.panda import PandaRobot
+            from splatsim.robots.panda import PandaRobot
 
             robot = PandaRobot(robot_ip=args.robot_ip, no_gripper=False)
         elif args.robot == "bimanual_ur":
-            from gello.robots.ur import URRobot
+            from splatsim.robots.ur import URRobot
 
             # IP for the bimanual robot setup is hardcoded
             _robot_l = URRobot(robot_ip="192.168.2.11")
@@ -203,7 +203,7 @@ def launch_robot_server(args: Args):
             robot = BimanualRobot(_robot_l, _robot_r)
         
         elif args.robot == "ur_pybullet":
-            from gello.robots.ur_pybullet import URRobotPybullet
+            from splatsim.robots.ur_pybullet import URRobotPybullet
             robot = URRobotPybullet(robot_ip=args.robot_ip, no_gripper=True)
 
         elif args.robot == "none" or args.robot == "print":

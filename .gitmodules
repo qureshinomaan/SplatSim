@@ -4,3 +4,9 @@
 [submodule "submodules/simple-knn"]
 	path = submodules/simple-knn
 	url = https://github.com/camenduru/simple-knn.git
+[submodule "submodules/gello_software"]
+	path = submodules/gello_software
+	url = https://github.com/wuphilipp/gello_software.git
+[submodule "submodules/ghalton"]
+	path = submodules/ghalton
+	url = https://github.com/fmder/ghalton

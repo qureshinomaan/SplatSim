@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 import numpy as np
 
 from gello.cameras.camera import CameraDriver
-from gello.robots.robot import Robot
+from splatsim.robots.robot import Robot
 import cv2
 import copy
 
