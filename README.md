@@ -10,6 +10,12 @@ This repository contains the code for the paper "SplatSim".
 
 ## Installation
 
+### Install pytorch
+
+  - torch==2.7.1
+  - torchaudio=2.7.1+cu128
+  - torchvision=0.22.1+cu128
+
 ```bash
 conda env create -f environment.yml
 conda activate splatsim
