@@ -76,10 +76,9 @@ pip install -r submodules/gello_software/requirements.txt
 pip install submodules/simple-knn/ --no-build-isolation
 ```
 
-QOL for git status
+QOL to clean up git status
 ```bash
 echo '*.egg-info' >> .git/modules/submodules/ghalton/info/exclude
-echo 'build/*' >> .git/modules/submodules/ghalton/info/exclude
 echo '*.egg-info' >> .git/modules/submodules/pybullet-URDF-models/info/exclude
 echo 'build/*' >> .git/modules/submodules/pybullet-URDF-models/info/exclude
 ```
@@ -118,11 +117,16 @@ Assume below that these files are stored under:
 
 ### 2. Configure the configs to match your folder directory structure
 
-Open `configs/object_configs/objects.yaml`. The data you downloaded in step 1 is for the robot `robot_iphone`.
+#### Open `configs/object_configs/objects.yaml`. The data you downloaded in step 1 is for the robot `robot_iphone`.
 
 Modify `robot_iphone` as below:
 - source_path: /home/yourusername/data/test_data/robot_iphone # Path to a folder you downloaded
 - model_path: /home/yourusername/data/output/robot_iphone # Path to a folder you downloaded
+
+#### Open `configs/trajectory_configs.yaml`
+
+Modify as follows:
+- trajectory_folder: /home/yourusername/data/bc_data/gello
 
 ### 3. Run the rendering script:
 
@@ -141,21 +145,6 @@ python scripts/run_env_sim.py --agent replay_trajectories --robot-port 6001
 ```bash
 render_fk_all_highres.py -s /path/to/test_data/robot_iphone -m /path/to/output/robot_iphone --objects plastic_apple --traj_folder /path/to/bc_data/gello
 ```
-
-## A general description of the codebase
-
-### 1. The most important file is render_fk_all_highres.py
-
-This file contains the code for rendering forward kinematics of the robot as well as the objects in the scene. 
-
-### 2. The folder "gello" contains the code for trajectory generation, which is then rendered using the code in the first file. 
-
-Currently, there is a lot of code here, need to clean it up and only keep files that are necessary. 
-
-### 3. The folder "splat" contains the code for KNN logic and some other utilities.
-
-Very unorganized, will need to clean it up. 
-
 
 
 ## A list of TODOs
