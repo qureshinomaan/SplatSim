@@ -20,6 +20,8 @@ from splatsim.robots.robot import PrintRobot
 from gello.zmq_core.robot_node import ZMQClientRobot
 from gello.zmq_core.camera_node import ZMQClientCamera
 
+import yaml
+
 
 
 def print_color(*args, color=None, attrs=(), **kwargs):
@@ -182,7 +184,9 @@ def main(args):
             do_startup = False
         elif args.agent == "replay_trajectory":
             from splatsim.agents.replay_trajectory_agent import ReplayTrajectoryAgent
-            traj_folder = "/home/jennyw2/data/bc_data/gello/"
+            with open("configs/trajectory_configs.yaml", "r") as file:
+                trajectory_config = yaml.safe_load(file)
+            traj_folder = trajectory_config["trajectory_folder"]
             agent = ReplayTrajectoryAgent(traj_folder=traj_folder, env=env)
             do_startup = True # So that it doesn't skip the first part of the first recording
         else:

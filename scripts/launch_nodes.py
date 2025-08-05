@@ -100,7 +100,7 @@ def launch_robot_server(args: Args):
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           env_config_name="apple_on_plate", camera_names=[], robot_name="robot_iphone",
+           env_config_name="apple_on_plate", camera_names=[], robot_name="robot_iphone", cam_i=3,
         )
         server.serve()
 
@@ -109,7 +109,7 @@ def launch_robot_server(args: Args):
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           env_config_name="apple_on_plate", robot_name="robot_iphone",
+           env_config_name="apple_on_plate", robot_name="robot_iphone", cam_i=3,
         )
         server.serve()
 
@@ -127,7 +127,7 @@ def launch_robot_server(args: Args):
         from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           env_config_name="banana_on_plate", camera_names=[], robot_name="robot_iphone",
+           env_config_name="banana_on_plate", camera_names=[], robot_name="robot_iphone", cam_i=3,
         )
         server.serve()
 
@@ -136,7 +136,7 @@ def launch_robot_server(args: Args):
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           env_config_name="banana_on_plate", robot_name="robot_iphone",
+           env_config_name="banana_on_plate", robot_name="robot_iphone", cam_i=3,
         )
         server.serve()
 

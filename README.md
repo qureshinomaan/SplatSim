@@ -13,15 +13,16 @@ This repository contains the code for the paper "SplatSim".
 ### Clone this repository
 ```bash
 cd ~/code
-git clone TODO --recursive
-git submodule init
-git submodule update
+git clone --recursive https://github.com/jwang078/SplatSim.git
 ```
+
+If you did git clone without the --recursive, you can do this to download all the submodules after the clone: `git submodule update --init --recursive`
 
 ### Create conda env
 
 ```bash
 conda create -n splatsim python=3.12
+conda activate splatsim
 ```
 
 ### Install pytorch
@@ -36,19 +37,9 @@ Go to https://pytorch.org/get-started/locally/ to find the right commands for yo
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 ```
 
-### Install other dependencies
-
-Install requirements:
-```bash
-cd ~/code/SplatSim
-pip install -r requirements.txt
-```
-
 ### Install submodules
 
-TODO download submodules, maybe with --recursive
-
-Change `submodules/gello_software` to install as a package by changing this in `submodules/gello_software/setup.py`:
+<!-- Change `submodules/gello_software` to install as a package by changing this in `submodules/gello_software/setup.py`:
 - From `packages=setuptools.find_packages(),`
 - To: `packages=setuptools.find_packages(include=["gello", "gello.*"]),`
 
@@ -70,47 +61,19 @@ import sys
 # Allow relative imports like `from utils...` to work by appending parent directory
 _module_path = os.path.dirname(__file__)
 sys.path.insert(0, _module_path)
-```
+``` -->
 
-Note that this has to be installed in editable mode `-e`
 ```bash
-pip install -e submodules/gaussian-splatting-wrapper
-```
+pip install submodules/diff-gaussian-rasterization submodules/pybullet-URDF-models submodules/pybullet-playground-wrapper/ submodules/ghalton
 
-And 
+# This needs editable mode for some reason
+pip install -e submodules/gaussian-splatting-wrapper submodules/gello_software
 
-Install submodules and their dependencies
-
-pip install submodules/gello_software
+# Install dependencies from gello_software
 pip install -r submodules/gello_software/requirements.txt
 
-```
 # Allow the install to use your version of pytorch; this takes a few mins for some reason
 pip install submodules/simple-knn/ --no-build-isolation
-```
-
-```
-pip install submodules/diff-gaussian-rasterization
-```
-
-```
-pip install submodules/pybullet-URDF-models
-```
-
-Pybullet playground
-Add `submodules/pybullet-playground-wrapper/setup.py`
-```
-from setuptools import setup, find_packages
-
-setup(
-    name="pybullet_playground",
-    version="0.1.0",
-    packages=find_packages(include=["pybullet_playground", "pybullet_playground/*"]),
-)
-```
-
-```
-pip install submodules/pybullet-playground-wrapper/
 ```
 
 QOL for git status
@@ -121,6 +84,16 @@ echo '*.egg-info' >> .git/modules/submodules/pybullet-URDF-models/info/exclude
 echo 'build/*' >> .git/modules/submodules/pybullet-URDF-models/info/exclude
 ```
 
+### Install other dependencies
+
+Install requirements:
+```bash
+cd ~/code/SplatSim
+pip install -r requirements.txt
+```
+
+Note: It's important to pip install the `ghalton` submodule in the previous step before installing requirements.txt because for some reason ghalton has to be installed from source
+
 ### Install this repo as a package
 
 Install in editable mode:
@@ -130,26 +103,40 @@ cd ~/code/SplatSim
 pip install -e .
 ```
 
-
-
-
-```bash
-conda env create -f environment.yml
-conda activate splatsim
-pip3 install -r requirements.txt
-cd gello
-pip install -e .
-cd pybullet-URDF-models
-pip install -e .
-```
-
 ## Running the rendering code 
 ### 1. Download the colmap and gaussian-splatting models from the below links:
 - [colmap (test_data)](https://drive.google.com/file/d/14D3fFtaPX4GBe9dSJLKAIvUYlgK7fUxS/view?usp=sharing)
 - [gaussian-splats (output)](https://drive.google.com/file/d/1rAUkf7l2ZZqG1Bm3ih6cAO5HCd9dSTO-/view?usp=sharing)
 - [trajectories (bc_data/gello)](https://drive.google.com/file/d/1NhSBNYMi51hETAspk6vN7F-Ih1134_lt/view?usp=sharing)
 
-### 2. Run the rendering script:
+`test_data` is the folder name of the output of colmap. `output` is the folder name of the output of gaussian splat generation. `bc_data/gello` is the folder name of the demo trajectories recorded by one of the scripts in this repo.
+
+Assume below that these files are stored under:
+- test_data: /home/yourusername/data/test_data
+- output: /home/yourusername/data/output
+- bc_data/gello: /home/yourusername/data/bc_data/gello
+
+### 2. Configure the configs to match your folder directory structure
+
+Open `configs/object_configs/objects.yaml`. The data you downloaded in step 1 is for the robot `robot_iphone`.
+
+Modify `robot_iphone` as below:
+- source_path: /home/yourusername/data/test_data/robot_iphone # Path to a folder you downloaded
+- model_path: /home/yourusername/data/output/robot_iphone # Path to a folder you downloaded
+
+### 3. Run the rendering script:
+
+Launch the robot server which includes an apple and a plate:
+```bash
+python scripts/launch_nodes.py --robot sim_ur_pybullet_apple_interactive
+```
+
+Wait about 10 seconds for the simulation window to pop up. It will say it is ready to serve.
+
+In another terminal tab, launch a node that will send the recorded trajectories in `/home/yourusername/data/bc_data/gello` to the server so that it will be rendered:
+```bash
+python scripts/run_env_sim.py --agent replay_trajectories --robot-port 6001
+```
 
 ```bash
 render_fk_all_highres.py -s /path/to/test_data/robot_iphone -m /path/to/output/robot_iphone --objects plastic_apple --traj_folder /path/to/bc_data/gello

@@ -546,8 +546,8 @@ class PybulletRobotServer:
                 self.gaussians_backup,
                 load_iteration=-1,
                 shuffle=False,
-                cam_train_indices=[self.cam_i],
-                cam_test_indices=[0], # Even tho we're not using this, make sure to load at max 1 camera for memory purposes
+                train_cam_indices=[self.cam_i],
+                test_cam_indices=[0], # Even tho we're not using this, make sure to load at max 1 camera for memory purposes
             )
 
             bg_color = [1, 1, 1]
