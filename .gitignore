@@ -30,4 +30,4 @@ outputs/*
 MUJOCO_LOG.TXT
 
 # build
-build/*
+**/build/*
