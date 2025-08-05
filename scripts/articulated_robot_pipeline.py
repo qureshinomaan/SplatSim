@@ -15,7 +15,7 @@ from gaussian_splatting.scene import Scene
 from gaussian_splatting.arguments import ModelParams, Namespace
 from gaussian_splatting.gaussian_renderer import GaussianModel
 
-from cameras import get_overall_pcd
+from splatsim.utils.cameras import get_overall_pcd
 
 class FlowStyleMatrixDumper(yaml.SafeDumper):
     def represent_sequence(self, tag, sequence, flow_style=None):
@@ -75,8 +75,10 @@ def main(args):
             source_path=source_path,
             model_path=model_path,
             images="images",
+            depths="",
             resolution=-1,
             white_background=False,
+            train_test_exp=False,
             data_device="cuda",
             eval=False,
         )
@@ -85,7 +87,7 @@ def main(args):
     # This loads the .ply file into self.gaussians_backup
     # Use the minimum number of cameras. This is just for startup
     scene = Scene(
-        dataset, gaussians, load_iteration=-1, shuffle=False, num_cams=1
+        dataset, gaussians, load_iteration=-1, shuffle=False, train_cam_indices=[0], test_cam_indices=[0],
     )
     # Extract the point cloud from the loaded gaussian splat
     robot_xyz = gaussians.get_xyz.cpu().detach().numpy()

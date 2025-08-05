@@ -19,3 +19,6 @@
 [submodule "submodules/pybullet-playground-wrapper/pybullet_playground"]
 	path = submodules/pybullet-playground-wrapper/pybullet_playground
 	url = https://github.com/zswang666/pybullet-playground.git
+[submodule "submodules/pybullet_ur5_gripper"]
+	path = submodules/pybullet_ur5_gripper
+	url = https://github.com/culurciello/pybullet_ur5_gripper.git

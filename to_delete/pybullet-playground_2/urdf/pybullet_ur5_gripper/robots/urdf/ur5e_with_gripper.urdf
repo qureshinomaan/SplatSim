@@ -307,12 +307,12 @@
     <link name="robotiq_85_base_link">
       <visual>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/visual/robotiq_85_base_link.dae"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/visual/robotiq_85_base_link.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/collision/robotiq_85_base_link.stl"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/collision/robotiq_85_base_link.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -344,12 +344,12 @@
     <link name="robotiq_85_left_knuckle_link">
       <visual>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/visual/robotiq_85_knuckle_link.dae"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/visual/robotiq_85_knuckle_link.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/collision/robotiq_85_knuckle_link.stl"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/collision/robotiq_85_knuckle_link.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -364,12 +364,12 @@
     <link name="robotiq_85_right_knuckle_link">
       <visual>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/visual/robotiq_85_knuckle_link.dae"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/visual/robotiq_85_knuckle_link.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/collision/robotiq_85_knuckle_link.stl"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/collision/robotiq_85_knuckle_link.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -396,12 +396,12 @@
     <link name="robotiq_85_left_finger_link">
       <visual>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/visual/robotiq_85_finger_link.dae"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/visual/robotiq_85_finger_link.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/collision/robotiq_85_finger_link.stl"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/collision/robotiq_85_finger_link.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -416,12 +416,12 @@
     <link name="robotiq_85_right_finger_link">
       <visual>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/visual/robotiq_85_finger_link.dae"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/visual/robotiq_85_finger_link.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/collision/robotiq_85_finger_link.stl"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/collision/robotiq_85_finger_link.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -454,12 +454,12 @@
     <link name="robotiq_85_left_inner_knuckle_link">
       <visual>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/visual/robotiq_85_inner_knuckle_link.dae"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/visual/robotiq_85_inner_knuckle_link.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/collision/robotiq_85_inner_knuckle_link.stl"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/collision/robotiq_85_inner_knuckle_link.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -473,12 +473,12 @@
     <link name="robotiq_85_right_inner_knuckle_link">
       <visual>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/visual/robotiq_85_inner_knuckle_link.dae"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/visual/robotiq_85_inner_knuckle_link.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/collision/robotiq_85_inner_knuckle_link.stl"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/collision/robotiq_85_inner_knuckle_link.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -512,12 +512,12 @@
     <link name="robotiq_85_left_finger_tip_link">
       <visual>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/visual/robotiq_85_finger_tip_link.dae"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/visual/robotiq_85_finger_tip_link.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/collision/robotiq_85_finger_tip_link.stl"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/collision/robotiq_85_finger_tip_link.stl"/>
         </geometry>
       </collision>
       <inertial>
@@ -532,12 +532,12 @@
     <link name="robotiq_85_right_finger_tip_link">
       <visual>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/visual/robotiq_85_finger_tip_link.dae"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/visual/robotiq_85_finger_tip_link.dae"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="../meshes/robotiq_85_gripper/collision/robotiq_85_finger_tip_link.stl"/>
+          <mesh filename="../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshesrobotiq_85_gripper/collision/robotiq_85_finger_tip_link.stl"/>
         </geometry>
       </collision>
       <inertial>

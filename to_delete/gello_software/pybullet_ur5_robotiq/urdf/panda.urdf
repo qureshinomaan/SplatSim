@@ -12,7 +12,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/link0.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/link0.obj"/>
       </geometry>
       <material name="panda_white">
     		<color rgba="1. 1. 1. 1."/>
@@ -20,7 +20,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/link0.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/link0.obj"/>
       </geometry>
       <material name="panda_white"/>
     </collision>
@@ -33,13 +33,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./../meshes/panda/visual/link1.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/visual/link1.obj"/>
       </geometry>
       <material name="panda_white"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/link1.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/link1.obj"/>
       </geometry>
       <material name="panda_white"/>
     </collision>
@@ -60,13 +60,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./../meshes/panda/visual/link2.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/visual/link2.obj"/>
       </geometry>
       <material name="panda_white"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/link2.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/link2.obj"/>
       </geometry>
       <material name="panda_white"/>
     </collision>
@@ -87,7 +87,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./../meshes/panda/visual/link3.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/visual/link3.obj"/>
       </geometry>
       <material name="panda_red">
     		<color rgba="1. 1. 1. 1."/>
@@ -95,7 +95,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/link3.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/link3.obj"/>
       </geometry>
     </collision>
   </link>
@@ -115,13 +115,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./../meshes/panda/visual/link4.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/visual/link4.obj"/>
       </geometry>
       <material name="panda_white"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/link4.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/link4.obj"/>
       </geometry>
       <material name="panda_white"/>
     </collision>
@@ -142,13 +142,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./../meshes/panda/visual/link5.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/visual/link5.obj"/>
       </geometry>
       <material name="panda_white"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/link5.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/link5.obj"/>
       </geometry>
       <material name="panda_white"/>
     </collision>
@@ -169,13 +169,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./../meshes/panda/visual/link6.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/visual/link6.obj"/>
       </geometry>
       <material name="panda_white"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/link6.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/link6.obj"/>
       </geometry>
       <material name="panda_white"/>
     </collision>
@@ -196,13 +196,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/link7.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/link7.obj"/>
       </geometry>
       <material name="panda_white"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/link7.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/link7.obj"/>
       </geometry>
       <material name="panda_white"/>
     </collision>
@@ -241,13 +241,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./../meshes/panda/visual/hand.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/visual/hand.obj"/>
       </geometry>
       <material name="panda_white"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/hand.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/hand.obj"/>
       </geometry>
       <material name="panda_white"/>
     </collision>
@@ -267,13 +267,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./../meshes/panda/visual/finger.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/visual/finger.obj"/>
       </geometry>
       <material name="panda_white"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="./../meshes/panda/visual/finger.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/visual/finger.obj"/>
       </geometry>
       <material name="panda_white"/>
     </collision>
@@ -295,14 +295,14 @@
     <visual>
       <origin rpy="0 0 3.14159265359" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="./../meshes/panda/visual/finger.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/visual/finger.obj"/>
       </geometry>
       <material name="panda_white"/>
     </visual>
     <collision>
       <origin rpy="0 0 3.14159265359" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="./../meshes/panda/collision/finger-high-quality.obj"/>
+        <mesh filename="./../../../submodules/pybullet-playground-wrapper/pybullet_playground/meshespanda/collision/finger-high-quality.obj"/>
       </geometry>
       <material name="panda_white"/>
     </collision>

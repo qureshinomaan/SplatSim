@@ -14,7 +14,7 @@ robot_jenny:
     - [0.0, 0.0]
     - [0.0, 0.0]
   urdf_path:
-  - ./submodules/pybullet-playground-wrapper/pybullet_playground/urdf/pybullet_ur5_gripper/robots/urdf/ur5e.urdf
+  - ./splatsim/robot_definitions/urdf/ur5e.urdf
   base_position:
   - [0.0, 0.0, 0]
   joint_states:
