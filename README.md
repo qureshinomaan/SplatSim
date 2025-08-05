@@ -16,7 +16,7 @@ cd ~/code
 git clone --recursive https://github.com/jwang078/SplatSim.git
 ```
 
-If you did git clone without the --recursive, you can do this to download all the submodules after the clone: `git submodule update --init --recursive`
+If you accidentally forgot the `--recursive`, run this command to download the files for the `submodules` folder: `git submodule update --init --recursive`
 
 ### Create conda env
 
@@ -39,35 +39,16 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 
 ### Install submodules
 
-<!-- Change `submodules/gello_software` to install as a package by changing this in `submodules/gello_software/setup.py`:
-- From `packages=setuptools.find_packages(),`
-- To: `packages=setuptools.find_packages(include=["gello", "gello.*"]),`
-
-Add `submodules/gaussian-splatting-wrapper/setup.py` and `submodules/gaussian-splatting-wrapper/gaussian_splatting/__init__.py` to gaussian-splatting repo
-```
-from setuptools import setup, find_packages
-
-setup(
-    name="gaussian_splatting",
-    version="0.1",
-    packages=find_packages(include=["scene", "scene.*", "utils", "utils.*"]),
-)
-```
-
-```
-import os
-import sys
-
-# Allow relative imports like `from utils...` to work by appending parent directory
-_module_path = os.path.dirname(__file__)
-sys.path.insert(0, _module_path)
-``` -->
+Note: If nothing is inside the `submodules/` folder, run `git submodule update --init --recursive`
 
 ```bash
 pip install submodules/diff-gaussian-rasterization submodules/pybullet-URDF-models submodules/pybullet-playground-wrapper/ submodules/ghalton
 
 # This needs editable mode for some reason
-pip install -e submodules/gaussian-splatting-wrapper submodules/gello_software
+pip install -e submodules/gaussian-splatting-wrapper
+
+# Seems like -e pip installs must be installed separately
+pip install -e submodules/gello_software
 
 # Install dependencies from gello_software
 pip install -r submodules/gello_software/requirements.txt
@@ -91,7 +72,7 @@ cd ~/code/SplatSim
 pip install -r requirements.txt
 ```
 
-Note: It's important to pip install the `ghalton` submodule in the previous step before installing requirements.txt because for some reason ghalton has to be installed from source
+Note: It's important to pip install the `ghalton` submodule in the previous step before installing requirements.txt because for some reason ghalton must be installed from source
 
 ### Install this repo as a package
 
@@ -111,6 +92,7 @@ pip install -e .
 `test_data` is the folder name of the output of colmap. `output` is the folder name of the output of gaussian splat generation. `bc_data/gello` is the folder name of the demo trajectories recorded by one of the scripts in this repo.
 
 Assume below that these files are stored under:
+
 - test_data: /home/yourusername/data/test_data
 - output: /home/yourusername/data/output
 - bc_data/gello: /home/yourusername/data/bc_data/gello
@@ -139,13 +121,18 @@ Wait about 10 seconds for the simulation window to pop up. It will say it is rea
 
 In another terminal tab, launch a node that will send the recorded trajectories in `/home/yourusername/data/bc_data/gello` to the server so that it will be rendered:
 ```bash
-python scripts/run_env_sim.py --agent replay_trajectories --robot-port 6001
+python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
 ```
 
-```bash
-render_fk_all_highres.py -s /path/to/test_data/robot_iphone -m /path/to/output/robot_iphone --objects plastic_apple --traj_folder /path/to/bc_data/gello
-```
+A window should pop up that is a rendering of the robot in the pybullet simulation. If you drag the end effector of the robot around in pybullet, it should be reflected in the render.
 
+## Adding a new robot
+
+TODO
+
+## Generating new trajectories
+
+TODO
 
 ## A list of TODOs
 
@@ -153,7 +140,7 @@ render_fk_all_highres.py -s /path/to/test_data/robot_iphone -m /path/to/output/r
     - [x] Installation instructions should work now.
 - [x] ~~Add links to pretrain gaussian-splats and trajectories, so that people can run rendering script.~~
     - [x] Links to pretrain gaussian-splats, colmap and trajectories are added.
-- [x] Create a new file for rendering robot and objects, without hardcoding the segmentation and shifting everything to KNN based segmentation.
+- [x] ~~Create a new file for rendering robot and objects, without hardcoding the segmentation and shifting everything to KNN based segmentation.~~
 - [x] Clean up the splat folder for only keeping necessary files and easy creation of KNN based segmentation for robots.
 - [ ] Documentation for the codebase.
 - [ ] Adding new robots (in sim or any other environment).
