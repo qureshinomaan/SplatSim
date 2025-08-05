@@ -33,20 +33,8 @@ Go to https://pytorch.org/get-started/locally/ to find the right commands for yo
   - torchvision=0.22.1+cu126
 
 ```bash
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 ```
-
-<!-- ### Install ghalton
-
-This is a dependency of pybullet-planning which has a hard time installing on its own. Install from source:
-
-```bash
-cd ~/code
-git clone https://github.com/fmder/ghalton.git
-cd ghalton
-pip install .
-cd ~/code/SplatSim
-``` -->
 
 ### Install other dependencies
 
