@@ -125,6 +125,14 @@ setup(
 pip install submodules/pybullet-playground-wrapper/
 ```
 
+QOL for git status
+```bash
+echo '*.egg-info' >> .git/modules/submodules/ghalton/info/exclude
+echo 'build/*' >> .git/modules/submodules/ghalton/info/exclude
+echo '*.egg-info' >> .git/modules/submodules/pybullet-URDF-models/info/exclude
+echo 'build/*' >> .git/modules/submodules/pybullet-URDF-models/info/exclude
+```
+
 ### Install this repo as a package
 
 Install in editable mode:
