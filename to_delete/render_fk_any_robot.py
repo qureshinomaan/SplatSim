@@ -8,7 +8,7 @@
 import copy
 
 import torch
-from scene import Scene
+from gaussian_splatting.scene import Scene
 import os
 from tqdm import tqdm
 from os import makedirs
@@ -18,7 +18,7 @@ from utils.general_utils import safe_state
 from argparse import ArgumentParser
 from arguments import ModelParams, PipelineParams, get_combined_args
 from gaussian_renderer import GaussianModel
-from utils_fk import *
+from splatsim.utils.utils_fk import *
 from e3nn import o3
 from einops import einsum
 
@@ -93,7 +93,7 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
     object_gaussians_backup = copy.deepcopy(object_gaussians)
 
     # load object configs 
-    with open('object_configs/objects.yaml', 'r') as file:
+    with open('configs/object_configs/objects.yaml', 'r') as file:
         object_config = yaml.safe_load(file)
         robot_transformation = object_config[robot_name]['transformation']['matrix']
 
@@ -516,7 +516,7 @@ def get_segmented_indices(pc, robot_transformation, aabb, robot_name):
     segmented_points = []
 
     #load labels.npy
-    labels = np.load('./labels_path/'+robot_name+'_labels.npy')
+    labels = np.load('./data/labels_path/'+robot_name+'_labels.npy')
     labels = torch.from_numpy(labels).to(device=xyz.device).long()
 
     
@@ -549,7 +549,7 @@ if __name__ == "__main__":
     robot_name = args.model_path.split('/')[-1]
 
     #load config for the robot
-    with open('object_configs/objects.yaml', 'r') as file:
+    with open('configs/object_configs/objects.yaml', 'r') as file:
         robot_config = yaml.safe_load(file)
     urdf_path = robot_config[robot_name]['urdf_path']
     print('urdf_path : ', urdf_path)

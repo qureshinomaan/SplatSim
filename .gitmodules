@@ -10,3 +10,12 @@
 [submodule "submodules/ghalton"]
 	path = submodules/ghalton
 	url = https://github.com/fmder/ghalton
+[submodule "submodules/gaussian-splatting-wrapper/gaussian_splatting"]
+	path = submodules/gaussian-splatting-wrapper/gaussian_splatting
+	url = https://github.com/jwang078/gaussian-splatting.git
+[submodule "submodules/pybullet-URDF-models"]
+	path = submodules/pybullet-URDF-models
+	url = https://github.com/c-yiting/pybullet-URDF-models.git
+[submodule "submodules/pybullet-playground-wrapper/pybullet_playground"]
+	path = submodules/pybullet-playground-wrapper/pybullet_playground
+	url = https://github.com/zswang666/pybullet-playground.git

@@ -14,6 +14,8 @@ This repository contains the code for the paper "SplatSim".
 ```bash
 cd ~/code
 git clone TODO --recursive
+git submodule init
+git submodule update
 ```
 
 ### Create conda env
@@ -27,14 +29,14 @@ conda create -n splatsim python=3.12
 
 Go to https://pytorch.org/get-started/locally/ to find the right commands for your system. For example, this repo worked with this configuration:
   - torch==2.7.1
-  - torchaudio=2.7.1+cu128
-  - torchvision=0.22.1+cu128
+  - torchaudio=2.7.1+cu126
+  - torchvision=0.22.1+cu126
 
 ```bash
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 ```
 
-### Install ghalton
+<!-- ### Install ghalton
 
 This is a dependency of pybullet-planning which has a hard time installing on its own. Install from source:
 
@@ -44,7 +46,7 @@ git clone https://github.com/fmder/ghalton.git
 cd ghalton
 pip install .
 cd ~/code/SplatSim
-```
+``` -->
 
 ### Install other dependencies
 
@@ -54,11 +56,82 @@ cd ~/code/SplatSim
 pip install -r requirements.txt
 ```
 
+### Install submodules
+
+TODO download submodules, maybe with --recursive
+
+Change `submodules/gello_software` to install as a package by changing this in `submodules/gello_software/setup.py`:
+- From `packages=setuptools.find_packages(),`
+- To: `packages=setuptools.find_packages(include=["gello", "gello.*"]),`
+
+Add `submodules/gaussian-splatting-wrapper/setup.py` and `submodules/gaussian-splatting-wrapper/gaussian_splatting/__init__.py` to gaussian-splatting repo
+```
+from setuptools import setup, find_packages
+
+setup(
+    name="gaussian_splatting",
+    version="0.1",
+    packages=find_packages(include=["scene", "scene.*", "utils", "utils.*"]),
+)
+```
+
+```
+import os
+import sys
+
+# Allow relative imports like `from utils...` to work by appending parent directory
+_module_path = os.path.dirname(__file__)
+sys.path.insert(0, _module_path)
+```
+
+Note that this has to be installed in editable mode `-e`
+```bash
+pip install -e submodules/gaussian-splatting-wrapper
+```
+
+And 
+
+Install submodules and their dependencies
+
+pip install submodules/gello_software
+pip install -r submodules/gello_software/requirements.txt
+
+```
+# Allow the install to use your version of pytorch; this takes a few mins for some reason
+pip install submodules/simple-knn/ --no-build-isolation
+```
+
+```
+pip install submodules/diff-gaussian-rasterization
+```
+
+```
+pip install submodules/pybullet-URDF-models
+```
+
+Pybullet playground
+Add `submodules/pybullet-playground-wrapper/setup.py`
+```
+from setuptools import setup, find_packages
+
+setup(
+    name="pybullet_playground",
+    version="0.1.0",
+    packages=find_packages(include=["pybullet_playground", "pybullet_playground/*"]),
+)
+```
+
+```
+pip install submodules/pybullet-playground-wrapper/
+```
+
 ### Install this repo as a package
+
+Install in editable mode:
 
 ```bash
 cd ~/code/SplatSim
-pip install .
+pip install -e .
 ```
 
 

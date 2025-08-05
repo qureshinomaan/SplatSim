@@ -10,7 +10,7 @@
 #
 
 import torch
-from scene import Scene
+from gaussian_splatting.scene import Scene
 import os
 from tqdm import tqdm
 from os import makedirs

@@ -12,7 +12,7 @@ def main(args):
     # p.setGravity(0, 0, -9.81)  # Set gravity
 
     # Get config
-    with open('object_configs/objects.yaml', 'r') as file:
+    with open('configs/object_configs/objects.yaml', 'r') as file:
         robot_config = yaml.safe_load(file)
 
     if args.robot_name is not None:
@@ -21,7 +21,7 @@ def main(args):
     else:
         print("WARNING: no robot name, so using default values")
         initial_joint_positions = [0, 0, -np.pi/2, np.pi/2, 0, np.pi/2, 0]  # Replace with your desired values
-        urdf_path = 'pybullet-playground_2/urdf/pybullet_ur5_gripper/robots/urdf/ur5e_with_shear_gripper.urdf'
+        urdf_path = 'submodules/pybullet-playground-wrapper/pybullet_playground/urdf/pybullet_ur5_gripper/robots/urdf/ur5e_with_shear_gripper.urdf'
 
 
     # Create an instance of the PybulletRobotServer

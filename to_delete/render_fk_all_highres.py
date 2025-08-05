@@ -8,7 +8,7 @@
 import copy
 
 import torch
-from scene import Scene
+from gaussian_splatting.scene import Scene
 import os
 from tqdm import tqdm
 from os import makedirs
@@ -18,7 +18,7 @@ from utils.general_utils import safe_state
 from argparse import ArgumentParser
 from arguments import ModelParams, PipelineParams, get_combined_args
 from gaussian_renderer import GaussianModel
-from utils_fk import *
+from splatsim.utils.utils_fk import *
 from e3nn import o3
 from einops import einsum
 
@@ -36,7 +36,7 @@ import pybullet as p
 p.connect(p.DIRECT)
 p.resetSimulation()
 flags = p.URDF_ENABLE_CACHED_GRAPHICS_SHAPES
-pandaUid = p.loadURDF('./pybullet-playground_2/urdf/sisbot.urdf', useFixedBase=True, basePosition=[0.0, 0.0, -0.1])
+pandaUid = p.loadURDF('./submodules/pybullet-playground-wrapper/pybullet_playground/urdf/sisbot.urdf', useFixedBase=True, basePosition=[0.0, 0.0, -0.1])
 # pandaUid = p.loadURDF('pybullet_ur5_gripper/robots/urdf/ur5e.urdf', useFixedBase=True, basePosition=[0.0, 0.0, 0.0], flags=flags, globalScaling=1)
 
 
@@ -102,7 +102,7 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
     object_gaussians_backup = copy.deepcopy(object_gaussians)
 
     # load object configs 
-    with open('object_configs/objects.yaml', 'r') as file:
+    with open('configs/object_configs/objects.yaml', 'r') as file:
         object_config = yaml.safe_load(file)
         robot_transformation = object_config[robot_name]['transformation']['matrix']
 

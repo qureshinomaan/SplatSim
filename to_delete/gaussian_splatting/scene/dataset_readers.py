@@ -13,7 +13,7 @@ import os
 import sys
 from PIL import Image
 from typing import NamedTuple
-from scene.colmap_loader import (
+from gaussian_splatting.scene.colmap_loader import (
     read_extrinsics_text,
     read_intrinsics_text,
     qvec2rotmat,
@@ -28,7 +28,7 @@ import json
 from pathlib import Path
 from plyfile import PlyData, PlyElement
 from utils.sh_utils import SH2RGB
-from scene.gaussian_model import BasicPointCloud
+from gaussian_splatting.scene.gaussian_model import BasicPointCloud
 
 
 class CameraInfo(NamedTuple):

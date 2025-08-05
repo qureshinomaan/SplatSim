@@ -82,7 +82,7 @@ def launch_robot_server(args: Args):
 
         server = PybulletRobotServer(
            port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           env_config_name="orange_on_plate", robot_name="robot_iphone",
+           env_config_name="orange_on_plate", robot_name="robot_iphone", cam_i=3
         )
         server.serve()
 

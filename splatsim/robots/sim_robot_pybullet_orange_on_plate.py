@@ -25,13 +25,13 @@ from e3nn import o3
 import cv2
 
 assert mujoco.viewer is mujoco.viewer
-from scene.cameras import Camera
+from gaussian_splatting.scene.cameras import Camera
 from gaussian_renderer import render
 import urdf_models.models_data as md
 import pybullet as p
 from pybullet_planning.interfaces.robots.collision import pairwise_collision
 from pybullet_planning import plan_joint_motion, get_movable_joints, set_joint_positions
-from utils.robot_splat_render_utils import (
+from splatsim.utils.robot_splat_render_utils import (
     get_segmented_indices,
     transform_means,
     get_transfomration_list,
@@ -40,7 +40,7 @@ from utils.robot_splat_render_utils import (
 )
 from gaussian_splatting.gaussian_renderer import GaussianModel
 from gaussian_splatting.arguments import ModelParams, PipelineParams, Namespace
-from scene import Scene
+from gaussian_splatting.scene import Scene
 
 
 class ZMQServerThread(threading.Thread):
@@ -273,7 +273,7 @@ class PybulletRobotServer:
         robot_name: str = "robot_iphone",
         camera_names: List[str] = ["base_rgb"],
         cam_i: int = 254,
-        object_config_path: str = "./object_configs/objects.yaml",
+        object_config_path: str = "./configs/object_configs/objects.yaml",
     ):
         self.ready_to_serve = False
         self.serve_mode = serve_mode
@@ -289,7 +289,7 @@ class PybulletRobotServer:
         self.grasp_poses = {}
         self.pybullet_client.connect(p.GUI)
         self.pybullet_client.setAdditionalSearchPath(
-            "./pybullet-playground_2/urdf/pybullet_ur5_gripper/urdf"
+            "./submodules/pybullet-playground-wrapper/pybullet_playground/urdf/pybullet_ur5_gripper/urdf"
         )
 
         with open(self.object_config_path, "r") as file:
@@ -531,8 +531,10 @@ class PybulletRobotServer:
                     source_path=source_path,
                     model_path=model_path,
                     images="images",
+                    depths="",
                     resolution=-1,
                     white_background=False,
+                    train_test_exp=False,
                     data_device="cuda",
                     eval=False,
                 )
@@ -544,7 +546,8 @@ class PybulletRobotServer:
                 self.gaussians_backup,
                 load_iteration=-1,
                 shuffle=False,
-                num_cams=self.cam_i + 2,
+                cam_train_indices=[self.cam_i],
+                cam_test_indices=[0], # Even tho we're not using this, make sure to load at max 1 camera for memory purposes
             )
 
             bg_color = [1, 1, 1]
@@ -886,13 +889,15 @@ class PybulletRobotServer:
         return rendering
 
     def setup_camera_from_dataset(self, cam_i, use_train=True):
+        # Assume that self.cam_train_indices and self.cam_test_indices have already singled out
+        # the camera of interest. Return the first camera in the list
         if use_train:
-            camera = self.scene.getTrainCameras()[cam_i]
+            camera = self.scene.getTrainCameras()[0]
         else:
-            camera = self.scene.getTestCameras()[cam_i]
+            camera = self.scene.getTestCameras()[0]
         return camera
 
-    def get_observations(self, generate_wrist_rgb=False) -> Dict[str, np.ndarray]:
+    def get_observations(self) -> Dict[str, np.ndarray]:
         joint_positions = self.get_joint_state()
         joint_positions_dummy = self.get_joint_state_dummy()
         joint_velocities = np.array(
@@ -935,13 +940,14 @@ class PybulletRobotServer:
             "all_joint_positions": joint_positions,
             "joint_velocities": joint_velocities,
             "joint_positions_dummy": joint_positions_dummy,
+            "ee_pos_quat": dummy_ee_quat,
             "state": state,
             "action": action,
         }
 
-        # TODO if this name change from gripper_position doesn't work downstream, this is prob why
-        # observations["gripper_position"] = [self.current_gripper_state]
-        observations["gripper"] = [self.current_gripper_state]
+        # gripper_position is for gello integration. It's a shame that it intersects with self.splat_object_name_list convetion
+        observations["gripper_position"] = [self.current_gripper_state]
+        # observations["gripper"] = [self.current_gripper_state]
 
         for i in range(len(self.urdf_object_list)):
             (

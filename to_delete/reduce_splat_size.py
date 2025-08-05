@@ -12,7 +12,7 @@
 import copy
 
 import torch
-from scene import Scene
+from gaussian_splatting.scene import Scene
 import os
 from tqdm import tqdm
 from os import makedirs
@@ -22,7 +22,7 @@ from utils.general_utils import safe_state
 from argparse import ArgumentParser
 from arguments import ModelParams, PipelineParams, get_combined_args
 from gaussian_renderer import GaussianModel
-from utils_fk import *
+from splatsim.utils.utils_fk import *
 import sphecerix
 from e3nn import o3
 from einops import einsum
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     model.load_ply('output/{}/point_cloud/iteration_7000/point_cloud.ply'.format(object_name))
 
     # Load object config file
-    with open('object_configs/objects.yaml', 'r') as file:
+    with open('configs/object_configs/objects.yaml', 'r') as file:
         object_config = yaml.safe_load(file)
 
     # Transform object

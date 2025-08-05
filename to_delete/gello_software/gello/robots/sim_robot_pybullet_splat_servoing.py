@@ -35,8 +35,8 @@ from gaussian_splatting.utils.general_utils import safe_state
 from argparse import ArgumentParser
 from gaussian_splatting.arguments import ModelParams, PipelineParams, get_combined_args
 from gaussian_splatting.gaussian_renderer import GaussianModel
-from gaussian_splatting.utils_fk import *
-from gaussian_splatting.utils_fk import compute_transformation
+from splatsim.utils.utils_fk import *
+from splatsim.utils.utils_fk import compute_transformation
 from gaussian_splatting.scene.cameras import Camera
 #import RGB2SH
 from gaussian_splatting.utils.sh_utils import eval_sh, RGB2SH
@@ -256,7 +256,7 @@ class PybulletRobotServer:
         # self.pybullet_client.changeDynamics(self.plane, -1, lateralFriction=random.uniform(0.2, 1.1))
 
         import yaml
-        with open('/home/nomaan/Desktop/corl24/ocean_backup/gaussian-splatting/object_configs/objects.yaml', 'r') as file:
+        with open('/home/nomaan/Desktop/corl24/ocean_backup/gaussian-splatting/configs/object_configs/objects.yaml', 'r') as file:
             self.object_config = yaml.safe_load(file)
 
         self.current_gripper_action = 0

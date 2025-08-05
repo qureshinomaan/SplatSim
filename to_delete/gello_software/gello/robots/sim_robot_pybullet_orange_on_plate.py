@@ -25,13 +25,13 @@ from e3nn import o3
 import cv2
 
 assert mujoco.viewer is mujoco.viewer
-from scene.cameras import Camera
+from gaussian_splatting.scene.cameras import Camera
 from gaussian_renderer import render
 import urdf_models.models_data as md
 import pybullet as p
 from pybullet_planning.interfaces.robots.collision import pairwise_collision
 from pybullet_planning import plan_joint_motion, get_movable_joints, set_joint_positions
-from utils.robot_splat_render_utils import (
+from splatsim.utils.robot_splat_render_utils import (
     get_segmented_indices,
     transform_means,
     get_transfomration_list,
@@ -273,7 +273,7 @@ class PybulletRobotServer:
         robot_name: str = "robot_iphone",
         camera_names: List[str] = ["base_rgb"],
         cam_i: int = 254,
-        object_config_path: str = "./object_configs/objects.yaml",
+        object_config_path: str = "./configs/object_configs/objects.yaml",
     ):
         self.ready_to_serve = False
         self.serve_mode = serve_mode
@@ -289,7 +289,7 @@ class PybulletRobotServer:
         self.grasp_poses = {}
         self.pybullet_client.connect(p.GUI)
         self.pybullet_client.setAdditionalSearchPath(
-            "./pybullet-playground_2/urdf/pybullet_ur5_gripper/urdf"
+            "./submodules/pybullet-playground-wrapper/pybullet_playground/urdf/pybullet_ur5_gripper/urdf"
         )
 
         with open(self.object_config_path, "r") as file:
@@ -935,13 +935,13 @@ class PybulletRobotServer:
             "all_joint_positions": joint_positions,
             "joint_velocities": joint_velocities,
             "joint_positions_dummy": joint_positions_dummy,
+            "ee_pos_quat": dummy_ee_quat,
             "state": state,
             "action": action,
         }
 
-        # TODO if this name change from gripper_position doesn't work downstream, this is prob why
-        # observations["gripper_position"] = [self.current_gripper_state]
-        observations["gripper"] = [self.current_gripper_state]
+        # gripper_position is for gello integration. It's a shame that it intersects with splat object names, below
+        observations["gripper_position"] = [self.current_gripper_state]
 
         for i in range(len(self.urdf_object_list)):
             (

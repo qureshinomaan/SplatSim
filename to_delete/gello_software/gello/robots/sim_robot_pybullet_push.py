@@ -88,8 +88,8 @@ class ZMQRobotServer:
 class PybulletRobotServer:
     def __init__(
         self,
-        # urdf_path: str = './pybullet-playground_2/urdf/sisbot.urdf',
-        urdf_path: str = './pybullet-playground_2/urdf/sisbot.urdf',
+        # urdf_path: str = './submodules/pybullet-playground-wrapper/pybullet_playground/urdf/sisbot.urdf',
+        urdf_path: str = './submodules/pybullet-playground-wrapper/pybullet_playground/urdf/sisbot.urdf',
         host: str = "127.0.0.1",
         port: int = 5556,
         print_joints: bool = False,
@@ -102,7 +102,7 @@ class PybulletRobotServer:
         self.urdf_path = urdf_path
         self._num_joints = 7
         self.pybullet_client.connect(p.GUI)
-        self.pybullet_client.setAdditionalSearchPath("./pybullet-playground_2/urdf/pybullet_ur5_gripper/urdf")
+        self.pybullet_client.setAdditionalSearchPath("./submodules/pybullet-playground-wrapper/pybullet_playground/urdf/pybullet_ur5_gripper/urdf")
 
         flags = self.pybullet_client.URDF_USE_IMPLICIT_CYLINDER
         self.robot = self.pybullet_client.loadURDF(self.urdf_path, [0, 0, -0.1], useFixedBase=True, flags=flags)
@@ -149,7 +149,7 @@ class PybulletRobotServer:
         # random quaternion for the orientation of the object
         quat = self.pybullet_client.getQuaternionFromEuler([0, 0, euler_z])
 
-        T_object = self.pybullet_client.loadURDF('./pybullet-playground_2/urdf/T_object/urdf_T.urdf', [x, y, 0], quat, globalScaling=0.93)
+        T_object = self.pybullet_client.loadURDF('./submodules/pybullet-playground-wrapper/pybullet_playground/urdf/T_object/urdf_T.urdf', [x, y, 0], quat, globalScaling=0.93)
         self.T_object = T_object
 
         #make T_object orange
@@ -158,7 +158,7 @@ class PybulletRobotServer:
         # load another object without collision
         self.target_location = [0.5+0.0, 0.-0.03, -0.02895]
         quat = self.pybullet_client.getQuaternionFromEuler([0, 0, np.pi+np.pi/4])
-        T_object2 = self.pybullet_client.loadURDF('./pybullet-playground_2/urdf/T_object/urdf_T.urdf', self.target_location, quat, globalScaling=0.93, useFixedBase=True)
+        T_object2 = self.pybullet_client.loadURDF('./submodules/pybullet-playground-wrapper/pybullet_playground/urdf/T_object/urdf_T.urdf', self.target_location, quat, globalScaling=0.93, useFixedBase=True)
         self.T_object2 = T_object2
         #disable collision for T_object2
         collisionFilterGroup = 0

@@ -60,6 +60,9 @@ class ReplayTrajectoryAgent(Agent):
         cur_joint = np.array(cur_joint)
 
         object_list = [object_position_key[:-len("_position")] for object_position_key in data.keys() if object_position_key.endswith("_position")]
+        # gripper_position is for gello integration. Ignore this value
+        if "gripper" in object_list:
+            object_list.remove("gripper")
         for object_name in object_list:
             cur_object_position = np.array(data[object_name + '_position'])
             cur_object_rotation = np.array(data[object_name + '_orientation'])

@@ -1,5 +1,5 @@
 from arguments import ModelParams
-from scene import Scene
+from gaussian_splatting.scene import Scene
 from gaussian_renderer import GaussianModel
 from arguments import ModelParams, get_combined_args, ArgumentParser, Namespace
 

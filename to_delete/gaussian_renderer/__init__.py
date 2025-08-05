@@ -12,7 +12,7 @@
 import torch
 import math
 from diff_gaussian_rasterization import GaussianRasterizationSettings, GaussianRasterizer
-from scene.gaussian_model import GaussianModel
+from gaussian_splatting.scene.gaussian_model import GaussianModel
 from utils.sh_utils import eval_sh
 import open3d as o3d
 import numpy as np

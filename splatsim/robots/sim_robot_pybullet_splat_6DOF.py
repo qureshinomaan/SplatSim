@@ -37,8 +37,8 @@ from gaussian_splatting.arguments import ModelParams, PipelineParams, get_combin
 from gaussian_splatting.gaussian_renderer import GaussianModel
 # from gaussian_splatting.utils_fk import *
 # from gaussian_splatting.utils_fk import compute_transformation
-from utils_fk import compute_transformation
-from scene.cameras import Camera
+from splatsim.utils.utils_fk import compute_transformation
+from gaussian_splatting.scene.cameras import Camera
 #import RGB2SH
 from gaussian_splatting.utils.sh_utils import eval_sh, RGB2SH
 
@@ -142,7 +142,7 @@ class ZMQRobotServer:
 class PybulletRobotServer:
     def __init__(
         self,
-        urdf_path: str = './pybullet-playground_2/urdf/sisbot.urdf',
+        urdf_path: str = './submodules/pybullet-playground-wrapper/pybullet_playground/urdf/sisbot.urdf',
         host: str = "127.0.0.1",
         port: int = 5556,
         print_joints: bool = False,
@@ -288,7 +288,7 @@ class PybulletRobotServer:
         # self.pybullet_client.changeDynamics(self.plane, -1, lateralFriction=random.uniform(0.2, 1.1))
 
         import yaml
-        with open('/home/jennyw2/code/SplatSim/object_configs/objects.yaml', 'r') as file:
+        with open('/home/jennyw2/code/SplatSim/configs/object_configs/objects.yaml', 'r') as file:
             self.object_config = yaml.safe_load(file)
 
         self.current_gripper_action = 0
