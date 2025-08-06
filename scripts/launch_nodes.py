@@ -113,6 +113,15 @@ def launch_robot_server(args: Args):
         )
         server.serve()
 
+    elif args.robot == "sim_ur_pybullet_apple_interactive-nosplat":
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+
+        server = PybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           env_config_name="apple_on_plate", robot_name="robot_iphone", cam_i=3, camera_names=[]
+        )
+        server.serve()
+
     elif args.robot == "sim_ur_pybullet_apple_interactive-robot_jenny":
         from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
 

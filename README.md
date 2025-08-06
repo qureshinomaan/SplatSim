@@ -52,6 +52,7 @@ pip install -e submodules/gello_software
 
 # Install dependencies from gello_software
 pip install -r submodules/gello_software/requirements.txt
+pip install -e submodules/gello_software/third_party/DynamixelSDK/python
 
 # Allow the install to use your version of pytorch; this takes a few mins for some reason
 pip install submodules/simple-knn/ --no-build-isolation
@@ -62,6 +63,7 @@ QOL to clean up git status
 echo '*.egg-info' >> .git/modules/submodules/ghalton/info/exclude
 echo '*.egg-info' >> .git/modules/submodules/pybullet-URDF-models/info/exclude
 echo 'build/*' >> .git/modules/submodules/pybullet-URDF-models/info/exclude
+echo '*.egg-info' >> .git/modules/submodules/gello_software/modules/third_party/DynamixelSDK/info/exclude
 ```
 
 ### Install other dependencies

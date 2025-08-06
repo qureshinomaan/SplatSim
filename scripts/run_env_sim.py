@@ -129,66 +129,76 @@ def main(args):
             else:
                 reset_joints = args.start_joints
                 reset_joints = np.array(reset_joints)
-            agent = GelloAgent(port=gello_port, start_joints=np.array(args.start_joints))
-            joints = agent.act(env.get_obs())
-            curr_joints = env.get_obs()["joint_positions"]
+            agent = GelloAgent(port=gello_port, start_joints=reset_joints)
+            # curr_joints = env.get_obs()["joint_positions"]
             
-            #if not np array, then convert to np array
-            if not isinstance(curr_joints, np.ndarray):
-                curr_joints = np.array(curr_joints)
+            # #if not np array, then convert to np array
+            # if not isinstance(curr_joints, np.ndarray):
+            #     curr_joints = np.array(curr_joints)
             
-            if reset_joints.shape == curr_joints.shape:
-                max_delta = (np.abs(curr_joints - reset_joints)).max()
-                steps = min(int(max_delta / 0.01), 100)
+            # if reset_joints.shape == curr_joints.shape:
+            #     max_delta = (np.abs(curr_joints - reset_joints)).max()
+            #     steps = min(int(max_delta / 0.01), 100)
 
-                for jnt in np.linspace(curr_joints, reset_joints, steps):
-                    env.step(jnt)
-                    time.sleep(0.001)
-            do_startup = True
+            #     for jnt in np.linspace(curr_joints, reset_joints, steps):
+            #         env.step(jnt)
+            #         time.sleep(0.001)
+            startup_steps = 100
+            query_new_joints_per_startup_step = True
         elif args.agent == "quest":
             from splatsim.agents.quest_agent import SingleArmQuestAgent
 
             agent = SingleArmQuestAgent(robot_type=args.robot_type, which_hand="l")
-            do_startup = True
+            startup_steps = 100
+            query_new_joints_per_startup_step = True
         elif args.agent == "spacemouse":
             from splatsim.agents.spacemouse_agent import SpacemouseAgent
 
             agent = SpacemouseAgent(robot_type=args.robot_type, verbose=args.verbose)
-            do_startup = True
+            startup_steps = 100
+            query_new_joints_per_startup_step = True
         elif args.agent == "dummy" or args.agent == "none":
             agent = DummyAgent(num_dofs=robot_client.num_dofs())
-            do_startup = True
+            startup_steps = 2
+            query_new_joints_per_startup_step = True
         elif args.agent == "policy":
             from splatsim.agents.policy_agent import DiffusionAgent
             agent = DiffusionAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
-            do_startup = True
+            startup_steps = 25
+            query_new_joints_per_startup_step = True
         elif args.agent == "policy6DOF":
             from splatsim.agents.policy_agent_6DOF import DiffusionAgent
             agent = DiffusionAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
-            do_startup = True
+            startup_steps = 25
+            query_new_joints_per_startup_step = True
         elif args.agent == "servoing":
             from splatsim.agents.servoing_agent import ServoingAgent
             agent = ServoingAgent(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT3M9NVB-if00-port0")
-            do_startup = True
+            startup_steps = 25
+            query_new_joints_per_startup_step = True
         elif args.agent == "interface":
             from splatsim.agents.interface_agent import InterfaceAgent
             agent = InterfaceAgent()
-            do_startup = True
+            startup_steps = 2
+            query_new_joints_per_startup_step = True
         elif args.agent == "text_interface":
             from splatsim.agents.text_interface_agent import TextInterfaceAgent
             agent = TextInterfaceAgent()
-            do_startup = False # So that it doesn't skip commands at first
+            startup_steps = 2
+            query_new_joints_per_startup_step = False
         elif args.agent == "slider_interface":
             from splatsim.agents.slider_interface_agent import SliderInterfaceAgent
             agent = SliderInterfaceAgent()
-            do_startup = False
+            startup_steps = 2
+            query_new_joints_per_startup_step = False
         elif args.agent == "replay_trajectory":
             from splatsim.agents.replay_trajectory_agent import ReplayTrajectoryAgent
             with open("configs/trajectory_configs.yaml", "r") as file:
                 trajectory_config = yaml.safe_load(file)
             traj_folder = trajectory_config["trajectory_folder"]
             agent = ReplayTrajectoryAgent(traj_folder=traj_folder, env=env)
-            do_startup = True # So that it doesn't skip the first part of the first recording
+            startup_steps = 2
+            query_new_joints_per_startup_step = False
         else:
             raise ValueError("Invalid agent name")
         
@@ -239,13 +249,11 @@ def main(args):
     ), f"agent output dim = {len(start_pos)}, but env dim = {len(joints)}"
 
     max_delta = 0.05
-    num_startup_iterations = 25 if do_startup else 2
-    for _ in range(num_startup_iterations):
+    command_joints = start_pos
+    for _ in range(startup_steps):
         obs = env.get_obs()
-        if do_startup:
+        if query_new_joints_per_startup_step:
             command_joints = agent.act(obs)
-        else:
-            command_joints = start_pos
         current_joints = obs["joint_positions"]
         if not isinstance(current_joints, np.ndarray):
             current_joints = np.array(current_joints)
