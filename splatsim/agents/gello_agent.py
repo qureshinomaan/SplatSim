@@ -137,23 +137,12 @@ class GelloAgent(Agent):
         joint_state = self._robot.get_joint_state()
         norm_joint_state = ((joint_state + np.pi) % (2 * np.pi)) - np.pi
         self.joint_state_offset = joint_state - norm_joint_state
+        # Assume the last joint is the gripper
+        self.joint_state_offset[-1] = 0
         print('joint state offset', self.joint_state_offset)
 
 
     def act(self, obs: Dict[str, np.ndarray]) -> np.ndarray:
         joint_state = self._robot.get_joint_state() - self.joint_state_offset
-        # Wrap joint state to be within [-pi, pi]
-        # joint_state = ((joint_state + np.pi) % (2 * np.pi)) - np.pi
         print("robot joint state", joint_state)
         return joint_state
-        # dyna_joints = self._robot.get_joint_state()
-        # # current_q = dyna_joints[:-1]  # last one dim is the gripper
-        # current_gripper = dyna_joints[-1]  # last one dim is the gripper
-
-        # print(current_gripper)
-        # if current_gripper < 0.2:
-        #     self._robot.set_torque_mode(False)
-        #     return obs["joint_positions"]
-        # else:
-        #     self._robot.set_torque_mode(False)
-        #     return dyna_joints
