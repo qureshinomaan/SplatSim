@@ -13,6 +13,10 @@ import shutil
 import yaml
 from argparse import ArgumentParser
 
+from dataclasses import dataclass, field
+import numpy as np
+from typing import Optional
+
 import torch
 import numpy as np
 import mujoco
@@ -114,6 +118,31 @@ class ZMQRobotServer:
         self._socket.close()
         self._context.term()
 
+class GripperState(str, enum.Enum):
+    OPEN = 1
+    CLOSE = 0
+
+@dataclass
+class PathSegment:
+    path_type: str = field(init=False)
+
+@dataclass
+class TrajectoryPathSegment(PathSegment):
+    path: np.ndarray
+    gripper_pos: float
+    gripper_velocity: float = 0.2
+    threshold: float = 1e-2
+
+    def __post_init__(self):
+        self.path_type = "trajectory"
+
+@dataclass
+class GripperPathSegment(PathSegment):
+    target_state: GripperState
+    num_steps: int = 160
+
+    def __post_init__(self):
+        self.path_type = "gripper"
 
 class PybulletRobotServerBase:
     MAX_TRAJECTORY_COUNT = 500
@@ -186,54 +215,9 @@ class PybulletRobotServerBase:
         },
     }
 
-    ENV_NAME_TO_CONFIG = {
-        "apple_on_plate": {
-            "objects": [
-                {
-                    "object_name": "plastic_apple",
-                    "splat_object_name": "plastic_apple",
-                    "grasp_config": [GRASP_CONFIGS["apple"]],
-                },
-                {
-                    "object_name": "plate",
-                    "splat_object_name": "plate",
-                    "grasp_config": [],
-                },
-            ]
-        },
-        "banana_on_plate": {
-            "objects": [
-                {
-                    "object_name": "plastic_banana",
-                    "splat_object_name": "plastic_banana",
-                    "grasp_config": [
-                        GRASP_CONFIGS["banana1"],
-                        GRASP_CONFIGS["banana2"],
-                    ],
-                },
-                {
-                    "object_name": "plate",
-                    "splat_object_name": "plate",
-                    "grasp_config": [],
-                },
-            ]
-        },
-        "orange_on_plate": {
-            "objects": [
-                {
-                    "object_name": "plastic_orange",
-                    "splat_object_name": "plastic_orange",
-                    "grasp_config": [GRASP_CONFIGS["orange"]],
-                },
-                {
-                    "object_name": "plate",
-                    "splat_object_name": "plate",
-                    "grasp_config": [],
-                },
-            ]
-        },
-        # TODO is there a plastic strawberry?
-    }
+    # TODO is there a plastic strawberry env?
+
+    ENV_CONFIG = None # To be set in a subclass
 
     def __init__(
         self,
@@ -327,18 +311,18 @@ class PybulletRobotServerBase:
         self.object_name_list = list(
             map(
                 lambda object_cfg: object_cfg["object_name"],
-                self.ENV_NAME_TO_CONFIG[self.ENV_CONFIG_NAME]["objects"],
+                self.ENV_CONFIG["objects"],
             )
         )
         self.splat_object_name_list = list(
             map(
                 lambda object_cfg: object_cfg["splat_object_name"],
-                self.ENV_NAME_TO_CONFIG[self.ENV_CONFIG_NAME]["objects"],
+                self.ENV_CONFIG["objects"],
             )
         )
         self.grasp_configs = {
             object_cfg["object_name"]: object_cfg["grasp_config"]
-            for object_cfg in self.ENV_NAME_TO_CONFIG[self.ENV_CONFIG_NAME]["objects"]
+            for object_cfg in self.ENV_CONFIG["objects"]
         }
 
         # self.object_name_list = ["plastic_orange", "plate"]
@@ -863,6 +847,28 @@ class PybulletRobotServerBase:
         else:
             camera = self.scene.getTestCameras()[0]
         return camera
+    
+    def get_current_ee_pose(self):
+        dummy_ee_pos, dummy_ee_quat = (
+            self.pybullet_client.getLinkState(self.dummy_robot, 6)[0],
+            self.pybullet_client.getLinkState(self.dummy_robot, 6)[1],
+        )
+        return dummy_ee_pos, dummy_ee_quat
+    
+    def get_current_object_pose(self, object_name=None, object_id=None):
+        if object_name is not None:
+            if object_name not in self.splat_object_name_list:
+                raise ValueError(f"Object name '{object_name}' not found when querying its pose.")
+            queried_object_id = self.splat_object_name_list.index(object_name)
+            if object_id is not None:
+                assert object_id == queried_object_id
+            object_id = queried_object_id
+        elif object_id is None:
+            raise ValueError("No object_name or object_id given!")
+
+        body_id = self.urdf_object_list[object_id]
+        pos, quat = self.pybullet_client.getBasePositionAndOrientation(body_id)
+        return pos, quat
 
     def get_observations(self) -> Dict[str, np.ndarray]:
         joint_positions = self.get_joint_state()
@@ -874,10 +880,7 @@ class PybulletRobotServerBase:
             ]
         )
 
-        dummy_ee_pos, dummy_ee_quat = (
-            self.pybullet_client.getLinkState(self.dummy_robot, 6)[0],
-            self.pybullet_client.getLinkState(self.dummy_robot, 6)[1],
-        )
+        dummy_ee_pos, dummy_ee_quat = self.get_current_ee_pose()
         # get the euler angles from the quaternion
         dummy_ee_euler = self.pybullet_client.getEulerFromQuaternion(dummy_ee_quat)
 
@@ -1072,88 +1075,25 @@ class PybulletRobotServerBase:
 
         return random_ee_pos, random_ee_quat
 
-    def follow_paths_and_record(self, all_paths, initial_joint_positions, joint_signs):
-        for k in range(1):
-            # go to first object
-            self.follow_trajectory(
-                all_paths[4 * k + 0], 0, gripper_velocity=0.2, threshold=0.001
-            )
-
-            self.follow_trajectory(
-                all_paths[4 * k + 1], 0, gripper_velocity=0.2, threshold=0.001
-            )
-
-            # grasp the first object
-            for i in range(160):
-                self.open_gripper()
-                self.pybullet_client.stepSimulation()
-
-                observations = self.get_observations()
-                # save the observations in the correct format zfill(5)
-                if i % 20 == 0 and not self.skip_recording_first:
-                    self.trajectory_length += 1
-                    with open(
-                        self.path
-                        + str(self.trajectory_count).zfill(3)
-                        + "/"
-                        + str(self.trajectory_length).zfill(5)
-                        + ".pkl",
-                        "wb",
-                    ) as f:
-                        pickle.dump(observations, f)
-
-            # go to pregrasp
-            self.follow_trajectory(all_paths[4 * k + 2], 1)
-
-            # go to intermediate
-            self.follow_trajectory(all_paths[4 * k + 3], 1)
-
-            # go to drop location
-            self.follow_trajectory(all_paths[4 * k + 4], 1)
-
-            # drop the object
-            for i in range(160):
-                self.open_gripper()
-                self.pybullet_client.stepSimulation()
-
-                observations = self.get_observations()
-                # save the observations
-                if i % 20 == 0 and not self.skip_recording_first:
-                    self.trajectory_length += 1
-                    with open(
-                        self.path
-                        + str(self.trajectory_count).zfill(3)
-                        + "/"
-                        + str(self.trajectory_length).zfill(5)
-                        + ".pkl",
-                        "wb",
-                    ) as f:
-                        pickle.dump(observations, f)
-
-            if self.skip_recording_first:
-                for i in range(100):
-                    self.pybullet_client.stepSimulation()
-                    # time.sleep(1/240)
-                    self.close_gripper()
-                    for k in range(1, self.num_dofs()):
-                        self.pybullet_client.resetJointState(
-                            self.dummy_robot,
-                            k,
-                            initial_joint_positions[k - 1] * joint_signs[k - 1],
-                        )
-
-        # TODO put this in all_paths
-        # create a path from the drop location to the initial joint positions
-        path = [
-            np.array(self.drop_ee_joint[:6]) * 0.1 * (10 - i)
-            + np.array(self.initial_joint_state[:6]) * 0.1 * (i)
-            for i in range(1, 11)
-        ]
-
-        self.follow_trajectory(path, 0)
-
-        path = [self.initial_joint_state for _ in range(5)]
-        self.follow_trajectory(path, 0)
+    def follow_paths_and_record(self, all_paths: List[PathSegment]):
+        for path_segment in all_paths:
+            if isinstance(path_segment, TrajectoryPathSegment):
+                self.follow_trajectory_and_record(
+                    path=path_segment.path,
+                    gripper_pos=path_segment.gripper_pos,
+                    gripper_velocity=path_segment.gripper_velocity,
+                    threshold=path_segment.threshold,
+                    use_current_iters=True, # Seems to always be default true
+                )
+            elif isinstance(path_segment, GripperPathSegment):
+                if path_segment.target_state == GripperState.OPEN:
+                    self.open_gripper_and_record(num_steps=path_segment.num_steps)
+                elif path_segment.target_state == GripperState.CLOSE:
+                    self.close_gripper_and_record(num_steps=path_segment.num_steps)
+                else:
+                    raise ValueError(f"Unknown GripperPathSegment.target_state value {path_segment.target_state}")
+            else:
+                raise ValueError(f"Unknown path segment type {type(path_segment)}")
 
     def eval_trajectory_success(self):
         # check the mse of xy position of the objects with the drop location
@@ -1173,12 +1113,12 @@ class PybulletRobotServerBase:
     def open_gripper(self):
         """Open the gripper."""
         self.move_gripper(0.084)
-        self.current_gripper_action = 1
+        self.current_gripper_action = GripperState.OPEN # 1
 
     def close_gripper(self):
         """Close the gripper."""
         self.move_gripper(0.0)
-        self.current_gripper_action = 0
+        self.current_gripper_action = GripperState.CLOSE # 0
 
     def plan_execute_record_trajectory(self, initial_joint_positions, joint_signs):
         # Returns whether it was a success
@@ -1202,11 +1142,11 @@ class PybulletRobotServerBase:
                     initial_joint_positions[k - 1] * joint_signs[k - 1],
                 )
 
-        if len(all_paths) != 5:
+        if len(all_paths) == 0:
             self.delete_trajectory_folder()
             return False
 
-        self.follow_paths_and_record(all_paths, initial_joint_positions, joint_signs)
+        self.follow_paths_and_record(all_paths)
 
         # evaluate the success of the trajectory
         correct_trajectory = self.eval_trajectory_success()
@@ -1238,10 +1178,7 @@ class PybulletRobotServerBase:
         )
 
         # get end effector position and orientation
-        ee_pos, ee_quat = (
-            self.pybullet_client.getLinkState(self.dummy_robot, 6)[0],
-            self.pybullet_client.getLinkState(self.dummy_robot, 6)[1],
-        )
+        ee_pos, ee_quat = self.get_current_ee_pose()
         self.iniital_ee_quat = ee_quat
 
         for i in range(1, self.num_dofs()):
@@ -1257,10 +1194,7 @@ class PybulletRobotServerBase:
         self.close_gripper()
 
         # get initial ee position and orientation
-        self.initial_ee_pos, self.initial_ee_quat = (
-            self.pybullet_client.getLinkState(self.dummy_robot, 6)[0],
-            self.pybullet_client.getLinkState(self.dummy_robot, 6)[1],
-        )
+        self.initial_ee_pos, self.initial_ee_quat = self.get_current_ee_pose()
         # print joint angles
         joint_states = []
         for i in range(1, len(self.initial_joint_state)):
@@ -1523,8 +1457,47 @@ class PybulletRobotServerBase:
             path.append(joint_positions)
 
         return path, pre_grasp_transformation
+    
+    def close_gripper_and_record(self, num_steps=160):
+        for i in range(num_steps):
+            self.close_gripper()
+            self.pybullet_client.stepSimulation()
 
-    def follow_trajectory(
+            observations = self.get_observations()
+            # save the observations in the correct format zfill(5)
+            if i % 20 == 0 and not self.skip_recording_first:
+                self.trajectory_length += 1
+                with open(
+                    self.path
+                    + str(self.trajectory_count).zfill(3)
+                    + "/"
+                    + str(self.trajectory_length).zfill(5)
+                    + ".pkl",
+                    "wb",
+                ) as f:
+                    pickle.dump(observations, f)
+
+    def open_gripper_and_record(self, num_steps=160):
+        for i in range(num_steps):
+            self.open_gripper()
+            self.pybullet_client.stepSimulation()
+
+            observations = self.get_observations()
+            # save the observations
+            if i % 20 == 0 and not self.skip_recording_first:
+                self.trajectory_length += 1
+                with open(
+                    self.path
+                    + str(self.trajectory_count).zfill(3)
+                    + "/"
+                    + str(self.trajectory_length).zfill(5)
+                    + ".pkl",
+                    "wb",
+                ) as f:
+                    pickle.dump(observations, f)
+
+
+    def follow_trajectory_and_record(
         self,
         path,
         gripper_pos,
