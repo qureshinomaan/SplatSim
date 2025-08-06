@@ -14,8 +14,8 @@ from splatsim.robots.sim_robot_pybullet_base import PybulletRobotServerBase
 from splatsim.utils.transform_utils import rotation_matrix_to_euler_angles
 
 
-class OrangeOnPlatePybulletRobotServer(PybulletRobotServerBase):
-    ENV_CONFIG_NAME = "orange_on_plate"
+class BananaOnPlatePybulletRobotServer(PybulletRobotServerBase):
+    ENV_CONFIG_NAME = "banana_on_plate"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

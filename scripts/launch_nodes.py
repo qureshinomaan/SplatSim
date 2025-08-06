@@ -69,83 +69,83 @@ def launch_robot_server(args: Args):
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_orange":
-        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import OrangeOnPlatePybulletRobotServer
 
-        server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           env_config_name="orange_on_plate", camera_names=[], robot_name="robot_iphone",
+        server = OrangeOnPlatePybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=OrangeOnPlatePybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
+           camera_names=[], robot_name="robot_iphone", cam_i=3
         )
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_orange_interactive":
-        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import OrangeOnPlatePybulletRobotServer
 
-        server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           env_config_name="orange_on_plate", robot_name="robot_iphone", cam_i=3
+        server = OrangeOnPlatePybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=OrangeOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
+            camera_names=["base_rgb"], robot_name="robot_iphone", cam_i=3
         )
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_orange_interactive-robot_jenny":
-        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_orange_on_plate import OrangeOnPlatePybulletRobotServer
 
-        server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           env_config_name="orange_on_plate", robot_name="robot_jenny", use_gripper=False, cam_i=3,
+        server = OrangeOnPlatePybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=OrangeOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           camera_names=["base_rgb"], robot_name="robot_jenny", cam_i=3, use_gripper=False
         )
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple":
-        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_apple_on_plate import AppleOnPlatePybulletRobotServer
 
-        server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           env_config_name="apple_on_plate", camera_names=[], robot_name="robot_iphone", cam_i=3,
+        server = AppleOnPlatePybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=AppleOnPlatePybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
+           camera_names=[], robot_name="robot_iphone", cam_i=3
         )
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple_interactive":
-        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_apple_on_plate import AppleOnPlatePybulletRobotServer
 
-        server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           env_config_name="apple_on_plate", robot_name="robot_iphone", cam_i=3,
+        server = AppleOnPlatePybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=AppleOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           camera_names=["base_rgb"], robot_name="robot_iphone", cam_i=3
         )
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple_interactive-nosplat":
-        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_apple_on_plate import AppleOnPlatePybulletRobotServer
 
-        server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           env_config_name="apple_on_plate", robot_name="robot_iphone", cam_i=3, camera_names=[]
+        server = AppleOnPlatePybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=AppleOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           camera_names=[], robot_name="robot_iphone", cam_i=3
         )
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple_interactive-robot_jenny":
-        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_apple_on_plate import AppleOnPlatePybulletRobotServer
 
-        server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           env_config_name="apple_on_plate", robot_name="robot_jenny", use_gripper=False, cam_i=3,
-           camera_names=["base_rgb", "wrist_rgb"]
+        server = AppleOnPlatePybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=AppleOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           camera_names=[], robot_name="robot_jenny", cam_i=3, use_gripper=False,
         )
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_banana":
-        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
-        server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           env_config_name="banana_on_plate", camera_names=[], robot_name="robot_iphone", cam_i=3,
+        from splatsim.robots.sim_robot_pybullet_banana_on_plate import BananaOnPlatePybulletRobotServer
+
+        server = BananaOnPlatePybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=BananaOnPlatePybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
+           camera_names=[], robot_name="robot_iphone", cam_i=3
         )
         server.serve()
 
     elif args.robot == "sim_ur_pybullet_banana_interactive":
-        from splatsim.robots.sim_robot_pybullet_orange_on_plate import PybulletRobotServer
+        from splatsim.robots.sim_robot_pybullet_banana_on_plate import BananaOnPlatePybulletRobotServer
 
-        server = PybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=PybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           env_config_name="banana_on_plate", robot_name="robot_iphone", cam_i=3,
+        server = BananaOnPlatePybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=BananaOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           camera_names=["base_rgb"], robot_name="robot_iphone", cam_i=3
         )
         server.serve()
 
