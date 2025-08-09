@@ -1,0 +1,24 @@
+[submodule "submodules/diff-gaussian-rasterization"]
+	path = submodules/diff-gaussian-rasterization
+	url = https://github.com/graphdeco-inria/diff-gaussian-rasterization.git
+[submodule "submodules/simple-knn"]
+	path = submodules/simple-knn
+	url = https://github.com/camenduru/simple-knn.git
+[submodule "submodules/gello_software"]
+	path = submodules/gello_software
+	url = https://github.com/wuphilipp/gello_software.git
+[submodule "submodules/ghalton"]
+	path = submodules/ghalton
+	url = https://github.com/fmder/ghalton
+[submodule "submodules/gaussian-splatting-wrapper/gaussian_splatting"]
+	path = submodules/gaussian-splatting-wrapper/gaussian_splatting
+	url = https://github.com/jwang078/gaussian-splatting.git
+[submodule "submodules/pybullet-URDF-models"]
+	path = submodules/pybullet-URDF-models
+	url = https://github.com/c-yiting/pybullet-URDF-models.git
+[submodule "submodules/pybullet-playground-wrapper/pybullet_playground"]
+	path = submodules/pybullet-playground-wrapper/pybullet_playground
+	url = https://github.com/zswang666/pybullet-playground.git
+[submodule "submodules/pybullet_ur5_gripper"]
+	path = submodules/pybullet_ur5_gripper
+	url = https://github.com/culurciello/pybullet_ur5_gripper.git
