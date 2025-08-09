@@ -139,6 +139,24 @@ def launch_robot_server(args: Args):
         )
         server.serve()
 
+    elif args.robot == "sim_ur_pybullet_apple_search_interactive":
+        from splatsim.robots.sim_robot_pybullet_apple_search import AppleSearchPybulletRobotServer
+
+        server = AppleSearchPybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=AppleSearchPybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           camera_names=["base_rgb", "wrist_rgb"], robot_name="robot_iphone", cam_i=3
+        )
+        server.serve()
+
+    elif args.robot == "sim_ur_pybullet_apple_search_interactive-robot_jenny":
+        from splatsim.robots.sim_robot_pybullet_apple_search import AppleSearchPybulletRobotServer
+
+        server = AppleSearchPybulletRobotServer(
+           port=port, host=args.hostname, serve_mode=AppleSearchPybulletRobotServer.SERVE_MODES.INTERACTIVE,
+           camera_names=["base_rgb", "wrist_rgb"], robot_name="robot_jenny", cam_i=3, use_gripper=False
+        )
+        server.serve()
+
     elif args.robot == "sim_ur_pybullet_banana":
         from splatsim.robots.sim_robot_pybullet_object_on_plate import BananaOnPlatePybulletRobotServer
 

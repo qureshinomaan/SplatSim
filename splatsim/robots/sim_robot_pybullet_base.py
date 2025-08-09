@@ -27,6 +27,7 @@ from splatsim.robots.robot import Robot
 from e3nn import o3
 
 import cv2
+from torchvision.transforms.functional import to_pil_image
 
 assert mujoco.viewer is mujoco.viewer
 from gaussian_splatting.scene.cameras import Camera
@@ -118,13 +119,16 @@ class ZMQRobotServer:
         self._socket.close()
         self._context.term()
 
+
 class GripperState(str, enum.Enum):
     OPEN = 1
     CLOSE = 0
 
+
 @dataclass
 class PathSegment:
     path_type: str = field(init=False)
+
 
 @dataclass
 class TrajectoryPathSegment(PathSegment):
@@ -136,6 +140,7 @@ class TrajectoryPathSegment(PathSegment):
     def __post_init__(self):
         self.path_type = "trajectory"
 
+
 @dataclass
 class GripperPathSegment(PathSegment):
     target_state: GripperState
@@ -143,6 +148,7 @@ class GripperPathSegment(PathSegment):
 
     def __post_init__(self):
         self.path_type = "gripper"
+
 
 class PybulletRobotServerBase:
     MAX_TRAJECTORY_COUNT = 500
@@ -217,7 +223,7 @@ class PybulletRobotServerBase:
 
     # TODO is there a plastic strawberry env?
 
-    ENV_CONFIG = None # To be set in a subclass
+    ENV_CONFIG = None  # To be set in a subclass
 
     def __init__(
         self,
@@ -685,15 +691,22 @@ class PybulletRobotServerBase:
         # R_wc = Rt_wc[:3, :3]
         T_wc = Rt_wc[:3, 3]
 
+        resolution = (image_width, image_height)
+        depth_params = None
+        invdepthmap = None
+
         # I really don't understand why this combination of rotation and translation matrices fixes calibration...
         camera = Camera(
+            resolution,
             colmap_id,
             R_cw,
             T_wc,
             FoVx,
             FoVy,
-            image,
-            gt_mask_alpha,
+            depth_params,
+            to_pil_image(image),
+            invdepthmap,
+            # gt_mask_alpha,
             image_name,
             uid,
             scale=scale,
@@ -847,18 +860,20 @@ class PybulletRobotServerBase:
         else:
             camera = self.scene.getTestCameras()[0]
         return camera
-    
+
     def get_current_ee_pose(self):
         dummy_ee_pos, dummy_ee_quat = (
             self.pybullet_client.getLinkState(self.dummy_robot, 6)[0],
             self.pybullet_client.getLinkState(self.dummy_robot, 6)[1],
         )
         return dummy_ee_pos, dummy_ee_quat
-    
+
     def get_current_object_pose(self, object_name=None, object_id=None):
         if object_name is not None:
             if object_name not in self.splat_object_name_list:
-                raise ValueError(f"Object name '{object_name}' not found when querying its pose.")
+                raise ValueError(
+                    f"Object name '{object_name}' not found when querying its pose."
+                )
             queried_object_id = self.splat_object_name_list.index(object_name)
             if object_id is not None:
                 assert object_id == queried_object_id
@@ -1083,7 +1098,7 @@ class PybulletRobotServerBase:
                     gripper_pos=path_segment.gripper_pos,
                     gripper_velocity=path_segment.gripper_velocity,
                     threshold=path_segment.threshold,
-                    use_current_iters=True, # Seems to always be default true
+                    use_current_iters=True,  # Seems to always be default true
                 )
             elif isinstance(path_segment, GripperPathSegment):
                 if path_segment.target_state == GripperState.OPEN:
@@ -1091,7 +1106,9 @@ class PybulletRobotServerBase:
                 elif path_segment.target_state == GripperState.CLOSE:
                     self.close_gripper_and_record(num_steps=path_segment.num_steps)
                 else:
-                    raise ValueError(f"Unknown GripperPathSegment.target_state value {path_segment.target_state}")
+                    raise ValueError(
+                        f"Unknown GripperPathSegment.target_state value {path_segment.target_state}"
+                    )
             else:
                 raise ValueError(f"Unknown path segment type {type(path_segment)}")
 
@@ -1113,12 +1130,12 @@ class PybulletRobotServerBase:
     def open_gripper(self):
         """Open the gripper."""
         self.move_gripper(0.084)
-        self.current_gripper_action = GripperState.OPEN # 1
+        self.current_gripper_action = GripperState.OPEN  # 1
 
     def close_gripper(self):
         """Close the gripper."""
         self.move_gripper(0.0)
-        self.current_gripper_action = GripperState.CLOSE # 0
+        self.current_gripper_action = GripperState.CLOSE  # 0
 
     def plan_execute_record_trajectory(self, initial_joint_positions, joint_signs):
         # Returns whether it was a success
@@ -1134,7 +1151,7 @@ class PybulletRobotServerBase:
 
         for i in range(100):
             self.pybullet_client.stepSimulation()
-            self.close_gripper()
+            self.open_gripper()
             for k in range(1, self.num_dofs()):
                 self.pybullet_client.resetJointState(
                     self.dummy_robot,
@@ -1457,7 +1474,7 @@ class PybulletRobotServerBase:
             path.append(joint_positions)
 
         return path, pre_grasp_transformation
-    
+
     def close_gripper_and_record(self, num_steps=160):
         for i in range(num_steps):
             self.close_gripper()
@@ -1495,7 +1512,6 @@ class PybulletRobotServerBase:
                     "wb",
                 ) as f:
                     pickle.dump(observations, f)
-
 
     def follow_trajectory_and_record(
         self,

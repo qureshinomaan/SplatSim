@@ -216,6 +216,7 @@ class ObjectOnPlatePybulletRobotServer(PybulletRobotServerBase):
         )
 
         if len(all_paths) != 9:
+            print("WARNING: Incorrect number of segments in the path")
             # Failure
             return []
 
