@@ -107,6 +107,8 @@ Modify `robot_iphone` as below:
 - source_path: /home/yourusername/data/test_data/robot_iphone # Path to a folder you downloaded
 - model_path: /home/yourusername/data/output/robot_iphone # Path to a folder you downloaded
 
+Modify all `ply_path` attributes to point to `/home/yourusername/data/output/...`, for example for `plastic_apple`
+
 #### Open `configs/trajectory_configs.yaml`
 
 Modify as follows:
@@ -127,6 +129,8 @@ python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
 ```
 
 A window should pop up that is a rendering of the robot in the pybullet simulation. If you drag the end effector of the robot around in pybullet, it should be reflected in the render.
+
+Congrats! Your static splat is now being simulated!
 
 ## Adding a new robot
 
