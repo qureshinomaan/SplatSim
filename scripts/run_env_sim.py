@@ -348,8 +348,9 @@ def main(args):
         #     cv2.waitKey(1)
 
         loop_end = time.time()
+        loop_duration = loop_end - loop_start
         # Keep the time locked at a fixed rate
-        sleep_time = max(0, (1 / 240) - (loop_end - loop_start))
+        sleep_time = max(0, (1 / 240) - (loop_duration))
         if sleep_time > 0:
             time.sleep(sleep_time)
 
