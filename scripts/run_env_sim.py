@@ -343,9 +343,14 @@ def main(args):
             action = action[:-1]
         obs = env.step(action)
 
-        # if "base_rgb" in obs:
-        #     cv2.imshow("robot", cv2.cvtColor(obs['base_rgb'], cv2.COLOR_RGB2BGR))
-        #     cv2.waitKey(1)
+        for img_obs_name in ["wrist_rgb", "base_rgb"]:
+            if img_obs_name not in obs or obs[img_obs_name] is None:
+                continue
+            frame = obs[img_obs_name]
+            frame = np.transpose(frame.detach().cpu().numpy(), (1, 2, 0))  # CxHxW -> HxWxC
+            frame = (frame * 255).astype(np.uint8)
+            cv2.imshow(img_obs_name, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            cv2.waitKey(1)
 
         loop_end = time.time()
         loop_duration = loop_end - loop_start

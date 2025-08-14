@@ -548,24 +548,6 @@ class PybulletRobotServerBase:
                     f"wrist_camera_link_name attribute not defined in object config of robot {self.robot_name}, yet wrist camera was requested"
                 )
 
-        self.frame_queue = queue.Queue(maxsize=2)  # small size to avoid huge lag
-
-        def display_frame_worker():
-            while True:
-                camera_name, frame = self.frame_queue.get()
-                if frame is None:
-                    break
-                # format + show
-                frame = np.transpose(frame, (1, 2, 0))  # CxHxW -> HxWxC
-                frame = (frame * 255).astype(np.uint8)
-                cv2.imshow(camera_name, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                cv2.waitKey(1)
-
-        self.display_frame_thread = threading.Thread(
-            target=display_frame_worker, daemon=True
-        )
-        self.display_frame_thread.start()
-
     def num_dofs(self) -> int:
         return 7
 
@@ -887,15 +869,6 @@ class PybulletRobotServerBase:
             "render"
         ]
 
-        rendering_cpu = torch.empty_like(rendering, device="cpu", pin_memory=True)
-        rendering_cpu.copy_(rendering.detach(), non_blocking=True)
-        self.frame_queue.put((camera_name, rendering_cpu.numpy()))
-        try:
-            self.frame_queue.put_nowait((camera_name, rendering_cpu.numpy()))
-
-        except queue.Full:
-            pass  # skip frame if queue is full
-
         # save the image
         return rendering
 
@@ -984,7 +957,6 @@ class PybulletRobotServerBase:
             )
             observations[self.splat_object_name_list[i] + "_position"] = object_pos
             observations[self.splat_object_name_list[i] + "_orientation"] = object_quat
-
 
         self.prep_image_rendering(data=observations)
         for camera_name in self.camera_names:
@@ -1641,7 +1613,4 @@ class PybulletRobotServerBase:
 
     def shutdown(self):
         # Say to shut down
-        self.frame_queue.put((None, None))
-        self.display_frame_thread.join(timeout=2.0)  # wait up to 2 seconds
-        if self.display_frame_thread.is_alive():
-            print("⚠ Display thread did not exit in time.")
+        pass
