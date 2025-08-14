@@ -130,11 +130,13 @@ python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
 
 A window should pop up that is a rendering of the robot in the pybullet simulation. If you drag the end effector of the robot around in pybullet, it should be reflected in the render.
 
-Congrats! Your static splat is now being simulated!
+Congrats! Your static splat is now being simulated! 🚀
+
+# Optional
 
 ## Adding a new robot
 
-What if you want to simulate a different robot than the one downloaded above?
+What if you want to simulate a different robot than the one downloaded above? Or with a new background?
 
 ### Create gaussian splat
 
