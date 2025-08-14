@@ -108,10 +108,10 @@ Modify `robot_iphone` as below:
 
 Modify all `ply_path` attributes to point to `/home/yourusername/data/output/...`, for example for `plastic_apple`
 
-#### Open `configs/trajectory_configs.yaml`
+#### Open `configs/folder_configs.yaml`
 
 Modify as follows:
-- trajectory_folder: /home/yourusername/data/bc_data/gello
+- traj_folder: /home/yourusername/data/bc_data/gello
 
 ### 3. Run the rendering script:
 
@@ -122,10 +122,12 @@ python scripts/launch_nodes.py --robot sim_ur_pybullet_apple_interactive --robot
 
 In another terminal tab, launch a node that will send the recorded trajectories in `/home/yourusername/data/bc_data/gello` to the server so that it will be rendered:
 ```bash
-python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
+python scripts/run_env_sim.py --agent replay_trajectory_and_save
 ```
 
 A window should pop up that is a rendering of the robot in the pybullet simulation. If you drag the end effector of the robot around in pybullet, it should be reflected in the render.
+
+The rendered images for trajectory 0 are saved in `{traj_folder}/0/images_1`, for example `/home/yourusername/data/bc_data/gello/0/images_1`.
 
 Congrats! Your static splat is now being simulated! 🚀
 
@@ -238,7 +240,7 @@ python scripts/launch_nodes.py --robot sim_ur_pybullet_apple_interactive --robot
 
 Set the robot to follow the recorded trajectories.
 ```bash
-python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
+python scripts/run_env_sim.py --agent replay_trajectory_and_save
 ```
 
 ## Generating new trajectories
@@ -262,7 +264,7 @@ python scripts/launch_nodes.py --robot sim_ur_pybullet_banana_interactive --robo
 
 Set the robot to follow the recorded trajectories.
 ```bash
-python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
+python scripts/run_env_sim.py --agent replay_trajectory_and_save
 ```
 
 You can use `splatsim/robots/sim_robot_pybullet_object_on_plate.py` as a template for configuring custom environments.
@@ -278,7 +280,7 @@ python scripts/launch_nodes.py --robot sim_ur_pybullet_apple_interactive --robot
 
 Set the robot to follow GELLO commands and show the save interface GUI:
 ```bash
-python scripts/run_env_sim.py --agent gello --robot-port 6001 --use-save-interface
+python scripts/run_env_sim.py --agent gello --use-save-interface
 ```
 
 If you move your GELLO, it the simulated robot should move, as well.
@@ -287,7 +289,7 @@ In the gray save interface window, you can start and stop recording a new demons
 
 Play back your recordings with the same command as before (note that new recordings are played last; you can delete or move files out of `trajectory_folder` to view your newly recorded trajectories)
 ```bash
-python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
+python scripts/run_env_sim.py --agent replay_trajectory_and_save
 ```
 
 ## Visualizing a trained policy in the Splat Sim
