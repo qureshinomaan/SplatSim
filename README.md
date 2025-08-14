@@ -228,7 +228,7 @@ Run this script below again. The last visualization that compares the two point 
 python scripts/articulated_robot_pipeline.py --robot_name your_robot_name
 ```
 
-Note: if your physical robot has an additional attachment compared to the URDF, you might need to fiddle with `urdf_bbox_adjustment` attribute in the object configs to make the bounding box segmentation include your attachment. The bbox adjustment affects the final visualization, so you can check it there
+Note: `urdf_bbox_adjustment` can handle cases where your physical robot has an additional attachment compared to the URDF. You can check its effects in the same final visualization
 
 #### Your custom robot can now follow the same recorded joint state trajectories!
 
