@@ -218,11 +218,11 @@ Open both the URDF point cloud `data/pcds_path/your_robot_name_pcd.ply` and the 
 - You can double-check alignment by setting the floor as visible and seeing if the floor planes are aligned, or by looking at all orthographic views (left toolbar)
 </details>
 
-The transformation is shown on the left toolbar if you scroll to the bottom of Properties to `Transformation History`.
+The splat-to-simulator transformation is in `Transformation History` (scroll to the bottom of Properties in the left sidebar). Copy-paste it to `configs/object_configs/objects.yaml` under your_robot_name > transformation > matrix, while fitting the yaml format
 
-Copy-paste the transformation to `configs/object_configs/objects.yaml` under your_robot_name > transformation > matrix, while fitting the yaml format
+#### Double check calibration
 
-Now, to double check calibration, run this script below again. The last visualization that compares the two point clouds should have colors and coordinate frames lined up.
+Run this script below again. The last visualization that compares the two point clouds should have colors and coordinate frames lined up.
 
 ```bash
 python scripts/articulated_robot_pipeline.py --robot_name your_robot_name
@@ -230,7 +230,7 @@ python scripts/articulated_robot_pipeline.py --robot_name your_robot_name
 
 Note: if your physical robot has an additional attachment compared to the URDF, you might need to fiddle with `urdf_bbox_adjustment` attribute in the object configs to make the bounding box segmentation include your attachment. The bbox adjustment affects the final visualization, so you can check it there
 
-Now, you can visualize your robot as it follows the same recorded joint state trajectories!
+#### Your custom robot can now follow the same recorded joint state trajectories!
 
 Launch the simulation server
 ```bash
@@ -248,7 +248,7 @@ The trajectories are stored at the folder specified in `configs/trajectory_confi
 
 For new trajectories, clear out the trajectory folder. Either change `trajectory_folder` or move the previously generated trajectories to another location.
 
-The provided demos are for placing an apple on a plate. If instead you wanted to generate demos for placing a banana ona plate, run
+The provided demos are for placing an apple on a plate. If instead you wanted to generate demos for placing a banana on a plate, run
 
 ```bash
 python scripts/launch_nodes.py --robot sim_ur_pybullet_banana --robot_name your_robot_name
@@ -299,9 +299,9 @@ python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
     - [x] Links to pretrain gaussian-splats, colmap and trajectories are added.
 - [x] ~~Create a new file for rendering robot and objects, without hardcoding the segmentation and shifting everything to KNN based segmentation.~~
 - [x] Clean up the splat folder for only keeping necessary files and easy creation of KNN based segmentation for robots.
-- [ ] Documentation for the codebase.
-- [ ] Adding new robots (in sim or any other environment).
-- [ ] Instructions to generate a trajectory and render it. 
+- [x] Documentation for the codebase.
+- [x] Adding new robots (in sim or any other environment).
+- [x] Instructions to generate a trajectory and render it. 
     - [ ] Trajectory format should be specified properly.
-- [ ] Clean up the gello folder and only keep files that are necessary. 
+- [x] Clean up the gello folder and only keep files that are necessary. 
  
