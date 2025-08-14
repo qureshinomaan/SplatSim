@@ -13,7 +13,7 @@ This repository contains the code for the paper "SplatSim".
 ### Clone this repository
 ```bash
 cd ~/code
-git clone --recursive https://github.com/jwang078/SplatSim.git
+git clone --recursive https://github.com/qureshinomaan/SplatSim.git
 ```
 
 If you accidentally forgot the `--recursive`, run this command to download the files for the `submodules` folder: `git submodule update --init --recursive`
@@ -144,7 +144,7 @@ First, create a gaussian splat of your robot within the scene. Record the joint 
 
 - Set the pose of your robot to be in an easy-to-describe state. For example, all exactly 90 degree angles. This is for easier calibration later
 
-- Don't put any objects within the robot's rectangular bounding box. The pipeline currently uses a simple segmentation technique with rectangular boxes
+- Don't put any objects within the robot's rectangular bounding box. The pipeline currently uses a simple segmentation technique with a rectangular bounding box
 
 - 1-2 minute landscape video on a smartphone or similar
 
@@ -163,18 +163,25 @@ Train the gaussian splat with the [gaussian-splatting](https://github.com/graphd
 
 - Create a folder structure for example at `~/data/your_robot_name/input`. Put all images into the `input` folder. For example, you can convert your video to images with ffmpeg (ex: `ffmpeg -i my_video.MOV -qscale:v 1 output_%04d.jpeg`).
 
-- Recover camera poses with structure from motion / colmap. First, install colmap with `conda install colmap`. Then, do `python submodules/gaussian-splatting-wrapper/gaussian_splatting/convert.py -s ~/data/your_robot_name`. This will populate `~/data/your_robot_name` with camera info
+- Recover camera poses with structure from motion / colmap. First, install colmap then run the script. This will populate `~/data/your_robot_name` with camera info
+```bash
+conda install colmap
+python submodules/gaussian-splatting-wrapper/gaussian_splatting/convert.py -s ~/data/your_robot_name
+```
 
-- Train gaussian splat: `python submodules/gaussian-splatting-wrapper/gaussian_splatting/train.py -s ~/data/your_robot_name`. This will create a folder that looks like `./output/258f657d-c` from where you run this command, and it contains the `output/258f657-c/point_cloud/iteration_30000/point_cloud.ply` file, which is the gaussian splat.
+- Train gaussian splat. This will create a folder that looks like `./output/258f657d-c` from where you run this command, and it contains the `output/258f657-c/point_cloud/iteration_30000/point_cloud.ply` file, which is the gaussian splat.
+```bash
+python submodules/gaussian-splatting-wrapper/gaussian_splatting/train.py -s ~/data/your_robot_name
+```
 </details>
 
 ### Align the simulator and the splat
 
-Now, align a URDF of the robot to the robot in the gaussian splat.
+#### Configs
 
-Add your_robot_name to `configs/object_configs/objects.yaml`. First, copy-paste the attributes from `robot_iphone`.
+Add `your_robot_name` to `configs/object_configs/objects.yaml`. First, copy-paste the attributes from `robot_iphone`.
 
-- Set `model_path` to the folder output of the gaussian splat training (ex: `output/258f657d-c`)
+- Set `model_path` to the folder output of the gaussian splat training (ex: `~/.../.../output/258f657d-c`)
 
 - Set `source_path` to the folder with the image data and colmap outputs (ex: `~/data/your_robot_name/input`)
 
@@ -182,30 +189,40 @@ Add your_robot_name to `configs/object_configs/objects.yaml`. First, copy-paste 
 
 - If you have a different URDF, change `urdf_path`. Note that `robot_iphone` is a UR5 robot.
 
-Convert the URDF to a point cloud. Verify that the first point cloud visualization has the same joint poses as your robot had in the splat. If not, you might need to adjust `joint_states`. The point cloud is outputted in `data/pcds_path/your_robot_name_pcd.ply`. Ignore the last visualization with the comparison because we have not calibrated the splat-to-simulator robot transformation yet.
+#### Convert URDF to point cloud
+
+Run
 ```bash
 python scripts/articulated_robot_pipeline.py --robot_name your_robot_name
 ```
 
-Now, align the robot's "forward/up/left/right" directions to that in the simulator. Download CloudCompare, which visualizes point clouds. Open both `data/pcds_path/your_robot_name_pcd.ply` and `output/.../point_cloud/point_cloud/iteration_30000/point_cloud.ply`. The goal is to apply transformations (rotation/translation/scale) to your splat such that the robot arm matches the point cloud of the robot arm in the simulator exactly. Don't apply transformations to the simulated robot arm.
+Verify that the first point cloud visualization has the same joint poses as your robot had in the splat. If not, adjust `joint_states`. Ignore the second visualization for now.
+
+The point cloud is outputted in `data/pcds_path/your_robot_name_pcd.ply`.
+
+#### Align robot coordinate frames in sim and in splat
+
+Download CloudCompare, which visualizes point clouds. 
+
+Open both the URDF point cloud `data/pcds_path/your_robot_name_pcd.ply` and the gaussian splat `output/.../point_cloud/point_cloud/iteration_30000/point_cloud.ply`. The goal is to apply transformations (rotation/translation/scale) *to your splat* such that the robot arm matches between the sim and splat, then you can copy that transformation to a config file. Don't apply transformations to the simulated robot arm.
 
 <details>
 <summary> Tips and tricks with CloudCompare </summary>
 
-- If you want to see rgb colors on your trained splat, download `3dgsconverter` and run `3dgsconverter -i point_cloud.ply -o output_cloudcompare.ply -f cc --rgb`. Import `output_cloudcompare.ply` to CloudCompare, select the Cloud in the left sidebar, then go to the left sidebar and set `Properties > Colors` to `RGB`
+- To see rgb colors on your trained splat, download `3dgsconverter` and run `3dgsconverter -i point_cloud.ply -o output_cloudcompare.ply -f cc --rgb`. After importing `output_cloudcompare.ply` to CloudCompare, select it in the top left sidebar, then in the bottom left sidebar, set `Properties > Colors` to `RGB`
 
-- Use the Segment tool (scissor in top bar) to crop out the table and other objects, leaving only the robot. Also crop out any wires (which wouldn't be present in the simulated robot). Note: you must select the point cloud you want to segment on the left toolbar before you click Segment, or else it will try to segment the wrong point cloud, thus making no changes. The points you segmented out re-appear after you save the segmentation because they are now in another group (in the left toolbar). You can deselect it to stop visualizing it. First select the robot with left clicks, then right click to finish your polygon, then click either Segment In or Segment Out, then if you want to keep on iterating on this, find a new angle then press the unpause button to start segmenting again. When you're done, press the green checkmark.
+- Use the Segment tool (scissor in top bar) to crop out the table and other objects, leaving only the robot. Also crop out any wires (which wouldn't be present in the simulated robot). Note: select the point cloud you want to segment on the left toolbar before you click Segment, or else it will try to segment the wrong point cloud, thus making no changes. The points you segmented out re-appear after you save the segmentation because they are now in another group (in the left toolbar). You can deselect it to stop visualizing it. First select create the selection polygon with left clicks, right click to finish your polygon, click either Segment In or Segment Out, then if you want to keep on iterating on this, find a new angle then press the unpause button to start segmenting again. When you're done, press the green checkmark.
 
-- The fastest way to align the robots seems to doing ICP w/o scale adjustment, manual adjustment, then ICP with scale adjustment. To start ICP, ctrl+click both point clouds, then `Tools > Registration > Fine Registration (ICP)`. Set the simulated robot to be the reference and the splat to be the aligned. Uncheck `adjust scale` for this first pass of ICP. Then, manually fix errors with the `Translate/Rotate` because that does not record the applied transformation in the point cloud properties. Then run ICP again but with `adjust scaling` checked. If you have an additional attachment on your physical robot, you might have to play around with segmenting out certain differing attachments between the URDF and your physical robot or moving the alignment around manually. When there is misalignment, prioritize aligning the robot end effector to mitigate cascading error when doing forward kinematics in the sim.
+- The fastest way to align the robots seems to doing ICP w/o scale adjustment, manual adjustment, then ICP with scale adjustment. To start ICP, ctrl+click both point clouds, then `Tools > Registration > Fine Registration (ICP)`. Set the simulated robot to be the reference and the splat to be the aligned. Uncheck `adjust scale` for this first pass of ICP. Then, manually fix errors with `Translate/Rotate` (click on point cloud in left sidebar then click on the button at the top toolbar). Then run ICP again but with `adjust scaling` checked. If the URDF is fundamentally different from your real robot, prioritize aligning the robot's end effector to mitigate cascading error when doing forward kinematics in the sim.
 
-- You can double-check alignment by setting the floor as visible and seeing if the floor planes are aligned, or looking at all orthographic views (left toolbar)
+- You can double-check alignment by setting the floor as visible and seeing if the floor planes are aligned, or by looking at all orthographic views (left toolbar)
 </details>
 
 The transformation is shown on the left toolbar if you scroll to the bottom of Properties to `Transformation History`.
 
-Copy-paste the transformation to transformation > matrix for `your_robot_name` in `configs/object_configs/objects.yaml`, while fitting the yaml format
+Copy-paste the transformation to `configs/object_configs/objects.yaml` under your_robot_name > transformation > matrix, while fitting the yaml format
 
-Now, to double check your work, run this script and the last visualization that compares the two point clouds should have colors and coordinate frames lined up. Note that the coordinate frame (red, blue, green arrows) MUST line up for this to work.
+Now, to double check calibration, run this script below again. The last visualization that compares the two point clouds should have colors and coordinate frames lined up.
 
 ```bash
 python scripts/articulated_robot_pipeline.py --robot_name your_robot_name
@@ -237,7 +254,7 @@ The provided demos are for placing an apple on a plate. If instead you wanted to
 python scripts/launch_nodes.py --robot sim_ur_pybullet_banana --robot_name your_robot_name
 ```
 
-These populate the `trajectory_folder`. Then, to replay these new trajectories, do the same visualization setup but with this banana on plate environment:
+This populates the `trajectory_folder`. Then, to replay these new trajectories, do the same visualization setup but with this banana on plate environment:
 
 Launch the simulation server
 ```bash
@@ -260,7 +277,7 @@ Start the simulation server in interactive mode:
 python scripts/launch_nodes.py --robot sim_ur_pybullet_apple_interactive --robot_name your_robot_name
 ```
 
-Set the robot to follow GELLO commands and show the GUI that shows if it's recording or not:
+Set the robot to follow GELLO commands and show the save interface GUI:
 ```bash
 python scripts/run_env_sim.py --agent gello --robot-port 6001 --use-save-interface
 ```
