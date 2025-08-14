@@ -290,6 +290,10 @@ Play back your recordings with the same command as before (note that new recordi
 python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
 ```
 
+## Visualizing a trained policy in the Splat Sim
+
+TODO for diffusion policy
+
 ## A list of TODOs
 
 - [x] ~~Proper instructions for installation. Current instructions might not work.~~
