@@ -44,7 +44,7 @@ class Args:
     gello_port: Optional[str] = None
     mock: bool = False
     use_save_interface: bool = False
-    data_dir: str = "~/bc_data"
+    data_dir: str = "~/data/bc_data"
     bimanual: bool = False
     verbose: bool = False
 
@@ -143,7 +143,7 @@ def main(args):
             #     for jnt in np.linspace(curr_joints, reset_joints, steps):
             #         env.step(jnt)
             #         time.sleep(0.001)
-            startup_steps = 100
+            startup_steps = 2
             query_new_joints_per_startup_step = True
         elif args.agent == "quest":
             from splatsim.agents.quest_agent import SingleArmQuestAgent
@@ -350,7 +350,7 @@ def main(args):
         loop_end = time.time()
         loop_duration = loop_end - loop_start
         # Keep the time locked at a fixed rate
-        sleep_time = max(0, (1 / 240) - (loop_duration))
+        sleep_time = max(0, (1 / 50) - (loop_duration))
         if sleep_time > 0:
             time.sleep(sleep_time)
 

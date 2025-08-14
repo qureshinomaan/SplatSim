@@ -85,11 +85,6 @@ class ZMQRobotServer:
                 args = request.get("args", {})
                 result: Any
                 # print(f"Received request: {method}, {args}")
-                if not self._robot.ready_to_serve:
-                    result = {"error": "Robot not ready to serve"}
-                    print(result)
-                    self._socket.send(pickle.dumps(result))
-                    continue
                 if method == "num_dofs":
                     result = self._robot.num_dofs()
                 elif method == "get_joint_state":
@@ -237,7 +232,6 @@ class PybulletRobotServerBase:
         cam_i: int = 254,
         object_config_path: str = "./configs/object_configs/objects.yaml",
     ):
-        self.ready_to_serve = False
         self.serve_mode = serve_mode
         self.use_link_centers = use_link_centers
         self.robot_name = robot_name
@@ -569,7 +563,8 @@ class PybulletRobotServerBase:
 
         self.display_frame_thread = threading.Thread(
             target=display_frame_worker, daemon=True
-        ).start()
+        )
+        self.display_frame_thread.start()
 
     def num_dofs(self) -> int:
         return 7
@@ -1245,9 +1240,6 @@ class PybulletRobotServerBase:
             return False
 
     def serve(self) -> None:
-        # start the zmq server
-        self._zmq_server_thread.start()
-
         # Prepare for teleport by removing forces
         for i in range(len(self.initial_joint_state)):
             self.pybullet_client.setJointMotorControl2(
@@ -1299,8 +1291,10 @@ class PybulletRobotServerBase:
                 )
             self.pybullet_client.stepSimulation()
 
+        # start the zmq server
+        self._zmq_server_thread.start()
+
         print("Ready to serve.")
-        self.ready_to_serve = True
 
         while True:
             self.serve_loop()

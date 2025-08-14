@@ -118,7 +118,7 @@ Modify as follows:
 
 Launch the robot server which includes an apple and a plate:
 ```bash
-python scripts/launch_nodes.py --robot sim_ur_pybullet_apple_interactive
+python scripts/launch_nodes.py --robot sim_ur_pybullet_apple_interactive --robot_name robot_iphone
 ```
 
 Wait about 10 seconds for the simulation window to pop up. It will say it is ready to serve.
@@ -134,11 +134,145 @@ Congrats! Your static splat is now being simulated!
 
 ## Adding a new robot
 
-TODO
+What if you want to simulate a different robot than the one downloaded above?
+
+### Create gaussian splat
+
+First, create a gaussian splat of your robot within the scene. Record the joint angles of the robot in your static scene
+<details>
+<summary>Tips for creating a good gaussian splat of the robot</summary>
+
+- Set the pose of your robot to be in an easy-to-describe state. For example, all exactly 90 degree angles. This is for easier calibration later
+
+- Don't put any objects within the robot's rectangular bounding box. The pipeline currently uses a simple segmentation technique with rectangular boxes
+
+- 1-2 minute landscape video on a smartphone or similar
+
+- Capture the scene from all angles
+
+- Make sure to capture areas of finer detail, for example the robot gripper, by sometimes moving the camera closer to it
+
+- Make sure the background is textured; use posters to cover plain walls. This helps when recovering camera poses (structure from motion / colmap)
+
+- Diffuse lighting is best (ex: white paper over a strong light), or else the result will have glares, which will not be updated by the simulation when robot joints are moved
+</details>
+
+Train the gaussian splat with the [gaussian-splatting](https://github.com/graphdeco-inria/gaussian-splatting) repo, which is in `submodules/gausisan-splatting-wrapper/gaussian_splatting` in this repo. Software like Polycam unfortunately does not give you the structure from motion outputs that are used for generating camera views in this repo.
+<details>
+<summary> Summary of how to train splat </summary>
+
+- Create a folder structure for example at `~/data/your_robot_name/input`. Put all images into the `input` folder. For example, you can convert your video to images with ffmpeg (ex: `ffmpeg -i my_video.MOV -qscale:v 1 output_%04d.jpeg`).
+
+- Recover camera poses with structure from motion / colmap. First, install colmap with `conda install colmap`. Then, do `python submodules/gaussian-splatting-wrapper/gaussian_splatting/convert.py -s ~/data/your_robot_name`. This will populate `~/data/your_robot_name` with camera info
+
+- Train gaussian splat: `python submodules/gaussian-splatting-wrapper/gaussian_splatting/train.py -s ~/data/your_robot_name`. This will create a folder that looks like `./output/258f657d-c` from where you run this command, and it contains the `output/258f657-c/point_cloud/iteration_30000/point_cloud.ply` file, which is the gaussian splat.
+</details>
+
+### Align the simulator and the splat
+
+Now, align a URDF of the robot to the robot in the gaussian splat.
+
+Add your_robot_name to `configs/object_configs/objects.yaml`. First, copy-paste the attributes from `robot_iphone`.
+
+- Set `model_path` to the folder output of the gaussian splat training (ex: `output/258f657d-c`)
+
+- Set `source_path` to the folder with the image data and colmap outputs (ex: `~/data/your_robot_name/input`)
+
+- Set `joint_states` (radians) to the joint angles that the robot had when the gaussian splat data was collected. There might be an extra 0 preceding the base joint (ex: [0, 0, 1.57, ...])
+
+- If you have a different URDF, change `urdf_path`. Note that `robot_iphone` is a UR5 robot.
+
+Convert the URDF to a point cloud. Verify that the first point cloud visualization has the same joint poses as your robot had in the splat. If not, you might need to adjust `joint_states`. The point cloud is outputted in `data/pcds_path/your_robot_name_pcd.ply`. Ignore the last visualization with the comparison because we have not calibrated the splat-to-simulator robot transformation yet.
+```bash
+python scripts/articulated_robot_pipeline.py --robot_name your_robot_name
+```
+
+Now, align the robot's "forward/up/left/right" directions to that in the simulator. Download CloudCompare, which visualizes point clouds. Open both `data/pcds_path/your_robot_name_pcd.ply` and `output/.../point_cloud/point_cloud/iteration_30000/point_cloud.ply`. The goal is to apply transformations (rotation/translation/scale) to your splat such that the robot arm matches the point cloud of the robot arm in the simulator exactly. Don't apply transformations to the simulated robot arm.
+
+<details>
+<summary> Tips and tricks with CloudCompare </summary>
+
+- If you want to see rgb colors on your trained splat, download `3dgsconverter` and run `3dgsconverter -i point_cloud.ply -o output_cloudcompare.ply -f cc --rgb`. Import `output_cloudcompare.ply` to CloudCompare, select the Cloud in the left sidebar, then go to the left sidebar and set `Properties > Colors` to `RGB`
+
+- Use the Segment tool (scissor in top bar) to crop out the table and other objects, leaving only the robot. Also crop out any wires (which wouldn't be present in the simulated robot). Note: you must select the point cloud you want to segment on the left toolbar before you click Segment, or else it will try to segment the wrong point cloud, thus making no changes. The points you segmented out re-appear after you save the segmentation because they are now in another group (in the left toolbar). You can deselect it to stop visualizing it. First select the robot with left clicks, then right click to finish your polygon, then click either Segment In or Segment Out, then if you want to keep on iterating on this, find a new angle then press the unpause button to start segmenting again. When you're done, press the green checkmark.
+
+- The fastest way to align the robots seems to doing ICP w/o scale adjustment, manual adjustment, then ICP with scale adjustment. To start ICP, ctrl+click both point clouds, then `Tools > Registration > Fine Registration (ICP)`. Set the simulated robot to be the reference and the splat to be the aligned. Uncheck `adjust scale` for this first pass of ICP. Then, manually fix errors with the `Translate/Rotate` because that does not record the applied transformation in the point cloud properties. Then run ICP again but with `adjust scaling` checked. If you have an additional attachment on your physical robot, you might have to play around with segmenting out certain differing attachments between the URDF and your physical robot or moving the alignment around manually. When there is misalignment, prioritize aligning the robot end effector to mitigate cascading error when doing forward kinematics in the sim.
+
+- You can double-check alignment by setting the floor as visible and seeing if the floor planes are aligned, or looking at all orthographic views (left toolbar)
+</details>
+
+The transformation is shown on the left toolbar if you scroll to the bottom of Properties to `Transformation History`.
+
+Copy-paste the transformation to transformation > matrix for `your_robot_name` in `configs/object_configs/objects.yaml`, while fitting the yaml format
+
+Now, to double check your work, run this script and the last visualization that compares the two point clouds should have colors and coordinate frames lined up. Note that the coordinate frame (red, blue, green arrows) MUST line up for this to work.
+
+```bash
+python scripts/articulated_robot_pipeline.py --robot_name your_robot_name
+```
+
+Note: if your physical robot has an additional attachment compared to the URDF, you might need to fiddle with `urdf_bbox_adjustment` attribute in the object configs to make the bounding box segmentation include your attachment. The bbox adjustment affects the final visualization, so you can check it there
+
+Now, you can visualize your robot as it follows the same recorded joint state trajectories!
+
+Launch the simulation server
+```bash
+python scripts/launch_nodes.py --robot sim_ur_pybullet_apple_interactive --robot_name your_robot_name
+```
+
+Set the robot to follow the recorded trajectories.
+```bash
+python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
+```
 
 ## Generating new trajectories
 
-TODO
+The trajectories are stored at the folder specified in `configs/trajectory_configs.yaml` (`trajectory_folder`). New trajectories are added as larger folder id numbers, and then the replay_trajectory agent starts playing trajectories from folder 0 and up.
+
+For new trajectories, clear out the trajectory folder. Either change `trajectory_folder` or move the previously generated trajectories to another location.
+
+The provided demos are for placing an apple on a plate. If instead you wanted to generate demos for placing a banana ona plate, run
+
+```bash
+python scripts/launch_nodes.py --robot sim_ur_pybullet_banana --robot_name your_robot_name
+```
+
+These populate the `trajectory_folder`. Then, to replay these new trajectories, do the same visualization setup but with this banana on plate environment:
+
+Launch the simulation server
+```bash
+python scripts/launch_nodes.py --robot sim_ur_pybullet_banana_interactive --robot_name your_robot_name
+```
+
+Set the robot to follow the recorded trajectories.
+```bash
+python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
+```
+
+You can use `splatsim/robots/sim_robot_pybullet_object_on_plate.py` as a template for configuring custom environments.
+
+## GELLO integration
+
+[GELLO](https://github.com/wuphilipp/gello_software) can be used as a teleoperation system for collecting demos. Please refer to the GELLO repo for hardware setup and general connectivity. Connect the GELLO via USB.
+
+Start the simulation server in interactive mode:
+```bash
+python scripts/launch_nodes.py --robot sim_ur_pybullet_apple_interactive --robot_name your_robot_name
+```
+
+Set the robot to follow GELLO commands and show the GUI that shows if it's recording or not:
+```bash
+python scripts/run_env_sim.py --agent gello --robot-port 6001 --use-save-interface
+```
+
+If you move your GELLO, it the simulated robot should move, as well.
+
+In the gray save interface window, you can start and stop recording a new demonstration. Click on the window and press `s` to start recording (the window will turn green). When  you're done recording, click on the window and press `q` (the window will turn red). You can do multiple `s` and `q` recordings.
+
+Play back your recordings with the same command as before (note that new recordings are played last; you can delete or move files out of `trajectory_folder` to view your newly recorded trajectories)
+```bash
+python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
+```
 
 ## A list of TODOs
 
