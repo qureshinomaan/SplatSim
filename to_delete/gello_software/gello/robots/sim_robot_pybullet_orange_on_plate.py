@@ -107,11 +107,6 @@ class ZMQRobotServer:
                 args = request.get("args", {})
                 result: Any
                 # print(f"Received request: {method}, {args}")
-                if not self._robot.ready_to_serve:
-                    result = {"error": "Robot not ready to serve"}
-                    print(result)
-                    self._socket.send(pickle.dumps(result))
-                    continue
                 if method == "num_dofs":
                     result = self._robot.num_dofs()
                 elif method == "get_joint_state":
@@ -275,7 +270,6 @@ class PybulletRobotServer:
         cam_i: int = 254,
         object_config_path: str = "./configs/object_configs/objects.yaml",
     ):
-        self.ready_to_serve = False
         self.serve_mode = serve_mode
         self.use_link_centers = use_link_centers
         self.robot_name = robot_name
@@ -1460,7 +1454,6 @@ class PybulletRobotServer:
             self.pybullet_client.stepSimulation()
 
         print("Ready to serve.")
-        self.ready_to_serve = True
 
         while True:
             if self.serve_mode == self.SERVE_MODES.INTERACTIVE:

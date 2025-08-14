@@ -769,17 +769,13 @@ class PybulletRobotServerBase:
         return camera
 
     def prep_image_rendering(self, data) -> Dict[str, np.ndarray]:
-        start = time.time()
         # Gets transformations for all links of the robot based on the current simulation
         transformations_list = get_transfomration_list(
             self.dummy_robot, self.initial_link_states
         )
-        end = time.time()
-        print(f"get transformation list: {end - start}")
 
         # TODO does this need to be done every time?
         # Ah. it's because xyz gets overwritten
-        start = time.time()
         robot_transformation = self.object_config[self.robot_name]["transformation"][
             "matrix"
         ]
@@ -793,10 +789,7 @@ class PybulletRobotServerBase:
             robot_labels=self.robot_labels,
             transformations_cache=self.transformations_cache,
         )
-        end = time.time()
-        print(f"get segmented indices: {end - start}")
 
-        start = time.time()
         xyz, rot, opacity, shs_featrest, shs_dc = transform_means(
             self.dummy_robot,
             self.gaussians_backup,
@@ -807,8 +800,6 @@ class PybulletRobotServerBase:
             robot_name=self.robot_name,
             transformations_cache=self.transformations_cache,
         )
-        end = time.time()
-        print(f"transform means: {end - start}")
 
         # Transform each object splat to be in the right pose
         cur_object_position_list = []
@@ -821,7 +812,6 @@ class PybulletRobotServerBase:
             cur_object_rotation_list.append(
                 torch.tensor(data[object_name + "_orientation"], device="cuda").float()
             )
-        start = time.time()
         xyz_obj_list = []
         rot_obj_list = []
         opacity_obj_list = []
@@ -853,11 +843,8 @@ class PybulletRobotServerBase:
             scales_obj_list.append(scales_obj)
             features_dc_obj_list.append(features_dc_obj)
             features_rest_obj_list.append(features_rest_obj)
-        end = time.time()
-        print(f"transform objects: {end - start}")
 
         # Combine splats of robot and of objects
-        start = time.time()
         with torch.no_grad():
             # gaussians.active_sh_degree = 0
             self.robot_gaussian._xyz = torch.cat(
@@ -884,8 +871,6 @@ class PybulletRobotServerBase:
                 [self.gaussians_backup._scaling] + scales_obj_list,
                 dim=0,
             )
-        end = time.time()
-        print(f"concatenate scene and object points: {end - start}")
 
     def render_image(self, camera_name):
         # TODO to save compute, you only need to create the splat once, then it can be rendered w/ different cameras
@@ -898,14 +883,10 @@ class PybulletRobotServerBase:
         else:
             raise ValueError(f"Unknown camera name {camera_name}")
 
-        start = time.time()
         rendering = render(camera, self.robot_gaussian, self.pipeline, self.background)[
             "render"
         ]
-        end = time.time()
-        print(f"render splat: {end - start}")
 
-        start = time.time()
         rendering_cpu = torch.empty_like(rendering, device="cpu", pin_memory=True)
         rendering_cpu.copy_(rendering.detach(), non_blocking=True)
         self.frame_queue.put((camera_name, rendering_cpu.numpy()))
@@ -914,7 +895,6 @@ class PybulletRobotServerBase:
 
         except queue.Full:
             pass  # skip frame if queue is full
-        print(f"show image: {end - start}")
 
         # save the image
         return rendering
@@ -1005,7 +985,6 @@ class PybulletRobotServerBase:
             observations[self.splat_object_name_list[i] + "_position"] = object_pos
             observations[self.splat_object_name_list[i] + "_orientation"] = object_quat
 
-        start = time.time()
 
         self.prep_image_rendering(data=observations)
         for camera_name in self.camera_names:
@@ -1014,9 +993,6 @@ class PybulletRobotServerBase:
             if camera_name not in observations:
                 observations[camera_name] = None
 
-        end = time.time()
-        duration = end - start
-        print(f"get_observations took {duration} seconds ({1/duration} fps)")
         return observations
 
     def randomize_object_pose(self):

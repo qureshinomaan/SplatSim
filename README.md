@@ -121,8 +121,6 @@ Launch the robot server which includes an apple and a plate:
 python scripts/launch_nodes.py --robot sim_ur_pybullet_apple_interactive --robot_name robot_iphone
 ```
 
-Wait about 10 seconds for the simulation window to pop up. It will say it is ready to serve.
-
 In another terminal tab, launch a node that will send the recorded trajectories in `/home/yourusername/data/bc_data/gello` to the server so that it will be rendered:
 ```bash
 python scripts/run_env_sim.py --agent replay_trajectory --robot-port 6001
