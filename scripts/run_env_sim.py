@@ -197,7 +197,7 @@ def main(args):
                 folder_config = yaml.safe_load(file)
             traj_folder = folder_config["traj_folder"]
             agent = ReplayTrajectoryAgent(traj_folder=traj_folder, env=env, save_images=False)
-            startup_steps = 50
+            startup_steps = 2
             query_new_joints_per_startup_step = False
         elif args.agent == "replay_trajectory_and_save":
             from splatsim.agents.replay_trajectory_agent import ReplayTrajectoryAgent
@@ -205,7 +205,7 @@ def main(args):
                 folder_config = yaml.safe_load(file)
             traj_folder = folder_config["traj_folder"]
             agent = ReplayTrajectoryAgent(traj_folder=traj_folder, env=env, save_images=True)
-            startup_steps = 50
+            startup_steps = 2
             query_new_joints_per_startup_step = False
         else:
             raise ValueError("Invalid agent name")

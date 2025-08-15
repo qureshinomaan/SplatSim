@@ -792,7 +792,7 @@ class PybulletRobotServerBase:
                 torch.tensor(data[object_name + "_position"], device="cuda").float()
             )
             cur_object_rotation_list.append(
-                torch.tensor(data[object_name + "_orientation"], device="cuda").float()
+                torch.roll(torch.tensor(data[object_name + "_orientation"], device="cuda").float(), 1)
             )
         xyz_obj_list = []
         rot_obj_list = []

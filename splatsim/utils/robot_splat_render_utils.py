@@ -132,7 +132,7 @@ def transform_object(pc, object_config, pos, quat, robot_transformation, object_
     #transform the object to the canonical frame
     xyz_obj = torch.matmul(rotation_matrix_c, xyz_obj.T).T + translation_c
     
-    rot_rotation_matrix = ( inv_rotation_matrix_r/inv_scale) @ o3.quaternion_to_matrix(quat)  @  (rotation_matrix_c/scale_obj)
+    rot_rotation_matrix = (inv_rotation_matrix_r/inv_scale) @ o3.quaternion_to_matrix(quat)  @  (rotation_matrix_c/scale_obj)
     rotation_obj_matrix = o3.quaternion_to_matrix(rotation_obj)
     rotation_obj_matrix = rot_rotation_matrix @ rotation_obj_matrix 
     rotation_obj = o3.matrix_to_quaternion(rotation_obj_matrix) 
