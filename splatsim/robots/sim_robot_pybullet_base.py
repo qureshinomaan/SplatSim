@@ -333,7 +333,7 @@ class PybulletRobotServerBase:
 
         for object_name in [self.robot_name] + self.splat_object_name_list:
             transformation = np.array(
-                self.object_config[self.robot_name]["transformation"]["matrix"]
+                self.object_config[object_name]["transformation"]["matrix"]
             )
             self.populate_transformations_cache(object_name, transformation)
 
