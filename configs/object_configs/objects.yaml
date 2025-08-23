@@ -1,3 +1,29 @@
+2025-08-01-ur5_robot_1069imgs:
+  transformation:
+    matrix:
+    - [0.140207, 0.056022, -0.149691, 0.6775]
+    - [0.159617, -0.03878, 0.134991, -0.120674]
+    - [0.008266, -0.201399, -0.067631, 0.516252]
+    - [0.0, 0.0, 0.0, 1.0]
+  aabb:
+    bounding_box:
+    - [-0.0734, -0.11, -0.0033]
+    - [0.5297, 0.2044, 0.5747]
+    urdf_bbox_adjustment:
+    - [0.0, 0.0]
+    - [0.0, 0.0]
+    - [0.0, 0.0]
+  urdf_path:
+  - ./splatsim/robot_definitions/urdf/sisbot.urdf
+  base_position:
+  - [0.0, 0.0, -0.1]
+  joint_states:
+  - [0, 0.0, -1.5707963267948966, 1.5707963267948966, -1.5707963267948966, -1.5707963267948966,
+    0.0, 0.0, 0.0, 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548,
+    0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127]
+  source_path: /home/jennyw2/data/2025-08-01-ur5_robot_1069imgs
+  model_path: /home/jennyw2/code/gaussian-splatting-repo/gaussian_splatting/output/2025-08-01-ur5_robot_1069imgs
+  use_gripper: true
 robot_jenny:
   transformation:
     matrix:
@@ -24,6 +50,7 @@ robot_jenny:
   source_path: /home/jennyw2/data/to_send/robot_jenny
   model_path: /home/jennyw2/code/gaussian-splatting-repo/gaussian_splatting/output/robot_jenny
   wrist_camera_link_name: wrist_camera_link
+  use_gripper: false # The urdf doesn't exactly match this physical robot. No gripper
 robot_iphone:
   transformation:
     matrix:
@@ -49,6 +76,7 @@ robot_iphone:
     0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127]
   source_path: /home/jennyw2/data/test_data/robot_iphone
   model_path: /home/jennyw2/data/output/robot_iphone
+  use_gripper: true
 sim_franka:
   transformation:
     matrix:
@@ -77,8 +105,7 @@ mug:
     bounding_box:
     - [-0.06174099954962731, -0.048921999961137774, -0.04394899818301201]
     - [0.06177900123596192, 0.05085599932074547, 0.043957998484373095]
-  ply_path:
-    /home/jennyw2/data/output/mug/point_cloud/iteration_7000/point_cloud.ply
+  ply_path: /home/jennyw2/data/output/mug/point_cloud/iteration_7000/point_cloud.ply
 plastic_apple:
   transformation:
     matrix:
@@ -90,8 +117,7 @@ plastic_apple:
     bounding_box:
     - [-0.040464000284671786, -0.04481899875402451, -0.003991999986581507]
     - [0.042181999862194064, 0.03782700139284134, 0.07506100225448609]
-  ply_path:
-    /home/jennyw2/data/output/plastic_apple/point_cloud/iteration_7000/point_cloud.ply
+  ply_path: /home/jennyw2/data/output/plastic_apple/point_cloud/iteration_7000/point_cloud.ply
 plastic_banana:
   transformation:
     matrix:
@@ -103,8 +129,7 @@ plastic_banana:
     bounding_box:
     - [-0.10480799663066864, -0.05512200060486794, -0.021652999773621562]
     - [0.09845499831438065, 0.026052999749779704, 0.021651999533176425]
-  ply_path:
-    /home/jennyw2/data/output/plastic_banana/point_cloud/iteration_7000/point_cloud.ply
+  ply_path: /home/jennyw2/data/output/plastic_banana/point_cloud/iteration_7000/point_cloud.ply
 plastic_strawberry:
   transformation:
     matrix:
@@ -116,8 +141,7 @@ plastic_strawberry:
     bounding_box:
     - [-0.026838000372052195, -0.010228999864310029, -0.0035789999850094345]
     - [0.024836999803781512, 0.04144700008630753, 0.048820999890565875]
-  ply_path:
-    /home/jennyw2/data/output/plastic_strawberry/point_cloud/iteration_7000/point_cloud.ply
+  ply_path: /home/jennyw2/data/output/plastic_strawberry/point_cloud/iteration_7000/point_cloud.ply
 plastic_orange:
   transformation:
     matrix:
@@ -129,8 +153,7 @@ plastic_orange:
     bounding_box:
     - [-0.042241001009941104, -0.05334599825739861, -0.003751000014133754]
     - [0.029288999244570735, 0.02029799993336201, 0.06777800011634827]
-  ply_path:
-    /home/jennyw2/data/output/plastic_orange/point_cloud/iteration_7000/point_cloud.ply
+  ply_path: /home/jennyw2/data/output/plastic_orange/point_cloud/iteration_7000/point_cloud.ply
 plate:
   transformation:
     matrix:
@@ -142,8 +165,7 @@ plate:
     bounding_box:
     - [-0.14549199628829956, -0.13433099675178528, -0.006904999932274225]
     - [0.12161000210046768, 0.13436300444602967, 0.027752000346779826]
-  ply_path:
-    /home/jennyw2/data/output/plate/point_cloud/iteration_7000/point_cloud.ply
+  ply_path: /home/jennyw2/data/output/plate/point_cloud/iteration_7000/point_cloud.ply
 pepper_plant:
   transformation:
     matrix:
@@ -155,8 +177,7 @@ pepper_plant:
     bounding_box:
     - [-0.10084044325351715, -0.07163486766815186, -0.04365334051847458]
     - [0.1079582064151764, 0.11075531828403473, 0.18289256978034973]
-  ply_path:
-    /home/jennyw2/data/output/pepper_plant/point_cloud/iteration_7000/point_cloud.ply
+  ply_path: /home/jennyw2/data/output/pepper_plant/point_cloud/iteration_7000/point_cloud.ply
 orange_bin:
   transformation:
     matrix:
@@ -168,8 +189,7 @@ orange_bin:
     bounding_box:
     - [-0.15628000485897064, -0.19878200578689575, -0.10199599850177765]
     - [0.15677600491046906, 0.19878200578689575, 0.10260500150918961]
-  ply_path:
-    /home/jennyw2/data/output/orange_bin/point_cloud/iteration_7000/point_cloud.ply
+  ply_path: /home/jennyw2/data/output/orange_bin/point_cloud/iteration_7000/point_cloud.ply
 redblock:
   transformation:
     matrix:
@@ -181,8 +201,7 @@ redblock:
     bounding_box:
     - [-0.13175, -0.128575, -0.11905]
     - [0.13175, 0.128575, 0.11905]
-  ply_path:
-      /home/jennyw2/data/output/redblock/point_cloud/iteration_7000/point_cloud.ply
+  ply_path: /home/jennyw2/data/output/redblock/point_cloud/iteration_7000/point_cloud.ply
 greenblock:
   transformation:
     matrix:
@@ -194,8 +213,7 @@ greenblock:
     bounding_box:
     - [-0.13175, -0.128575, -0.11905]
     - [0.13175, 0.128575, 0.11905]
-  ply_path:
-    /home/jennyw2/data/output/greenblock/point_cloud/iteration_7000/point_cloud.ply
+  ply_path: /home/jennyw2/data/output/greenblock/point_cloud/iteration_7000/point_cloud.ply
 T_object:
   transformation:
     matrix:
@@ -207,5 +225,4 @@ T_object:
     bounding_box:
     - [-0.10481339830160141, -0.17983333158493042, -0.0066666600499302175]
     - [0.10481339830160141, 0.029833329349756244, 0.04666666078567505]
-  ply_path:
-    /home/jennyw2/data/output/T_object/point_cloud/iteration_7000/point_cloud.ply
+  ply_path: /home/jennyw2/data/output/T_object/point_cloud/iteration_7000/point_cloud.ply

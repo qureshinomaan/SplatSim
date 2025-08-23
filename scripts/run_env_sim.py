@@ -44,7 +44,7 @@ class Args:
     gello_port: Optional[str] = None
     mock: bool = False
     use_save_interface: bool = False
-    data_dir: str = "~/bc_data"
+    data_dir: str = "~/data/bc_data"
     bimanual: bool = False
     verbose: bool = False
 
@@ -143,7 +143,7 @@ def main(args):
             #     for jnt in np.linspace(curr_joints, reset_joints, steps):
             #         env.step(jnt)
             #         time.sleep(0.001)
-            startup_steps = 100
+            startup_steps = 2
             query_new_joints_per_startup_step = True
         elif args.agent == "quest":
             from splatsim.agents.quest_agent import SingleArmQuestAgent
@@ -193,10 +193,18 @@ def main(args):
             query_new_joints_per_startup_step = False
         elif args.agent == "replay_trajectory":
             from splatsim.agents.replay_trajectory_agent import ReplayTrajectoryAgent
-            with open("configs/trajectory_configs.yaml", "r") as file:
-                trajectory_config = yaml.safe_load(file)
-            traj_folder = trajectory_config["trajectory_folder"]
-            agent = ReplayTrajectoryAgent(traj_folder=traj_folder, env=env)
+            with open("configs/folder_configs.yaml", "r") as file:
+                folder_config = yaml.safe_load(file)
+            traj_folder = folder_config["traj_folder"]
+            agent = ReplayTrajectoryAgent(traj_folder=traj_folder, env=env, save_images=False)
+            startup_steps = 2
+            query_new_joints_per_startup_step = False
+        elif args.agent == "replay_trajectory_and_save":
+            from splatsim.agents.replay_trajectory_agent import ReplayTrajectoryAgent
+            with open("configs/folder_configs.yaml", "r") as file:
+                folder_config = yaml.safe_load(file)
+            traj_folder = folder_config["traj_folder"]
+            agent = ReplayTrajectoryAgent(traj_folder=traj_folder, env=env, save_images=True)
             startup_steps = 2
             query_new_joints_per_startup_step = False
         else:
@@ -343,13 +351,19 @@ def main(args):
             action = action[:-1]
         obs = env.step(action)
 
-        # if "base_rgb" in obs:
-        #     cv2.imshow("robot", cv2.cvtColor(obs['base_rgb'], cv2.COLOR_RGB2BGR))
-        #     cv2.waitKey(1)
+        for img_obs_name in ["wrist_rgb", "base_rgb"]:
+            if img_obs_name not in obs or obs[img_obs_name] is None:
+                continue
+            frame = obs[img_obs_name]
+            frame = np.transpose(frame.detach().cpu().numpy(), (1, 2, 0))  # CxHxW -> HxWxC
+            frame = (frame * 255).astype(np.uint8)
+            cv2.imshow(img_obs_name, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            cv2.waitKey(1)
 
         loop_end = time.time()
+        loop_duration = loop_end - loop_start
         # Keep the time locked at a fixed rate
-        sleep_time = max(0, (1 / 240) - (loop_end - loop_start))
+        sleep_time = max(0, (1 / 50) - (loop_duration))
         if sleep_time > 0:
             time.sleep(sleep_time)
 

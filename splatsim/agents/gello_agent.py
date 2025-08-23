@@ -139,10 +139,8 @@ class GelloAgent(Agent):
         self.joint_state_offset = joint_state - norm_joint_state
         # Assume the last joint is the gripper
         self.joint_state_offset[-1] = 0
-        print('joint state offset', self.joint_state_offset)
 
 
     def act(self, obs: Dict[str, np.ndarray]) -> np.ndarray:
         joint_state = self._robot.get_joint_state() - self.joint_state_offset
-        print("robot joint state", joint_state)
         return joint_state

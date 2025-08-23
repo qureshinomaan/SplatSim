@@ -3,7 +3,6 @@ import threading
 import time
 from typing import Any, Dict, Optional, List
 import enum
-import copy
 import random
 from collections import namedtuple
 import math
@@ -15,16 +14,16 @@ from argparse import ArgumentParser
 
 from dataclasses import dataclass, field
 import numpy as np
-from typing import Optional
+import threading
+import queue
+
 
 import torch
 import numpy as np
 import mujoco
 import mujoco.viewer
 import zmq
-from dm_control import mjcf
 from splatsim.robots.robot import Robot
-from e3nn import o3
 
 import cv2
 from torchvision.transforms.functional import to_pil_image
@@ -35,7 +34,7 @@ from gaussian_renderer import render
 import urdf_models.models_data as md
 import pybullet as p
 from pybullet_planning.interfaces.robots.collision import pairwise_collision
-from pybullet_planning import plan_joint_motion, get_movable_joints, set_joint_positions
+import pybullet_data
 from splatsim.utils.robot_splat_render_utils import (
     get_segmented_indices,
     transform_means,
@@ -86,11 +85,6 @@ class ZMQRobotServer:
                 args = request.get("args", {})
                 result: Any
                 # print(f"Received request: {method}, {args}")
-                if not self._robot.ready_to_serve:
-                    result = {"error": "Robot not ready to serve"}
-                    print(result)
-                    self._socket.send(pickle.dumps(result))
-                    continue
                 if method == "num_dofs":
                     result = self._robot.num_dofs()
                 elif method == "get_joint_state":
@@ -238,12 +232,19 @@ class PybulletRobotServerBase:
         cam_i: int = 254,
         object_config_path: str = "./configs/object_configs/objects.yaml",
     ):
-        self.ready_to_serve = False
         self.serve_mode = serve_mode
         self.use_link_centers = use_link_centers
         self.robot_name = robot_name
         self.camera_names = camera_names
         self.cam_i = cam_i
+
+        # load labels.npy
+        self.robot_labels = np.load(
+            "./data/labels_path/" + self.robot_name + "_labels.npy"
+        )
+        self.robot_labels = torch.from_numpy(self.robot_labels).to(device="cuda").long()
+        self.transformations_cache = None
+
         self._zmq_server = ZMQRobotServer(robot=self, host=host, port=port)
         self._zmq_server_thread = ZMQServerThread(self._zmq_server)
         self.pybullet_client = p
@@ -273,7 +274,6 @@ class PybulletRobotServerBase:
             info = self.pybullet_client.getJointInfo(self.dummy_robot, i)
             joint_id = info[0]
             joint_name = info[1].decode("utf-8")
-            joint_type = info[2]
             if joint_name == "ee_fixed_joint":
                 self.ur5e_ee_id = joint_id
 
@@ -331,8 +331,12 @@ class PybulletRobotServerBase:
             for object_cfg in self.ENV_CONFIG["objects"]
         }
 
-        # self.object_name_list = ["plastic_orange", "plate"]
-        # self.splat_object_name_list = ["plastic_orange", "plate"]
+        for object_name in [self.robot_name] + self.splat_object_name_list:
+            transformation = np.array(
+                self.object_config[object_name]["transformation"]["matrix"]
+            )
+            self.populate_transformations_cache(object_name, transformation)
+
         self.randomize_object_positions = [True, False]
         self.randomize_object_rotations = [False, True]
         self.rotation_values = [[0, 0], [-np.pi / 6, np.pi / 6]]
@@ -421,8 +425,6 @@ class PybulletRobotServerBase:
         self.pybullet_client.setGravity(0, 0, -9.81)
 
         # add plane
-        import pybullet_data
-
         self.pybullet_client.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.plane = self.pybullet_client.loadURDF("plane.urdf", [0, 0, -0.022])
 
@@ -430,10 +432,6 @@ class PybulletRobotServerBase:
         # wall is perpendicular to the plane
         quat = self.pybullet_client.getQuaternionFromEuler([0, np.pi / 2, 0])
         self.wall = self.pybullet_client.loadURDF("plane.urdf", [-0.4, 0, 0.0], quat)
-
-        ##add a spher at 0.4, 0.5 0.01 without urdf
-        # self.sphere = self.pybullet_client.createVisualShape(shapeType=p.GEOM_SPHERE, radius=0.05, rgbaColor=[1, 0, 0, 1], specularColor=[0.4, .4, 0], visualFramePosition=[0.4, 0.6, 0.01])
-        # self.sphere_id = self.pybullet_client.createMultiBody(baseMass=0, baseVisualShapeIndex=self.sphere)
 
         ## add stage
         self.stage = 0
@@ -443,17 +441,16 @@ class PybulletRobotServerBase:
 
         # set time step
         self.pybullet_client.setTimeStep(1 / 240)
-        # self.pybullet_client.setRealTimeSimulation(0)
 
         # current gripper state
         self.current_gripper_action = 0
 
         # trajectory path
-        self.path = "/home/jennyw2/data/bc_data/gello/"
+        with open("configs/folder_configs.yaml", "r") as f:
+            folder_config = yaml.safe_load(f)
+        self.path = folder_config["traj_folder"]
         # get no of folders in the path
         self.trajectory_count = len(os.listdir(self.path))
-
-        # self.trajectory_count =
 
         # step simulation
         for i in range(100):
@@ -503,11 +500,15 @@ class PybulletRobotServerBase:
             )
             self.gaussians_backup = GaussianModel(dataset.sh_degree)
             # This loads the .ply file into self.gaussians_backup
+            self.cam_scale = (
+                2  # A scale of 2 produces a smaller image than a scale of 1
+            )
             self.scene = Scene(
                 dataset,
                 self.gaussians_backup,
                 load_iteration=-1,
                 shuffle=False,
+                resolution_scales=[self.cam_scale],
                 train_cam_indices=[self.cam_i],
                 test_cam_indices=[
                     0
@@ -636,6 +637,26 @@ class PybulletRobotServerBase:
     def set_freedrive_mode(self, enable: bool):
         pass
 
+    def populate_transformations_cache(self, object_name, object_transformation):
+        if self.transformations_cache is None:
+            self.transformations_cache = {}
+        object_transformation = (
+            torch.tensor(object_transformation).to(device="cuda").float()
+        )
+        object_transformation_scale = torch.pow(
+            torch.linalg.det(object_transformation[:3, :3]), 1 / 3
+        )
+        object_transformation_inv = torch.inverse(object_transformation)
+        object_transformation_inv_scale = torch.pow(
+            torch.linalg.det(object_transformation_inv[:3, :3]), 1 / 3
+        )
+        self.transformations_cache[object_name] = {
+            "transformation": object_transformation,
+            "transformation_scale": object_transformation_scale,
+            "inv_transformation": object_transformation_inv,
+            "inv_transformation_scale": object_transformation_inv_scale,
+        }
+
     def get_wrist_camera(self):
         if self.wrist_camera_link_index is None:
             print("WARNING: No wrist camera index found")
@@ -651,25 +672,43 @@ class PybulletRobotServerBase:
             computeForwardKinematics=True,
         )
 
-        robot_transformation = np.array(
-            self.object_config[self.robot_name]["transformation"]["matrix"]
-        )
-        robot_transformation_inv = np.linalg.inv(robot_transformation)
+        # robot_transformation = np.array(
+        #     self.object_config[self.robot_name]["transformation"]["matrix"]
+        # )
+        if self.transformations_cache is None:
+            robot_transformation = torch.tensor(
+                self.object_config[self.robot_name]["transformation"]["matrix"],
+                device="cuda",
+            )
+            robot_transformation_inv = torch.linalg.inv(robot_transformation)
+        else:
+            robot_transformation = self.transformations_cache[self.robot_name][
+                "transformation"
+            ]
+            robot_transformation_inv = self.transformations_cache[self.robot_name][
+                "inv_transformation"
+            ]
 
-        T = np.array(link_state[0]).astype(np.float32)  # xyz position in world frame
+        T = torch.tensor(
+            link_state[0], device=robot_transformation.device
+        ).float()  # xyz position in world frame
         quat = link_state[1]
-        R = np.array(p.getMatrixFromQuaternion(quat)).reshape(3, 3).astype(np.float32)
-        Trans_cam_world = np.eye(4)
+        R = (
+            torch.tensor(
+                p.getMatrixFromQuaternion(quat), device=robot_transformation.device
+            )
+            .reshape(3, 3)
+            .float()
+        )
+        Trans_cam_world = torch.eye(4, device=R.device)
         Trans_cam_world[:3, :3] = R
         Trans_cam_world[:3, 3] = T
 
         robot_transformation[:3, 3] = robot_transformation[:3, 3]
-        Trans_cam_splat = np.matmul(robot_transformation_inv, Trans_cam_world)
+        Trans_cam_splat = torch.matmul(robot_transformation_inv, Trans_cam_world)
 
         FoVx = 1.375955594372348
         FoVy = 1.1025297299614814
-
-        gt_mask_alpha = None
 
         image_width = 640
         image_height = 480
@@ -679,16 +718,15 @@ class PybulletRobotServerBase:
         # Original camera-to-world transform
         R_cw = Trans_cam_splat[:3, :3]
         T_cw = Trans_cam_splat[:3, 3]
-        scale = np.pow(np.linalg.det(R_cw[:3, :3]), 1 / 3)
+        scale = torch.pow(torch.linalg.det(R_cw[:3, :3]), 1 / 3)
         R_cw = R_cw / scale
         T_cw = T_cw / scale
-        Trans_cam_splat_wo_scale = np.eye(4)
+        Trans_cam_splat_wo_scale = torch.eye(4, device=R_cw.device)
         Trans_cam_splat_wo_scale[:3, :3] = R_cw
         Trans_cam_splat_wo_scale[:3, 3] = T_cw
 
-        # # Convert to world-to-camera
-        Rt_wc = np.linalg.inv(Trans_cam_splat_wo_scale)
-        # R_wc = Rt_wc[:3, :3]
+        # Convert to world-to-camera
+        Rt_wc = torch.linalg.inv(Trans_cam_splat_wo_scale)
         T_wc = Rt_wc[:3, 3]
 
         resolution = (image_width, image_height)
@@ -699,8 +737,8 @@ class PybulletRobotServerBase:
         camera = Camera(
             resolution,
             colmap_id,
-            R_cw,
-            T_wc,
+            R_cw.detach().cpu().numpy(),
+            T_wc.detach().cpu().numpy(),
             FoVx,
             FoVy,
             depth_params,
@@ -709,24 +747,12 @@ class PybulletRobotServerBase:
             # gt_mask_alpha,
             image_name,
             uid,
-            scale=scale,
+            scale=scale.detach().cpu().numpy(),
         )
 
         return camera
 
-    def get_image_observation(
-        self, data, camera_name="base_rgb"
-    ) -> Dict[str, np.ndarray]:
-        # TODO to save compute, you only need to create the splat once, then it can be rendered w/ different cameras
-        if camera_name == "base_rgb":
-            camera = self.base_camera
-        elif camera_name == "wrist_rgb":
-            camera = self.get_wrist_camera()
-            if camera is None:
-                return None
-        else:
-            raise ValueError(f"Unknown camera name {camera_name}")
-
+    def prep_image_rendering(self, data) -> Dict[str, np.ndarray]:
         # Gets transformations for all links of the robot based on the current simulation
         transformations_list = get_transfomration_list(
             self.dummy_robot, self.initial_link_states
@@ -744,6 +770,8 @@ class PybulletRobotServerBase:
             robot_transformation,
             aabb,
             self.robot_name,
+            robot_labels=self.robot_labels,
+            transformations_cache=self.transformations_cache,
         )
 
         xyz, rot, opacity, shs_featrest, shs_dc = transform_means(
@@ -753,6 +781,8 @@ class PybulletRobotServerBase:
             segmented_list,
             transformations_list,
             robot_transformation,
+            robot_name=self.robot_name,
+            transformations_cache=self.transformations_cache,
         )
 
         # Transform each object splat to be in the right pose
@@ -760,16 +790,12 @@ class PybulletRobotServerBase:
         cur_object_rotation_list = []
 
         for object_name in self.splat_object_name_list:
-            cur_object_position = np.array(data[object_name + "_position"])
             cur_object_position_list.append(
-                torch.from_numpy(cur_object_position).to(device="cuda").float()
+                torch.tensor(data[object_name + "_position"], device="cuda").float()
             )
-            cur_object_rotation = np.array(data[object_name + "_orientation"])
             cur_object_rotation_list.append(
-                torch.from_numpy(cur_object_rotation).to(device="cuda").float()
+                torch.roll(torch.tensor(data[object_name + "_orientation"], device="cuda").float(), 1)
             )
-        # xyz_cube, rot_cube, opacity_cube, scales_cube, shs_dc_cube, sh_rest_cube = place_object(gaussians_backup, pos=torch.from_numpy(cur_object).to(device='cuda').float(), rotation=torch.from_numpy(curr_rotation).to(device='cuda').float())
-        # xyz_obj, rot_obj, opacity_obj, scales_obj, features_dc_obj, features_rest_obj = transform_object(t_gaussians, pos=cur_position, quat=cur_rotation)
         xyz_obj_list = []
         rot_obj_list = []
         opacity_obj_list = []
@@ -777,6 +803,7 @@ class PybulletRobotServerBase:
         features_dc_obj_list = []
         features_rest_obj_list = []
         for i in range(len(self.urdf_object_list)):
+            object_name = self.splat_object_name_list[i]
             (
                 xyz_obj,
                 rot_obj,
@@ -786,10 +813,13 @@ class PybulletRobotServerBase:
                 features_rest_obj,
             ) = transform_object(
                 self.object_gaussians[i],
-                object_config=self.object_config[self.splat_object_name_list[i]],
+                object_config=self.object_config[object_name],
                 pos=cur_object_position_list[i],
                 quat=cur_object_rotation_list[i],
                 robot_transformation=robot_transformation,
+                object_name=object_name,
+                robot_name=self.robot_name,
+                transformations_cache=self.transformations_cache,
             )
             xyz_obj_list.append(xyz_obj)
             rot_obj_list.append(rot_obj)
@@ -826,28 +856,20 @@ class PybulletRobotServerBase:
                 dim=0,
             )
 
+    def render_image(self, camera_name):
+        # TODO to save compute, you only need to create the splat once, then it can be rendered w/ different cameras
+        if camera_name == "base_rgb":
+            camera = self.base_camera
+        elif camera_name == "wrist_rgb":
+            camera = self.get_wrist_camera()
+            if camera is None:
+                return None
+        else:
+            raise ValueError(f"Unknown camera name {camera_name}")
+
         rendering = render(camera, self.robot_gaussian, self.pipeline, self.background)[
             "render"
         ]
-
-        # t_gaussians = copy.deepcopy(t_gaussians_backup)
-
-        # convert into numpy
-        rendering = rendering.detach().cpu().numpy()
-
-        # convert to hxwxc from cxhxw
-        rendering = np.transpose(rendering, (1, 2, 0))
-
-        # convert to 0-255
-        rendering = (rendering * 255).astype(np.uint8)
-
-        # show the image
-        # resize the image to 640x480
-        cv2.imshow(
-            camera_name,
-            cv2.cvtColor(cv2.resize(rendering, (640, 480)), cv2.COLOR_BGR2RGB),
-        )
-        cv2.waitKey(1)
 
         # save the image
         return rendering
@@ -856,9 +878,9 @@ class PybulletRobotServerBase:
         # Assume that self.cam_train_indices and self.cam_test_indices have already singled out
         # the camera of interest. Return the first camera in the list
         if use_train:
-            camera = self.scene.getTrainCameras()[0]
+            camera = self.scene.getTrainCameras(scale=self.cam_scale)[0]
         else:
-            camera = self.scene.getTestCameras()[0]
+            camera = self.scene.getTestCameras(scale=self.cam_scale)[0]
         return camera
 
     def get_current_ee_pose(self):
@@ -899,11 +921,6 @@ class PybulletRobotServerBase:
         # get the euler angles from the quaternion
         dummy_ee_euler = self.pybullet_client.getEulerFromQuaternion(dummy_ee_quat)
 
-        # get quaternion from euler angles
-        dummy_ee_quat_reconstruct = self.pybullet_client.getQuaternionFromEuler(
-            dummy_ee_euler
-        )
-
         # print the euler angles and the reconstructed quaternion
         if self.use_gripper:
             self.current_gripper_state = self.get_current_gripper_state() / 0.8
@@ -932,7 +949,6 @@ class PybulletRobotServerBase:
 
         # gripper_position is for gello integration. It's a shame that it intersects with self.splat_object_name_list convetion
         observations["gripper_position"] = [self.current_gripper_state]
-        # observations["gripper"] = [self.current_gripper_state]
 
         for i in range(len(self.urdf_object_list)):
             (
@@ -944,10 +960,10 @@ class PybulletRobotServerBase:
             observations[self.splat_object_name_list[i] + "_position"] = object_pos
             observations[self.splat_object_name_list[i] + "_orientation"] = object_quat
 
-        for camera_name in self.camera_names:
-            observations[camera_name] = self.get_image_observation(
-                data=observations, camera_name=camera_name
-            )
+        if len(self.camera_names) > 0:
+            self.prep_image_rendering(data=observations)
+            for camera_name in self.camera_names:
+                observations[camera_name] = self.render_image(camera_name=camera_name)
         for camera_name in ["base_rgb", "wrist_rgb"]:
             if camera_name not in observations:
                 observations[camera_name] = None
@@ -1175,9 +1191,6 @@ class PybulletRobotServerBase:
             return False
 
     def serve(self) -> None:
-        # start the zmq server
-        self._zmq_server_thread.start()
-
         # Prepare for teleport by removing forces
         for i in range(len(self.initial_joint_state)):
             self.pybullet_client.setJointMotorControl2(
@@ -1229,8 +1242,10 @@ class PybulletRobotServerBase:
                 )
             self.pybullet_client.stepSimulation()
 
+        # start the zmq server
+        self._zmq_server_thread.start()
+
         print("Ready to serve.")
-        self.ready_to_serve = True
 
         while True:
             self.serve_loop()
@@ -1598,3 +1613,7 @@ class PybulletRobotServerBase:
                 "wb",
             ) as f:
                 pickle.dump(observations, f)
+
+    def shutdown(self):
+        # Say to shut down
+        pass

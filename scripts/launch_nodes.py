@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import tyro
+import types
+import yaml
 
 from splatsim.robots.robot import BimanualRobot, PrintRobot
 from gello.zmq_core.robot_node import ZMQServerRobot
@@ -14,9 +16,20 @@ class Args:
     hostname: str = "127.0.0.1"
     robot_ip: str = "192.168.1.10"
     gaussian_path : str = "/home/jennyw2/data/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply"
+    robot_name: str = "robot_iphone"
 
 
 def launch_robot_server(args: Args):
+    with open("configs/object_configs/objects.yaml", "r") as f:
+        object_config = yaml.safe_load(f)
+
+    has_wrist_camera = object_config[args.robot_name].get("wrist_camera_link_name", None) is not None
+    if has_wrist_camera:
+        camera_names = ["base_rgb", "wrist_rgb"]
+    else:
+        camera_names = ["base_rgb"]
+    use_gripper = object_config[args.robot_name].get("use_gripper", True)
+    
     port = args.robot_port
     if args.robot == "sim_ur":
         MENAGERIE_ROOT: Path = (
@@ -30,7 +43,6 @@ def launch_robot_server(args: Args):
         server = MujocoRobotServer(
             xml_path=xml, gripper_xml_path=gripper_xml, port=port, host=args.hostname
         )
-        server.serve()
 
     elif args.robot == "sim_ur_pybullet_push":
         MENAGERIE_ROOT: Path = (
@@ -45,7 +57,6 @@ def launch_robot_server(args: Args):
         server = PybulletRobotServer(
            port=port, host=args.hostname,
         )
-        server.serve()
 
     elif args.robot == "sim_ur_pybullet_cup":
         MENAGERIE_ROOT: Path = (
@@ -65,115 +76,78 @@ def launch_robot_server(args: Args):
         server = PybulletRobotServer(
            port=port, host=args.hostname,
         )
-        server.serve()
 
     elif args.robot == "sim_ur_pybullet_orange":
         from splatsim.robots.sim_robot_pybullet_object_on_plate import OrangeOnPlatePybulletRobotServer
 
         server = OrangeOnPlatePybulletRobotServer(
            port=port, host=args.hostname, serve_mode=OrangeOnPlatePybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           camera_names=[], robot_name="robot_iphone", cam_i=3
+           camera_names=[], robot_name=args.robot_name, cam_i=3, use_gripper=use_gripper
         )
-        server.serve()
 
     elif args.robot == "sim_ur_pybullet_orange_interactive":
         from splatsim.robots.sim_robot_pybullet_object_on_plate import OrangeOnPlatePybulletRobotServer
 
         server = OrangeOnPlatePybulletRobotServer(
            port=port, host=args.hostname, serve_mode=OrangeOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
-            camera_names=["base_rgb"], robot_name="robot_iphone", cam_i=3
+            camera_names=camera_names, robot_name=args.robot_name, cam_i=3, use_gripper=use_gripper
         )
-        server.serve()
-
-    elif args.robot == "sim_ur_pybullet_orange_interactive-robot_jenny":
-        from splatsim.robots.sim_robot_pybullet_object_on_plate import OrangeOnPlatePybulletRobotServer
-
-        server = OrangeOnPlatePybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=OrangeOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           camera_names=["base_rgb"], robot_name="robot_jenny", cam_i=3, use_gripper=False
-        )
-        server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple":
         from splatsim.robots.sim_robot_pybullet_object_on_plate import AppleOnPlatePybulletRobotServer
 
         server = AppleOnPlatePybulletRobotServer(
            port=port, host=args.hostname, serve_mode=AppleOnPlatePybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           camera_names=[], robot_name="robot_iphone", cam_i=3
+           camera_names=[], robot_name=args.robot_name, cam_i=3, use_gripper=use_gripper
         )
-        server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple_interactive":
         from splatsim.robots.sim_robot_pybullet_object_on_plate import AppleOnPlatePybulletRobotServer
 
         server = AppleOnPlatePybulletRobotServer(
            port=port, host=args.hostname, serve_mode=AppleOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           camera_names=["base_rgb"], robot_name="robot_iphone", cam_i=3
+           camera_names=camera_names, robot_name=args.robot_name, cam_i=3, use_gripper=use_gripper
         )
-        server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple_interactive-nosplat":
         from splatsim.robots.sim_robot_pybullet_object_on_plate import AppleOnPlatePybulletRobotServer
 
         server = AppleOnPlatePybulletRobotServer(
            port=port, host=args.hostname, serve_mode=AppleOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           camera_names=[], robot_name="robot_iphone", cam_i=3
+           camera_names=[], robot_name=args.robot_name, cam_i=3, use_gripper=use_gripper
         )
-        server.serve()
-
-    elif args.robot == "sim_ur_pybullet_apple_interactive-robot_jenny":
-        from splatsim.robots.sim_robot_pybullet_object_on_plate import AppleOnPlatePybulletRobotServer
-
-        server = AppleOnPlatePybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=AppleOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           camera_names=[], robot_name="robot_jenny", cam_i=3, use_gripper=False,
-        )
-        server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple_search":
         from splatsim.robots.sim_robot_pybullet_apple_search import AppleSearchPybulletRobotServer
 
         server = AppleSearchPybulletRobotServer(
            port=port, host=args.hostname, serve_mode=AppleSearchPybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           camera_names=[], robot_name="robot_iphone", cam_i=3
+           camera_names=[], robot_name=args.robot_name, cam_i=3, use_gripper=use_gripper
         )
-        server.serve()
 
     elif args.robot == "sim_ur_pybullet_apple_search_interactive":
         from splatsim.robots.sim_robot_pybullet_apple_search import AppleSearchPybulletRobotServer
 
         server = AppleSearchPybulletRobotServer(
            port=port, host=args.hostname, serve_mode=AppleSearchPybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           camera_names=["base_rgb", "wrist_rgb"], robot_name="robot_iphone", cam_i=3
+           camera_names=camera_names, robot_name=args.robot_name, cam_i=3, use_gripper=use_gripper
         )
-        server.serve()
-
-    elif args.robot == "sim_ur_pybullet_apple_search_interactive-robot_jenny":
-        from splatsim.robots.sim_robot_pybullet_apple_search import AppleSearchPybulletRobotServer
-
-        server = AppleSearchPybulletRobotServer(
-           port=port, host=args.hostname, serve_mode=AppleSearchPybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           camera_names=["base_rgb", "wrist_rgb"], robot_name="robot_jenny", cam_i=3, use_gripper=False
-        )
-        server.serve()
 
     elif args.robot == "sim_ur_pybullet_banana":
         from splatsim.robots.sim_robot_pybullet_object_on_plate import BananaOnPlatePybulletRobotServer
 
         server = BananaOnPlatePybulletRobotServer(
            port=port, host=args.hostname, serve_mode=BananaOnPlatePybulletRobotServer.SERVE_MODES.GENERATE_DEMOS,
-           camera_names=[], robot_name="robot_iphone", cam_i=3
+           camera_names=[], robot_name=args.robot_name, cam_i=3, use_gripper=use_gripper
         )
-        server.serve()
 
     elif args.robot == "sim_ur_pybullet_banana_interactive":
         from splatsim.robots.sim_robot_pybullet_object_on_plate import BananaOnPlatePybulletRobotServer
 
         server = BananaOnPlatePybulletRobotServer(
            port=port, host=args.hostname, serve_mode=BananaOnPlatePybulletRobotServer.SERVE_MODES.INTERACTIVE,
-           camera_names=["base_rgb"], robot_name="robot_iphone", cam_i=3
+           camera_names=camera_names, robot_name=args.robot_name, cam_i=3, use_gripper=use_gripper
         )
-        server.serve()
 
     elif args.robot == "sim_ur_splat":
         MENAGERIE_ROOT: Path = (
@@ -189,7 +163,6 @@ def launch_robot_server(args: Args):
         server = GaussianRenderServer(
            port=port, host=args.hostname, gaussian_path=args.gaussian_path
         )
-        server.serve()
 
     elif args.robot == "sim_panda":
         from splatsim.robots.sim_robot import MujocoRobotServer
@@ -202,7 +175,7 @@ def launch_robot_server(args: Args):
         server = MujocoRobotServer(
             xml_path=xml, gripper_xml_path=gripper_xml, port=port, host=args.hostname
         )
-        server.serve()
+
     elif args.robot == "sim_xarm":
         from splatsim.robots.sim_robot import MujocoRobotServer
 
@@ -214,7 +187,6 @@ def launch_robot_server(args: Args):
         server = MujocoRobotServer(
             xml_path=xml, gripper_xml_path=gripper_xml, port=port, host=args.hostname
         )
-        server.serve()
 
     else:
         if args.robot == "xarm":
@@ -250,7 +222,13 @@ def launch_robot_server(args: Args):
             )
         server = ZMQServerRobot(robot, port=port, host=args.hostname)
         print(f"Starting robot server on port {port}")
+    
+    
+    try:
         server.serve()
+    except KeyboardInterrupt:
+        if hasattr(server, "shutdown") and type(getattr(server, "shutdown")) == types.MethodType:
+            server.shutdown()
 
 
 def main(args):

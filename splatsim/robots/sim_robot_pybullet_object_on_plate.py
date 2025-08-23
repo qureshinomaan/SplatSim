@@ -8,7 +8,7 @@ import zmq
 
 assert mujoco.viewer is mujoco.viewer
 import pybullet as p
-from pybullet_planning import plan_joint_motion, get_movable_joints, set_joint_positions
+from pybullet_planning import plan_joint_motion, get_movable_joints
 
 from splatsim.robots.sim_robot_pybullet_base import (
     PybulletRobotServerBase,

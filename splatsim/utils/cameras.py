@@ -1,11 +1,7 @@
 
 import pybullet as p
-
 import numpy as np
 import open3d as o3d
-
-
-import urdf_models.models_data as md   ### object models
 
 def get_point_cloud(width, height, view_matrix, proj_matrix):
     # based on https://stackoverflow.com/questions/59128880/getting-world-coordinates-from-opengl-depth-buffer
