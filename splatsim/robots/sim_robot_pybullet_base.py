@@ -446,7 +446,9 @@ class PybulletRobotServerBase:
         self.current_gripper_action = 0
 
         # trajectory path
-        self.path = "/home/jennyw2/data/bc_data/gello/"
+        with open("configs/folder_configs.yaml", "r") as f:
+            folder_config = yaml.safe_load(f)
+        self.path = folder_config["traj_folder"]
         # get no of folders in the path
         self.trajectory_count = len(os.listdir(self.path))
 
@@ -958,9 +960,10 @@ class PybulletRobotServerBase:
             observations[self.splat_object_name_list[i] + "_position"] = object_pos
             observations[self.splat_object_name_list[i] + "_orientation"] = object_quat
 
-        self.prep_image_rendering(data=observations)
-        for camera_name in self.camera_names:
-            observations[camera_name] = self.render_image(camera_name=camera_name)
+        if len(self.camera_names) > 0:
+            self.prep_image_rendering(data=observations)
+            for camera_name in self.camera_names:
+                observations[camera_name] = self.render_image(camera_name=camera_name)
         for camera_name in ["base_rgb", "wrist_rgb"]:
             if camera_name not in observations:
                 observations[camera_name] = None
