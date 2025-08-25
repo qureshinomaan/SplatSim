@@ -278,14 +278,7 @@ def main(args):
 if __name__ == '__main__':
     #argument parser
     parser = argparse.ArgumentParser()
-
-    #add arguments with default values
-    # parser.add_argument('--robot', type=str, default='../../submodules/pybullet-playground-wrapper/pybullet_playground/urdf/sisbot.urdf')
-    # parser.add_argument('--joint_states', nargs='+', type=float, default=[0, 0.0, -1.5707963267948966, 1.5707963267948966, -1.5707963267948966, -1.5707963267948966, 0.0, 0.0, 0.0, 0.7999999999999996, 0.0, -0.8000070728762431, 0.0, 0.7999947291384548, 0.799996381456464, 0.0, -0.799988452159267, 0.0, 0.7999926186486127])
-    # parser.add_argument('--splat_path', type=str, default='/home/jennyw2/data/output/robot_iphone/point_cloud/iteration_30000/point_cloud.ply')
-    # parser.add_argument('--robot_name', type=str, default='robot_iphone')
-
-    parser.add_argument('--robot_name', type=str, default='robot_jenny')
+    parser.add_argument('--robot_name', type=str, default='robot_iphone')
 
     #parse the arguments
     args = parser.parse_args()

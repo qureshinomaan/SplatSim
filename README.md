@@ -41,7 +41,7 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 Note: If nothing is inside the `submodules/` folder, run `git submodule update --init --recursive`
 
 ```bash
-pip install submodules/diff-gaussian-rasterization submodules/pybullet-URDF-models submodules/pybullet-playground-wrapper/ submodules/ghalton
+pip install submodules/gaussian-splatting-wrapper/gaussian_splatting/submodules/diff-gaussian-rasterization submodules/pybullet-URDF-models submodules/pybullet-playground-wrapper/ submodules/ghalton
 
 # This needs editable mode for some reason
 pip install -e submodules/gaussian-splatting-wrapper
