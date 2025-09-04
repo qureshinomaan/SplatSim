@@ -794,7 +794,12 @@ class PybulletRobotServerBase:
                 torch.tensor(data[object_name + "_position"], device="cuda").float()
             )
             cur_object_rotation_list.append(
-                torch.roll(torch.tensor(data[object_name + "_orientation"], device="cuda").float(), 1)
+                torch.roll(
+                    torch.tensor(
+                        data[object_name + "_orientation"], device="cuda"
+                    ).float(),
+                    1,
+                )
             )
         xyz_obj_list = []
         rot_obj_list = []
@@ -1159,7 +1164,7 @@ class PybulletRobotServerBase:
         self.trajectory_length = 0
 
         # make path+trajectory_count folder
-        trajectory_folder = self.path + str(self.trajectory_count).zfill(3)
+        trajectory_folder = os.path.join(self.path, str(self.trajectory_count).zfill(3))
         print("Generating trajectory in folder:", trajectory_folder)
         os.makedirs(trajectory_folder, exist_ok=True)
 
@@ -1257,7 +1262,7 @@ class PybulletRobotServerBase:
         raise NotImplementedError()
 
     def delete_trajectory_folder(self):
-        shutil.rmtree(self.path + str(self.trajectory_count).zfill(3))
+        shutil.rmtree(os.path.join(self.path, str(self.trajectory_count).zfill(3)))
 
     def stop(self) -> None:
         self._zmq_server_thread.join()
@@ -1500,11 +1505,11 @@ class PybulletRobotServerBase:
             if i % 20 == 0 and not self.skip_recording_first:
                 self.trajectory_length += 1
                 with open(
-                    self.path
-                    + str(self.trajectory_count).zfill(3)
-                    + "/"
-                    + str(self.trajectory_length).zfill(5)
-                    + ".pkl",
+                    os.path.join(
+                        self.path,
+                        str(self.trajectory_count).zfill(3),
+                        str(self.trajectory_length).zfill(5) + ".pkl",
+                    ),
                     "wb",
                 ) as f:
                     pickle.dump(observations, f)
@@ -1519,11 +1524,11 @@ class PybulletRobotServerBase:
             if i % 20 == 0 and not self.skip_recording_first:
                 self.trajectory_length += 1
                 with open(
-                    self.path
-                    + str(self.trajectory_count).zfill(3)
-                    + "/"
-                    + str(self.trajectory_length).zfill(5)
-                    + ".pkl",
+                    os.path.join(
+                        self.path,
+                        str(self.trajectory_count).zfill(3),
+                        str(self.trajectory_length).zfill(5) + ".pkl",
+                    ),
                     "wb",
                 ) as f:
                     pickle.dump(observations, f)
@@ -1582,11 +1587,11 @@ class PybulletRobotServerBase:
                 observations = self.get_observations()
                 # save the observations with trajectory length as pickle file in format 0000x.pkl
                 with open(
-                    self.path
-                    + str(self.trajectory_count).zfill(3)
-                    + "/"
-                    + str(self.trajectory_length).zfill(5)
-                    + ".pkl",
+                    os.path.join(
+                        self.path,
+                        str(self.trajectory_count).zfill(3),
+                        str(self.trajectory_length).zfill(5) + ".pkl",
+                    ),
                     "wb",
                 ) as f:
                     pickle.dump(observations, f)
@@ -1605,11 +1610,11 @@ class PybulletRobotServerBase:
             observations = self.get_observations()
             # save the observations with trajectory length as pickle file in format 0000x.pkl
             with open(
-                self.path
-                + str(self.trajectory_count).zfill(3)
-                + "/"
-                + str(self.trajectory_length).zfill(5)
-                + ".pkl",
+                os.path.join(
+                    self.path,
+                    str(self.trajectory_count).zfill(3),
+                    str(self.trajectory_length).zfill(5) + ".pkl",
+                ),
                 "wb",
             ) as f:
                 pickle.dump(observations, f)
